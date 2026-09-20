@@ -9,24 +9,33 @@ Component({
       type: Object,
       value: {
         name: '小糯米',
+        stage: 'egg',
         hunger: 80,
         mood: 85,
         energy: 90,
+        health: 95,
         level: 1,
         exp: 0,
         actionState: 'normal',
       },
       observer(newVal) {
-        if (newVal && newVal.actionState) {
-          this.setData({ actionState: newVal.actionState })
-          this._updateEmotionEffects(newVal.actionState)
+        if (newVal) {
+          if (newVal.actionState) {
+            this.setData({ actionState: newVal.actionState })
+            this._updateEmotionEffects(newVal.actionState)
+          }
+          if (newVal.stage) {
+            const names = { egg: '萌宠蛋', baby: '幼崽期', youth: '成长期', adult: '完全体' }
+            this.setData({ stageName: names[newVal.stage] || '幼崽期' })
+          }
         }
       }
     }
   },
 
   data: {
-    actionState: 'normal', // happy | sad | surprise | normal | expectant | sleepy
+    stageName: '萌宠蛋',
+    actionState: 'normal', // happy | sad | surprise | normal | expectant | sleepy | sick
     idleIndex: 0, // 0: 呼吸, 1: 晃脑摇尾, 2: 歪头杀, 3: 踏步
     isBlinking: false,
     isTapped: false,

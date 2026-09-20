@@ -78,6 +78,9 @@ const HANDLERS = {
   // 双人共养虚拟桌宠
   petGet: pet.petGet,
   petInteract: pet.petInteract,
+  petBuyItem: pet.petBuyItem,
+  petRequestEvolve: pet.petRequestEvolve,
+  petConfirmEvolve: pet.petConfirmEvolve,
   petRename: pet.petRename,
   // 余额实时同步
   getBalances,

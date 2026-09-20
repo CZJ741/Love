@@ -1,21 +1,27 @@
 <view class="page pet-page">
-  <!-- 顶部宠物大舞台卡片（大尺寸 Live2D 唯美渲染展示） -->
+  <!-- 顶部宠物大舞台卡片（Live2D 唯美多形态渲染展示） -->
   <view class="card pet-stage-card">
     <view class="pet-stage-header">
       <view class="pet-name-box" bindtap="promptRename">
         <text class="pnb-name">{{pet.name || '小糯米'}}</text>
         <text class="pnb-edit">✏️</text>
       </view>
-      <view class="pet-level-badge">Lv.{{pet.level || 1}} 萌宠宝贝</view>
+      <!-- 当前进化阶段徽标 -->
+      <view class="pet-stage-badge">
+        <text wx:if="{{pet.stage === 'egg'}}">🥚 阶段一 · 萌宠蛋</text>
+        <text wx:elif="{{pet.stage === 'baby'}}">🐾 阶段二 · 幼崽期</text>
+        <text wx:elif="{{pet.stage === 'youth'}}">🐕 阶段三 · 成长期</text>
+        <text wx:elif="{{pet.stage === 'adult'}}">👑 阶段四 · 完全体</text>
+      </view>
     </view>
 
-    <!-- 舞台精美情绪对白气泡（位于宠物头顶上方独立排版，绝不遮挡小狗） -->
+    <!-- 舞台精美独立对白条：独立位于小狗上方，绝不遮挡宠物头部 -->
     <view class="stage-speech-bubble">
       <view class="ssb-icon-tag">🐶 对白</view>
       <text class="ssb-text">{{speechText}}</text>
     </view>
 
-    <!-- 大舞台 Live2D 桌宠（无内嵌重叠气泡，保证小狗头部神态完好展示） -->
+    <!-- 大舞台 Live2D 多形态桌宠 -->
     <view class="stage-pet-center">
       <live2d-pet
         pet="{{pet}}"
@@ -23,17 +29,80 @@
         bindinteract="onPetInteract"
       />
     </view>
-    <view class="stage-tip">轻触小狗互动，伴侣也能看到它的即时心情与动作哦~</view>
+    <view class="stage-tip">
+      <text wx:if="{{pet.stage === 'egg'}}">轻触蛋壳抚摸对话，孵化经验由双方共同积累~</text>
+      <text wx:else>轻触小狗互动，伴侣也能看到它的即时心情与动作哦~</text>
+    </view>
   </view>
 
-  <!-- 属性三维状态卡片（QQ宠物式养成数值） -->
+  <!-- 阶段进化卡片（当经验蓄满或进入确认状态时展示） -->
+  <view wx:if="{{stageConfig.nextStage}}" class="card evolve-card {{canEvolve ? 'evolve-ready' : ''}}">
+    <view class="evolve-header">
+      <view class="eh-title-row">
+        <text class="eh-icon">✨</text>
+        <text class="eh-title">阶段进化仪式</text>
+      </view>
+      <text class="eh-sub">{{stageConfig.name}} → {{nextStageName}}</text>
+    </view>
+
+    <!-- 进化条件指标对比 -->
+    <view class="evolve-requirements">
+      <view class="er-item {{pet.exp >= pet.maxExp ? 'ok' : 'wait'}}">
+        <text class="er-icon">{{pet.exp >= pet.maxExp ? '✓' : '⏳'}}</text>
+        <text class="er-text">阶段经验满格 ({{pet.exp}}/{{pet.maxExp}})</text>
+      </view>
+      <view class="er-item {{pet.health >= healthThreshold ? 'ok' : 'fail'}}">
+        <text class="er-icon">{{pet.health >= healthThreshold ? '✓' : '⚠️'}}</text>
+        <text class="er-text">健康度达标 (当前: {{pet.health}}% / 需 ≥{{healthThreshold}}%)</text>
+      </view>
+    </view>
+
+    <!-- 共同确认机制操作栏 -->
+    <view class="evolve-action-bar">
+      <!-- 1. 经验未满或健康未达标 -->
+      <button wx:if="{{!canEvolve && !pet.evolveRequested}}" class="btn-evolve disabled" disabled="true">
+        {{pet.health < healthThreshold && pet.exp >= pet.maxExp ? '健康度过低，需照料至80%方可进化' : '积攒经验与照料中...'}}
+      </button>
+      <!-- 2. 达到条件，尚未发起 -->
+      <button wx:elif="{{canEvolve && !pet.evolveRequested}}" class="btn-evolve ready" bindtap="requestEvolve">
+        🌟 发起进化仪式
+      </button>
+      <!-- 3. 我已发起，等待对方确认 -->
+      <button wx:elif="{{isMyRequested}}" class="btn-evolve waiting" disabled="true">
+        ⏳ 已发起仪式，等待 TA 共同见证确认...
+      </button>
+      <!-- 4. 对方已发起，轮到我确认进化！ -->
+      <button wx:elif="{{isWaitingPartnerConfirm}}" class="btn-evolve confirm" bindtap="confirmEvolve">
+        🎉 共同见证！点击确认完成进化！
+      </button>
+    </view>
+  </view>
+
+  <!-- 属性状态卡片（健康度总指标 + 基础数值） -->
   <view class="card stats-card">
     <view class="card-title-row">
-      <text class="ctr-title">🐾 宠物成长状态</text>
-      <text class="ctr-exp">成长值: {{pet.exp || 0}}/100</text>
+      <view class="ctr-left">
+        <text class="ctr-title">🐾 成长状态指标</text>
+        <text class="ctr-health-tag {{pet.health >= healthThreshold ? 'health-good' : 'health-warning'}}">
+          健康度: {{pet.health || 0}}% {{pet.health < healthThreshold ? '(病态需照料)' : '(优良)'}}
+        </text>
+      </view>
+      <text class="ctr-exp">今日经验: {{pet.todayExp || 0}}/{{stageConfig.dailyExpLimit || 40}}</text>
+    </view>
+
+    <!-- 阶段经验条 -->
+    <view class="main-exp-section">
+      <view class="mes-info">
+        <text class="mes-name">{{stageConfig.name}}成长进度</text>
+        <text class="mes-val">{{pet.exp || 0}} / {{pet.maxExp || 100}} EXP</text>
+      </view>
+      <view class="mes-bar-track">
+        <view class="mes-bar-fill" style="width: {{pet.exp * 100 / pet.maxExp}}%;"></view>
+      </view>
     </view>
 
     <view class="stat-bars">
+      <!-- 1. 饱食度 -->
       <view class="stat-bar-row">
         <view class="sbr-label"><text class="sbr-icon">🍖</text><text>饱食度</text></view>
         <view class="sbr-bar-track">
@@ -42,6 +111,7 @@
         <text class="sbr-val">{{pet.hunger || 0}}/100</text>
       </view>
 
+      <!-- 2. 心情值 -->
       <view class="stat-bar-row">
         <view class="sbr-label"><text class="sbr-icon">💖</text><text>心情值</text></view>
         <view class="sbr-bar-track">
@@ -50,6 +120,16 @@
         <text class="sbr-val">{{pet.mood || 0}}/100</text>
       </view>
 
+      <!-- 3. 清洁度 -->
+      <view class="stat-bar-row">
+        <view class="sbr-label"><text class="sbr-icon">🧼</text><text>清洁度</text></view>
+        <view class="sbr-bar-track">
+          <view class="sbr-bar-fill clean" style="width: {{pet.cleanliness || 0}}%;"></view>
+        </view>
+        <text class="sbr-val">{{pet.cleanliness || 0}}/100</text>
+      </view>
+
+      <!-- 4. 体力值 -->
       <view class="stat-bar-row">
         <view class="sbr-label"><text class="sbr-icon">⚡</text><text>体力值</text></view>
         <view class="sbr-bar-track">
@@ -62,63 +142,105 @@
     <!-- 最新动态足迹日记 -->
     <view class="pet-diary-row">
       <text class="pdr-tag">最新足迹</text>
-      <text class="pdr-text">{{pet.lastActionText || '小狗正乖巧地依偎在你们身边'}}</text>
+      <text class="pdr-text">{{pet.lastActionText || '小家伙正乖巧地待在你们身边'}}</text>
     </view>
   </view>
 
-  <!-- 6大核心养成互动操作盘 -->
+  <!-- 阶段专属互动照料面板 -->
   <view class="card actions-card">
     <view class="card-title-row">
       <text class="ctr-title">🎮 互动照料大厅</text>
-      <text class="ctr-sub">两人爱心轮流照料</text>
+      <text class="ctr-sub">双方共享经验池 · 共同照料</text>
     </view>
 
-    <view class="actions-grid">
-      <view class="act-btn" data-act="feed" bindtap="doInteract">
-        <view class="act-icon-box box-feed">🍖</view>
-        <text class="act-name">投喂肉干</text>
-        <text class="act-desc">饱食+25 心情+10</text>
+    <!-- 蛋阶段专属互动 -->
+    <block wx:if="{{pet.stage === 'egg'}}">
+      <view class="actions-grid egg-actions">
+        <view class="act-btn" data-act="touch" bindtap="doInteract">
+          <view class="act-icon-box box-pet">🤗</view>
+          <text class="act-name">抚摸暖蛋</text>
+          <text class="act-desc">心情+15 经验+12</text>
+        </view>
+        <view class="act-btn" data-act="talk" bindtap="doInteract">
+          <view class="act-icon-box box-talk">💬</view>
+          <text class="act-name">温柔对话</text>
+          <text class="act-desc">心情+20 经验+15</text>
+        </view>
+        <view class="act-btn" data-act="shake" bindtap="doInteract">
+          <view class="act-icon-box box-shake">🪺</view>
+          <text class="act-name">轻微摇晃</text>
+          <text class="act-desc">好奇翻身 经验+10</text>
+        </view>
       </view>
+    </block>
 
-      <view class="act-btn" data-act="pet" bindtap="doInteract">
-        <view class="act-icon-box box-pet">🤗</view>
-        <text class="act-name">温柔摸摸</text>
-        <text class="act-desc">心情+18 撒娇期待</text>
+    <!-- 破壳后通用日常照料 -->
+    <block wx:else>
+      <view class="actions-grid">
+        <view class="act-btn" data-act="touch" bindtap="doInteract">
+          <view class="act-icon-box box-pet">🤗</view>
+          <text class="act-name">温柔摸摸</text>
+          <text class="act-desc">心情+15 经验+10</text>
+        </view>
+        <view class="act-btn" data-act="clean" bindtap="doInteract">
+          <view class="act-icon-box box-clean">🧼</view>
+          <text class="act-name">泡泡洗澡</text>
+          <text class="act-desc">清洁+35 健康+10</text>
+        </view>
+        <view class="act-btn" data-act="sleep" bindtap="doInteract">
+          <view class="act-icon-box box-sleep">💤</view>
+          <text class="act-name">抱去睡觉</text>
+          <text class="act-desc">体力+40 恢复活力</text>
+        </view>
+        <view class="act-btn" data-act="heal" bindtap="doInteract">
+          <view class="act-icon-box box-heal">🩹</view>
+          <text class="act-name">看病治疗</text>
+          <text class="act-desc">健康+30 去除病态</text>
+        </view>
       </view>
+    </block>
+  </view>
 
-      <view class="act-btn" data-act="play" bindtap="doInteract">
-        <view class="act-icon-box box-play">🎾</view>
-        <text class="act-name">飞盘玩耍</text>
-        <text class="act-desc">心情+25 消耗体力</text>
+  <!-- ====== 宠物积分商城卡片（结合已有用户积分系统购买商品） ====== -->
+  <view class="card shop-card">
+    <view class="card-title-row">
+      <view class="shop-title-left">
+        <text class="ctr-title">🏪 萌宠积分商店</text>
+        <text class="ctr-sub">使用情侣积分购买专属养宠好物</text>
       </view>
-
-      <view class="act-btn" data-act="gift" bindtap="doInteract">
-        <view class="act-icon-box box-gift">🎁</view>
-        <text class="act-name">赠送礼盒</text>
-        <text class="act-desc">心情+30 惊喜转圈</text>
+      <view class="user-balance-pill">
+        <text class="ubp-icon">⭐</text>
+        <text class="ubp-val">我的积分: {{myBalance || 0}}</text>
       </view>
+    </view>
 
-      <view class="act-btn" data-act="sleep" bindtap="doInteract">
-        <view class="act-icon-box box-sleep">💤</view>
-        <text class="act-name">抱去睡觉</text>
-        <text class="act-desc">体力+40 恢复活力</text>
-      </view>
-
-      <view class="act-btn" bindtap="promptRename">
-        <view class="act-icon-box box-rename">✏️</view>
-        <text class="act-name">修改昵称</text>
-        <text class="act-desc">专属萌犬爱称</text>
+    <view class="shop-items-grid">
+      <view
+        wx:for="{{shopList}}"
+        wx:key="id"
+        class="shop-item"
+        data-item="{{item}}"
+        bindtap="buyShopItem"
+      >
+        <view class="si-icon-box">{{item.emoji}}</view>
+        <text class="si-name">{{item.name}}</text>
+        <text class="si-desc">{{item.desc}}</text>
+        <view class="si-price-btn">
+          <text class="sip-star">⭐</text>
+          <text class="sip-num">{{item.price}} 积分</text>
+        </view>
       </view>
     </view>
   </view>
 
-  <!-- 养成小提示卡片 -->
+  <!-- 养成与成长指南卡片 -->
   <view class="card tips-card">
-    <view class="tips-title">💡 养成小指南</view>
+    <view class="tips-title">💡 纯成长体系规则</view>
     <view class="tips-content">
-      <view>• 两人共同照料同一只宠物，任何一方的投喂、抚摸都会实时同步给对方。</view>
-      <view>• 属性随时间流逝自然减少，饥饿或冷落时小狗会表现出委屈难过。</view>
-      <view>• 在家页面，小狗会乖巧地浮在陪伴时长卡片右下侧，双击它也能随时直接回来！</view>
+      <view>• 四大形态进化：蛋(egg) → 幼崽(baby) → 成长期(youth) → 完全体(adult)。</view>
+      <view>• 双方共享同一经验池，达到当日经验上限后不再获取，不设个人排行榜。</view>
+      <view>• 健康度为核心总指标，长期饱食/心情/清洁不佳会下降并呈现虚弱病态（贴创口贴）。</view>
+      <view>• 进化必须满足【阶段经验满 + 健康度 ≥ 80% + 双方共同确认】，进化后全状态满值奖励！</view>
     </view>
   </view>
 </view>

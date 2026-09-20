@@ -1,19 +1,44 @@
-// 专属萌宠爱心小窝页面逻辑
+// 专属萌宠纯成长进化体系与积分商城页面逻辑
 const api = require('../../lib/api')
+
+const NEXT_STAGE_NAMES = {
+  egg: '阶段二 · 幼崽期',
+  baby: '阶段三 · 成长期',
+  youth: '阶段四 · 完全体',
+  adult: '最高形态',
+}
 
 Page({
   data: {
     pet: {
       name: '小糯米',
-      hunger: 80,
-      mood: 85,
+      stage: 'egg',
+      hunger: 90,
+      mood: 90,
+      cleanliness: 90,
       energy: 90,
-      level: 1,
+      health: 95,
       exp: 0,
+      maxExp: 100,
+      todayExp: 0,
       actionState: 'normal',
-      lastActionText: '小狗正安稳待在小窝中',
+      lastActionText: '小生命正在温暖的蛋壳中孕育...',
     },
-    speechText: '汪！主人你来啦，小狗正在开心地摇尾巴！',
+    stageConfig: {
+      key: 'egg',
+      name: '萌宠蛋',
+      dailyExpLimit: 40,
+      maxExp: 100,
+      nextStage: 'baby'
+    },
+    nextStageName: '阶段二 · 幼崽期',
+    healthThreshold: 80,
+    canEvolve: false,
+    isWaitingPartnerConfirm: false,
+    isMyRequested: false,
+    shopList: [],
+    myBalance: 0,
+    speechText: '轻触蛋壳抚摸对话，孵化经验由双方共同积累~',
     submitting: false,
   },
 
@@ -33,12 +58,30 @@ Page({
     if (!quiet) wx.showLoading({ title: '加载中...' })
     return api.call('petGet')
       .then(res => {
-        if (res && res.pet) {
-          this.setData({
-            pet: res.pet,
-            speechText: this._getSpeechByPet(res.pet)
-          })
-        }
+        if (!res) return
+        const {
+          pet,
+          stageConfig,
+          healthThreshold,
+          canEvolve,
+          isWaitingPartnerConfirm,
+          isMyRequested,
+          shopList,
+          myBalance
+        } = res
+
+        this.setData({
+          pet: pet || this.data.pet,
+          stageConfig: stageConfig || this.data.stageConfig,
+          nextStageName: NEXT_STAGE_NAMES[pet.stage] || '',
+          healthThreshold: healthThreshold || 80,
+          canEvolve: Boolean(canEvolve),
+          isWaitingPartnerConfirm: Boolean(isWaitingPartnerConfirm),
+          isMyRequested: Boolean(isMyRequested),
+          shopList: shopList || [],
+          myBalance: myBalance || 0,
+          speechText: this._getSpeechByPet(pet)
+        })
       })
       .catch(err => {
         wx.showToast({ title: err.message || '获取数据失败', icon: 'none' })
@@ -49,47 +92,40 @@ Page({
   },
 
   _getSpeechByPet(pet) {
-    if (!pet) return '汪！今天也是元气满满的一天！'
-    if (pet.hunger < 30) return '呜呜... 肚子好饿好饿，想吃香喷喷的肉干！'
-    if (pet.mood < 30) return '委屈巴巴... 是不是忙起来把我忘记啦？'
-    if (pet.energy < 20) return '呼噜噜... 脑袋晕乎乎的，想要抱抱睡大觉 zZ'
-    if (pet.hunger > 80 && pet.mood > 80) return '摇尾巴！肚皮饱饱，心情棒棒，最爱你们啦~'
-    return '汪！随时都在小窝陪伴你们，今天也超级想你！'
+    if (!pet) return '今天也是元气满满的一天！'
+    if (pet.stage === 'egg') {
+      if (pet.exp >= pet.maxExp) return '蛋壳微微晃动发光，已经具备孵化蜕变幼崽的条件啦！'
+      return '蛋壳暖洋洋的，轻触对话让小生命感受到爱意~'
+    }
+    if (pet.health < 60) return '呜呜... 脑袋昏昏沉沉生病了，需要看病吃药或洗香香才能恢复健康！'
+    if (pet.hunger < 35) return '肚子好饿呀，快去宠物商城买点好吃的肉干吧！'
+    if (pet.mood < 35) return '委屈巴巴... 摸摸我或者陪我玩飞盘好不好？'
+    if (pet.cleanliness < 40) return '身上脏兮兮的，想要舒舒服服洗个泡泡澡！'
+    if (pet.energy < 20) return '好困好累呀，抱我去小被子里睡个大觉吧 zZ'
+    if (pet.exp >= pet.maxExp && pet.health >= 80) return '🌟 能量已蓄满！快和 TA 一起发起进化仪式吧！'
+    return '摇尾巴！肚皮饱饱身体棒，最喜欢和你们在一起啦！'
   },
 
   // 接收 Live2D 组件触碰互动事件
   onPetInteract(e) {
-    const action = (e.detail && e.detail.action) || 'poke'
-    const quotes = [
-      '嗷呜~ 被摸得舒服极啦，小尾巴摇成直升机！',
-      '扑进你的怀抱里！最喜欢主人摸摸脑袋啦~',
-      '歪头看着你：今天你们有想对方吗？',
-      '汪！是不是要带我去吃好吃的呀？'
-    ]
-    const pick = quotes[Math.floor(Math.random() * quotes.length)]
-    this.setData({ speechText: pick })
-
-    api.call('petInteract', { action })
-      .then(res => {
-        if (res && res.pet) {
-          this.setData({ pet: res.pet })
-        }
-      })
-      .catch(() => {})
+    const action = (e.detail && e.detail.action) || 'touch'
+    this.doInteractAction(action)
   },
 
-  // 触发养成互动（喂食、抚摸、玩耍、送礼、睡眠）
+  // 触发常规日常照料（摸摸/对话/摇晃/洗澡/睡眠/看病）
   doInteract(e) {
     const act = e.currentTarget.dataset.act
-    if (!act || this.data.submitting) return
+    if (!act) return
+    this.doInteractAction(act)
+  },
 
-    try { wx.vibrateShort({ type: 'medium' }) } catch (err) {}
+  doInteractAction(act) {
+    if (this.data.submitting) return
+    try { wx.vibrateShort({ type: 'light' }) } catch (err) {}
     this.setData({ submitting: true })
-    wx.showLoading({ title: '互动中...' })
 
     api.call('petInteract', { action: act })
       .then(res => {
-        wx.hideLoading()
         if (res && res.pet) {
           this.setData({
             pet: res.pet,
@@ -99,9 +135,9 @@ Page({
         if (res && res.replyText) {
           wx.showToast({ title: res.replyText, icon: 'none', duration: 2500 })
         }
+        this.fetchPetData(true)
       })
       .catch(err => {
-        wx.hideLoading()
         wx.showToast({ title: err.message || '操作失败', icon: 'none' })
       })
       .finally(() => {
@@ -109,7 +145,108 @@ Page({
       })
   },
 
-  // 修改宠物昵称
+  // 购买并使用宠物积分商城道具
+  buyShopItem(e) {
+    const item = e.currentTarget.dataset.item
+    if (!item || this.data.submitting) return
+
+    wx.showModal({
+      title: `购买 ${item.name}`,
+      content: `确认消耗 ${item.price} 积分购买并喂养宠物吗？\n（当前积分余额: ${this.data.myBalance}）`,
+      confirmText: '购买使用',
+      confirmColor: '#FB8C00',
+      success: res => {
+        if (res.confirm) {
+          wx.showLoading({ title: '购买喂养中...' })
+          this.setData({ submitting: true })
+
+          api.call('petBuyItem', { itemId: item.id })
+            .then(buyRes => {
+              wx.hideLoading()
+              try { wx.vibrateShort({ type: 'medium' }) } catch (err) {}
+              if (buyRes && buyRes.replyText) {
+                wx.showToast({ title: buyRes.replyText, icon: 'none', duration: 2500 })
+              }
+              this.fetchPetData(true)
+            })
+            .catch(err => {
+              wx.hideLoading()
+              wx.showToast({ title: err.message || '购买失败', icon: 'none' })
+            })
+            .finally(() => {
+              this.setData({ submitting: false })
+            })
+        }
+      }
+    })
+  },
+
+  // 发起阶段进化申请
+  requestEvolve() {
+    if (this.data.submitting) return
+    wx.showModal({
+      title: '发起阶段进化仪式',
+      content: `经验已满且健康度达标（${this.data.pet.health}%）！发起后将邀请 TA 共同见证蜕变。是否发起？`,
+      confirmText: '发起见证',
+      confirmColor: '#E91E63',
+      success: res => {
+        if (res.confirm) {
+          wx.showLoading({ title: '发起中...' })
+          this.setData({ submitting: true })
+          api.call('petRequestEvolve')
+            .then(res => {
+              wx.hideLoading()
+              wx.showToast({ title: res.msg || '已发起！等待TA确认', icon: 'none', duration: 3000 })
+              this.fetchPetData(true)
+            })
+            .catch(err => {
+              wx.hideLoading()
+              wx.showToast({ title: err.message || '发起失败', icon: 'none' })
+            })
+            .finally(() => {
+              this.setData({ submitting: false })
+            })
+        }
+      }
+    })
+  },
+
+  // 对方确认进化完成蜕变
+  confirmEvolve() {
+    if (this.data.submitting) return
+    wx.showModal({
+      title: '共同见证破茧进化',
+      content: `TA 已经发起了进化仪式！点击确认即可完成蜕变，双方宠物全部属性重置为 100 满格奖励！`,
+      confirmText: '共同见证！',
+      confirmColor: '#E91E63',
+      success: res => {
+        if (res.confirm) {
+          wx.showLoading({ title: '见证蜕变中...' })
+          this.setData({ submitting: true })
+          api.call('petConfirmEvolve')
+            .then(res => {
+              wx.hideLoading()
+              try { wx.vibrateLong() } catch (err) {}
+              wx.showModal({
+                title: '进化成功！🎉',
+                content: res.congratulationText || '恭喜萌宠破茧蜕变！全属性已恢复满格！',
+                showCancel: false
+              })
+              this.fetchPetData(true)
+            })
+            .catch(err => {
+              wx.hideLoading()
+              wx.showToast({ title: err.message || '确认失败', icon: 'none' })
+            })
+            .finally(() => {
+              this.setData({ submitting: false })
+            })
+        }
+      }
+    })
+  },
+
+  // 修改昵称
   promptRename() {
     wx.showModal({
       title: '给萌宠起个名字',
