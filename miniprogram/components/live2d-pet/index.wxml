@@ -1,0 +1,102 @@
+<!-- Live2D 唯美可爱小狗双人桌宠组件 -->
+<!-- 形象：圆润可爱小萌犬，特征符号化，小尺寸高辨识度，温润治愈配色 -->
+<view class="pet-wrapper {{compactMode ? 'compact' : ''}}" catchtap="onPetTap">
+  <!-- 气泡对白与互动情绪反馈 -->
+  <view wx:if="{{bubbleText}}" class="pet-bubble {{bubbleAnim ? 'bubble-pop' : ''}}">
+    <text class="bubble-content">{{bubbleText}}</text>
+    <view class="bubble-arrow"></view>
+  </view>
+
+  <!-- 心情/饱食度微型状态胶囊（普通模式显示，compact 紧贴卡片模式隐去以彻底保持卡片清爽） -->
+  <view wx:if="{{!compactMode}}" class="pet-stats-pill" catchtap="openPetModal">
+    <text class="pet-level-tag">Lv.{{pet.level || 1}} {{pet.name || '小糯米'}}</text>
+    <view class="pet-stat-item">
+      <text class="psi-icon">🍖</text>
+      <view class="psi-bar"><view class="psi-fill hunger" style="width: {{pet.hunger || 0}}%;"></view></view>
+    </view>
+    <view class="pet-stat-item">
+      <text class="psi-icon">💖</text>
+      <view class="psi-bar"><view class="psi-fill mood" style="width: {{pet.mood || 0}}%;"></view></view>
+    </view>
+  </view>
+
+  <!-- Live2D 小狗骨骼层级分层动画模型 -->
+  <view class="live2d-dog action-{{actionState}} idle-{{idleIndex}} {{isBlinking ? 'blinking' : ''}} {{isTapped ? 'petted' : ''}}">
+    <!-- 飘落爱心/情绪特效 -->
+    <view wx:if="{{showHeartFx}}" class="fx-heart fx-1">💖</view>
+    <view wx:if="{{showHeartFx}}" class="fx-heart fx-2">✨</view>
+    <view wx:if="{{showSweatFx}}" class="fx-sweat">💧</view>
+    <view wx:if="{{showZzzFx}}" class="fx-zzz">zZ</view>
+
+    <!-- 身体阴影 -->
+    <view class="dog-shadow"></view>
+
+    <!-- 尾巴层（骨骼摆动动画） -->
+    <view class="dog-tail-wrap">
+      <view class="dog-tail"></view>
+    </view>
+
+    <!-- 身体层 -->
+    <view class="dog-body">
+      <!-- 肚子白色温暖高光块 -->
+      <view class="dog-belly"></view>
+      <!-- 项圈与爱心小金铃铛 -->
+      <view class="dog-collar">
+        <view class="dog-bell"></view>
+      </view>
+    </view>
+
+    <!-- 前爪爪 -->
+    <view class="dog-paws">
+      <view class="paw paw-left"></view>
+      <view class="paw paw-right"></view>
+    </view>
+
+    <!-- 头部层（带有呼吸浮动与倾斜骨骼） -->
+    <view class="dog-head-wrap">
+      <!-- 左右耳朵（温顺耷拉或惊喜竖起） -->
+      <view class="dog-ear ear-left"></view>
+      <view class="dog-ear ear-right"></view>
+
+      <!-- 脑袋本体 -->
+      <view class="dog-head">
+        <!-- 头部温暖奶黄斑纹特征（高辨识度） -->
+        <view class="dog-patch"></view>
+
+        <!-- 眉毛/表情传达层 -->
+        <view class="dog-eyebrows">
+          <view class="eyebrow eb-left"></view>
+          <view class="eyebrow eb-right"></view>
+        </view>
+
+        <!-- 眼睛层（至少传达 6 种以上眼神：开心眯眼、委屈下垂眼、惊喜大圆眼、平静眨眼、困倦闭眼） -->
+        <view class="dog-eyes">
+          <view class="eye eye-left">
+            <view class="pupil"></view>
+            <view class="eye-shine"></view>
+          </view>
+          <view class="eye eye-right">
+            <view class="pupil"></view>
+            <view class="eye-shine"></view>
+          </view>
+          <!-- 眯眼月牙笑容（开心、被喂食使用） -->
+          <view class="eye-happy-crescent crescent-left"></view>
+          <view class="eye-happy-crescent crescent-right"></view>
+        </view>
+
+        <!-- 脸颊腮红 -->
+        <view class="dog-blush blush-left"></view>
+        <view class="dog-blush blush-right"></view>
+
+        <!-- 鼻子 -->
+        <view class="dog-nose"></view>
+
+        <!-- 嘴巴（开心张嘴吐舌头、委屈撇嘴、平常可爱 w 嘴） -->
+        <view class="dog-mouth">
+          <view class="mouth-lip"></view>
+          <view class="dog-tongue"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

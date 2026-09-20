@@ -1,0 +1,124 @@
+<view class="page pet-page">
+  <!-- 顶部宠物大舞台卡片（大尺寸 Live2D 唯美渲染展示） -->
+  <view class="card pet-stage-card">
+    <view class="pet-stage-header">
+      <view class="pet-name-box" bindtap="promptRename">
+        <text class="pnb-name">{{pet.name || '小糯米'}}</text>
+        <text class="pnb-edit">✏️</text>
+      </view>
+      <view class="pet-level-badge">Lv.{{pet.level || 1}} 萌宠宝贝</view>
+    </view>
+
+    <!-- 舞台精美情绪对白气泡（位于宠物头顶上方独立排版，绝不遮挡小狗） -->
+    <view class="stage-speech-bubble">
+      <view class="ssb-icon-tag">🐶 对白</view>
+      <text class="ssb-text">{{speechText}}</text>
+    </view>
+
+    <!-- 大舞台 Live2D 桌宠（无内嵌重叠气泡，保证小狗头部神态完好展示） -->
+    <view class="stage-pet-center">
+      <live2d-pet
+        pet="{{pet}}"
+        compactMode="{{true}}"
+        bindinteract="onPetInteract"
+      />
+    </view>
+    <view class="stage-tip">轻触小狗互动，伴侣也能看到它的即时心情与动作哦~</view>
+  </view>
+
+  <!-- 属性三维状态卡片（QQ宠物式养成数值） -->
+  <view class="card stats-card">
+    <view class="card-title-row">
+      <text class="ctr-title">🐾 宠物成长状态</text>
+      <text class="ctr-exp">成长值: {{pet.exp || 0}}/100</text>
+    </view>
+
+    <view class="stat-bars">
+      <view class="stat-bar-row">
+        <view class="sbr-label"><text class="sbr-icon">🍖</text><text>饱食度</text></view>
+        <view class="sbr-bar-track">
+          <view class="sbr-bar-fill hunger" style="width: {{pet.hunger || 0}}%;"></view>
+        </view>
+        <text class="sbr-val">{{pet.hunger || 0}}/100</text>
+      </view>
+
+      <view class="stat-bar-row">
+        <view class="sbr-label"><text class="sbr-icon">💖</text><text>心情值</text></view>
+        <view class="sbr-bar-track">
+          <view class="sbr-bar-fill mood" style="width: {{pet.mood || 0}}%;"></view>
+        </view>
+        <text class="sbr-val">{{pet.mood || 0}}/100</text>
+      </view>
+
+      <view class="stat-bar-row">
+        <view class="sbr-label"><text class="sbr-icon">⚡</text><text>体力值</text></view>
+        <view class="sbr-bar-track">
+          <view class="sbr-bar-fill energy" style="width: {{pet.energy || 0}}%;"></view>
+        </view>
+        <text class="sbr-val">{{pet.energy || 0}}/100</text>
+      </view>
+    </view>
+
+    <!-- 最新动态足迹日记 -->
+    <view class="pet-diary-row">
+      <text class="pdr-tag">最新足迹</text>
+      <text class="pdr-text">{{pet.lastActionText || '小狗正乖巧地依偎在你们身边'}}</text>
+    </view>
+  </view>
+
+  <!-- 6大核心养成互动操作盘 -->
+  <view class="card actions-card">
+    <view class="card-title-row">
+      <text class="ctr-title">🎮 互动照料大厅</text>
+      <text class="ctr-sub">两人爱心轮流照料</text>
+    </view>
+
+    <view class="actions-grid">
+      <view class="act-btn" data-act="feed" bindtap="doInteract">
+        <view class="act-icon-box box-feed">🍖</view>
+        <text class="act-name">投喂肉干</text>
+        <text class="act-desc">饱食+25 心情+10</text>
+      </view>
+
+      <view class="act-btn" data-act="pet" bindtap="doInteract">
+        <view class="act-icon-box box-pet">🤗</view>
+        <text class="act-name">温柔摸摸</text>
+        <text class="act-desc">心情+18 撒娇期待</text>
+      </view>
+
+      <view class="act-btn" data-act="play" bindtap="doInteract">
+        <view class="act-icon-box box-play">🎾</view>
+        <text class="act-name">飞盘玩耍</text>
+        <text class="act-desc">心情+25 消耗体力</text>
+      </view>
+
+      <view class="act-btn" data-act="gift" bindtap="doInteract">
+        <view class="act-icon-box box-gift">🎁</view>
+        <text class="act-name">赠送礼盒</text>
+        <text class="act-desc">心情+30 惊喜转圈</text>
+      </view>
+
+      <view class="act-btn" data-act="sleep" bindtap="doInteract">
+        <view class="act-icon-box box-sleep">💤</view>
+        <text class="act-name">抱去睡觉</text>
+        <text class="act-desc">体力+40 恢复活力</text>
+      </view>
+
+      <view class="act-btn" bindtap="promptRename">
+        <view class="act-icon-box box-rename">✏️</view>
+        <text class="act-name">修改昵称</text>
+        <text class="act-desc">专属萌犬爱称</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 养成小提示卡片 -->
+  <view class="card tips-card">
+    <view class="tips-title">💡 养成小指南</view>
+    <view class="tips-content">
+      <view>• 两人共同照料同一只宠物，任何一方的投喂、抚摸都会实时同步给对方。</view>
+      <view>• 属性随时间流逝自然减少，饥饿或冷落时小狗会表现出委屈难过。</view>
+      <view>• 在家页面，小狗会乖巧地浮在陪伴时长卡片右下侧，双击它也能随时直接回来！</view>
+    </view>
+  </view>
+</view>

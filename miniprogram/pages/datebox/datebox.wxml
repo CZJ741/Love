@@ -1,0 +1,168 @@
+<view class="page datebox">
+  <!-- 抽奖动效遮罩：转盘出现 -->
+  <view wx:if="{{drawAnim}}" class="draw-overlay">
+    <view class="wheel">
+      <view class="wheel-ring"></view>
+      <text class="wheel-emoji">🎡</text>
+    </view>
+    <text class="draw-overlay-text">抽取中...</text>
+  </view>
+
+  <!-- 头部 -->
+  <view class="db-header">
+    <view class="db-title">🎲 约会盲盒</view>
+    <view class="db-sub">两个人选好心意，一起抽出今天的约会</view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="empty"><text class="e-emoji">⏳</text>加载中...</view>
+
+  <!-- 无对方 -->
+  <view wx:elif="{{!hasPartner}}" class="empty">
+    <text class="e-emoji">🐰</text>
+    等 TA 入住小窝后，再一起抽约会盲盒吧~
+  </view>
+
+  <!-- ============ 授权阶段 ============ -->
+  <view wx:elif="{{phase === 'auth'}}" class="card auth-card">
+    <view class="auth-emoji">🎁</view>
+    <view class="auth-title">开启一次约会盲盒</view>
+    <view class="auth-desc">需要两个人互相确认，才能进入标签选择</view>
+
+    <!-- 双方都未授权 / 我已授权 -->
+    <view wx:if="{{!partnerAuthorized}}" class="auth-state">
+      <view class="auth-avatars">
+        <view class="auth-ava">
+          <image wx:if="{{meAvatarImg}}" class="auth-ava-img" src="{{me.avatar}}" mode="aspectFill" />
+          <text wx:else class="auth-ava-emoji">{{me.avatar || '🐻'}}</text>
+          <text wx:if="{{myAuthorized}}" class="auth-tick">✓</text>
+        </view>
+        <view class="auth-ava">
+          <image wx:if="{{partnerAvatarImg}}" class="auth-ava-img" src="{{partner.avatar}}" mode="aspectFill" />
+          <text wx:else class="auth-ava-emoji">{{partner.avatar || '🐰'}}</text>
+        </view>
+      </view>
+      <view class="auth-state-text">
+        {{myAuthorized ? '已发出邀请，等待 TA 同意…' : '等待对方同意'}}
+      </view>
+      <button wx:if="{{!myAuthorized}}" class="btn submit-btn" bindtap="auth">我想抽奖</button>
+    </view>
+
+    <!-- 对方已授权，等我确认 -->
+    <view wx:else class="auth-state">
+      <view class="auth-avatars">
+        <view class="auth-ava">
+          <image wx:if="{{meAvatarImg}}" class="auth-ava-img" src="{{me.avatar}}" mode="aspectFill" />
+          <text wx:else class="auth-ava-emoji">{{me.avatar || '🐻'}}</text>
+        </view>
+        <view class="auth-ava">
+          <image wx:if="{{partnerAvatarImg}}" class="auth-ava-img" src="{{partner.avatar}}" mode="aspectFill" />
+          <text wx:else class="auth-ava-emoji">{{partner.avatar || '🐰'}}</text>
+          <text class="auth-tick">✓</text>
+        </view>
+      </view>
+      <view class="auth-state-text highlight">对方已准备好，等你确认</view>
+      <button class="btn submit-btn" bindtap="auth">确认开启</button>
+    </view>
+  </view>
+
+  <!-- ============ 标签选择阶段 ============ -->
+  <view wx:elif="{{phase === 'select'}}" class="select-phase">
+    <!-- 双方状态条 -->
+    <view class="card status-card">
+      <view class="status-row">
+        <text class="status-me">{{myConfirmed ? '✅ 我已选好' : '✏️ 我正在挑选'}}</text>
+        <text class="status-partner">{{partnerConfirmed ? '✅ TA 已选好' : '对方正在认真挑选中…'}}</text>
+      </view>
+      <view wx:if="{{!partnerConfirmed}}" class="partner-waiting">
+        <view class="pw-ava">
+          <image wx:if="{{partnerAvatarImg}}" class="pw-img" src="{{partner.avatar}}" mode="aspectFill" />
+          <text wx:else class="pw-emoji">{{partner.avatar || '🐰'}}</text>
+        </view>
+        <text class="pw-text">TA 正在认真挑选中，等 TA 一下下~</text>
+      </view>
+      <view wx:if="{{partnerTags.length}}" class="partner-picked">
+        <text class="pp-label">{{partner.nickname}} 已选：</text>
+        <text wx:for="{{partnerTags}}" wx:key="*this" class="pp-tag">{{item}}</text>
+      </view>
+    </view>
+
+    <!-- 我的标签选择 -->
+    <view class="card select-card">
+      <view class="sc-title">选出你的心意标签<text class="sc-hint">（1~2 个）</text></view>
+
+      <view wx:for="{{tagGroups}}" wx:key="name" wx:for-item="group" class="tag-group">
+        <view class="tg-label" style="color: {{group.color}};">{{group.name}}</view>
+        <view class="tg-tags">
+          <view
+            wx:for="{{group.tags}}" wx:key="name" wx:for-item="tag"
+            class="tag-chip {{selectedMap[tag.name] ? 'active' : ''}}"
+            style="{{selectedMap[tag.name] ? 'background:' + tag.color + ';border-color:' + tag.color + ';color:#FFF;' : 'color:' + tag.color + ';border-color:' + tag.color + ';'}}"
+            data-name="{{tag.name}}"
+            bindtap="toggleTag"
+          >
+            <text wx:if="{{selectedMap[tag.name]}}" class="tag-check">✓</text>{{tag.name}}
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <button class="btn submit-btn confirm-btn" bindtap="confirm" disabled="{{submitting || !myTags.length}}">
+      {{myConfirmed ? '已选好，等待对方' : '确认意愿'}}
+    </button>
+  </view>
+
+  <!-- ============ 抽奖阶段 ============ -->
+  <view wx:elif="{{phase === 'draw'}}" class="draw-phase">
+    <!-- 结果卡片 -->
+    <view wx:if="{{result}}" class="card result-card">
+      <view class="rc-badge {{resultMode === 'blind' ? 'blind' : ''}}">
+        {{resultMode === 'fallback' ? '盲盒随机掉落' : resultMode === 'blind' ? '开盲盒' : '心意匹配'}}
+      </view>
+      <view class="rc-emoji">🎉</view>
+      <view class="rc-name">{{result.name}}</view>
+      <view wx:if="{{resultTags.length}}" class="rc-tags">
+        <text wx:for="{{resultTags}}" wx:key="*this" class="rc-tag">{{item}}</text>
+      </view>
+      <view wx:if="{{resultMode === 'fallback'}}" class="rc-note">这次是盲盒随机掉落，不在你们的选择范围内哦</view>
+      <view wx:elif="{{resultMode === 'blind'}}" class="rc-note">这是纯随机开盲盒结果，惊喜感拉满</view>
+
+      <!-- 接受状态 -->
+      <view wx:if="{{myAccepted}}" class="rc-accepted">
+        你已就这个了！等 {{partner.nickname}} 确认…
+      </view>
+      <view wx:elif="{{partnerAccepted}}" class="rc-accepted">
+        {{partner.nickname}} 已就这个了！等你确认
+      </view>
+
+      <!-- 操作按钮 -->
+      <view class="rc-actions">
+        <button class="btn ghost-btn" bindtap="redraw" disabled="{{redrawLeft <= 0 || submitting}}">
+          换一个{{redrawLeft > 0 ? '（' + redrawLeft + '）' : ''}}
+        </button>
+        <button class="btn submit-btn" bindtap="accept" disabled="{{submitting}}">
+          {{myAccepted ? '等待对方确认…' : '就这个了！'}}
+        </button>
+        <button class="btn danger-btn" bindtap="reject" disabled="{{redrawLeft <= 0 || submitting}}">
+          拒绝
+        </button>
+      </view>
+    </view>
+
+    <view class="draw-tip">双方都点「就这个了！」才敲定；「换一个」或「拒绝」会重新抽取</view>
+  </view>
+
+  <!-- ============ 完成阶段 ============ -->
+  <view wx:elif="{{phase === 'done'}}" class="done-phase">
+    <view class="card done-card">
+      <view class="dc-emoji">💞</view>
+      <view class="dc-title">约会敲定！</view>
+      <view class="dc-name">{{winner.name}}</view>
+      <view wx:if="{{winner.tags && winner.tags.length}}" class="rc-tags">
+        <text wx:for="{{winner.tags}}" wx:key="*this" class="rc-tag">{{item}}</text>
+      </view>
+      <view class="dc-note">祝你们玩得开心，甜甜蜜蜜~</view>
+      <button class="btn submit-btn" bindtap="reset">再来一局</button>
+    </view>
+  </view>
+</view>

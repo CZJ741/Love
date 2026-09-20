@@ -1,0 +1,359 @@
+/* 查找 · 情侣共享定位样式 */
+.location-page {
+  padding: 24rpx 20rpx 60rpx;
+  background-color: #FFEBED;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.card {
+  background: #FFFFFF;
+  border-radius: 28rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 4rpx 16rpx rgba(191, 166, 154, 0.12);
+  border: 2rpx solid rgba(255, 235, 237, 0.8);
+  box-sizing: border-box;
+}
+
+/* 顶部状态卡片 */
+.header-card {
+  padding: 24rpx;
+}
+.header-main {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+.header-icon-wrap {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, #80DEEA 0%, #00ACC1 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 172, 193, 0.35);
+  flex-shrink: 0;
+}
+.header-icon {
+  font-size: 46rpx;
+  line-height: 1;
+}
+.header-text {
+  display: flex;
+  flex-direction: column;
+}
+.header-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #5A4636;
+}
+.header-desc {
+  font-size: 22rpx;
+  color: #A89282;
+  margin-top: 6rpx;
+  line-height: 1.4;
+}
+
+.consent-status-row {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+.consent-pill {
+  flex: 1;
+  background: #F5F5F5;
+  border-radius: 16rpx;
+  padding: 12rpx 16rpx;
+  display: flex;
+  align-items: center;
+  border: 1rpx solid #E0E0E0;
+}
+.consent-pill.pill-active {
+  background: #E8F5E9;
+  border-color: #C8E6C9;
+}
+.pill-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: #BDBDBD;
+  margin-right: 10rpx;
+}
+.pill-active .pill-dot {
+  background: #4CAF50;
+  box-shadow: 0 0 8rpx #4CAF50;
+}
+.pill-label {
+  font-size: 22rpx;
+  color: #757575;
+  font-weight: 600;
+}
+.pill-active .pill-label {
+  color: #2E7D32;
+}
+
+.toggle-action-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16rpx;
+  border-top: 1rpx solid #F5EDE6;
+}
+.toggle-text {
+  display: flex;
+  flex-direction: column;
+}
+.tt-title {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #5A4636;
+}
+.tt-sub {
+  font-size: 20rpx;
+  color: #B39B8A;
+  margin-top: 4rpx;
+}
+
+/* 指南针与距离综合卡片 */
+.compass-card {
+  padding: 24rpx;
+}
+.compass-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.distance-box {
+  display: flex;
+  flex-direction: column;
+}
+.dist-label {
+  font-size: 22rpx;
+  color: #A89282;
+  margin-bottom: 6rpx;
+}
+.dist-num {
+  font-size: 46rpx;
+  font-weight: 900;
+  color: #E91E63;
+  letter-spacing: 1rpx;
+}
+
+/* 旋转指南针 */
+.compass-dial-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.compass-dial {
+  position: relative;
+  width: 110rpx;
+  height: 110rpx;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF5F7 100%);
+  border: 4rpx solid #F48FB1;
+  box-shadow: 0 4rpx 14rpx rgba(244, 143, 177, 0.3);
+  transition: transform 0.15s ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.compass-needle-n {
+  position: absolute;
+  top: 14rpx;
+  width: 8rpx;
+  height: 40rpx;
+  background: #E53935;
+  border-radius: 4rpx;
+}
+.compass-needle-s {
+  position: absolute;
+  bottom: 14rpx;
+  width: 8rpx;
+  height: 40rpx;
+  background: #757575;
+  border-radius: 4rpx;
+}
+.compass-n-text {
+  position: absolute;
+  top: 4rpx;
+  font-size: 16rpx;
+  font-weight: 900;
+  color: #E53935;
+}
+.compass-deg-text {
+  font-size: 20rpx;
+  font-weight: 700;
+  color: #5A4636;
+  margin-top: 8rpx;
+}
+
+.target-guidance-bar {
+  margin-top: 20rpx;
+  background: #FFF0F3;
+  border-radius: 16rpx;
+  padding: 12rpx 16rpx;
+  display: flex;
+  align-items: center;
+  border: 1rpx solid #FFCDD2;
+}
+.guide-icon {
+  font-size: 28rpx;
+  margin-right: 10rpx;
+}
+.guide-text {
+  font-size: 22rpx;
+  color: #5A4636;
+}
+.guide-strong {
+  font-weight: 800;
+  color: #D81B60;
+}
+
+/* 地图容器 */
+.map-wrapper {
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+.love-map {
+  width: 100%;
+  height: 520rpx;
+  border-radius: 28rpx;
+}
+.map-controls {
+  position: absolute;
+  bottom: 20rpx;
+  left: 20rpx;
+  right: 20rpx;
+  display: flex;
+  gap: 16rpx;
+}
+.map-ctrl-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.92);
+  color: #5A4636;
+  font-size: 22rpx;
+  font-weight: 700;
+  border-radius: 30rpx;
+  padding: 12rpx 0;
+  margin: 0;
+  line-height: 1.4;
+  border: 2rpx solid rgba(244, 143, 177, 0.4);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+}
+.map-ctrl-btn:active {
+  background: #FFF0F3;
+}
+
+/* 双方地址卡片 */
+.info-card {
+  padding: 24rpx;
+}
+.user-loc-row {
+  display: flex;
+  align-items: center;
+}
+.user-avatar-badge {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-right: 18rpx;
+  flex-shrink: 0;
+}
+.my-badge {
+  background: #E91E63;
+  box-shadow: 0 4rpx 10rpx rgba(233, 30, 99, 0.35);
+}
+.partner-badge {
+  background: #0288D1;
+  box-shadow: 0 4rpx 10rpx rgba(2, 136, 209, 0.35);
+}
+.user-loc-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.ul-name-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6rpx;
+}
+.ul-name {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #5A4636;
+}
+.ul-dir-tag {
+  font-size: 20rpx;
+  color: #E91E63;
+  background: #FFF0F3;
+  border-radius: 10rpx;
+  padding: 2rpx 10rpx;
+  font-weight: 600;
+}
+.ul-address {
+  font-size: 22rpx;
+  color: #8C7565;
+  line-height: 1.3;
+}
+.ul-waiting {
+  color: #BDBDBD;
+  font-style: italic;
+}
+.loc-divider {
+  height: 1rpx;
+  background: #F5EDE6;
+  margin: 18rpx 0;
+}
+
+/* 隐私锁屏卡片 */
+.privacy-card {
+  text-align: center;
+  padding: 40rpx 30rpx;
+}
+.privacy-icon {
+  font-size: 72rpx;
+  margin-bottom: 16rpx;
+}
+.privacy-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #5A4636;
+  margin-bottom: 16rpx;
+}
+.privacy-text {
+  text-align: left;
+  font-size: 22rpx;
+  color: #8C7565;
+  line-height: 1.6;
+  background: #FFF9FA;
+  padding: 24rpx;
+  border-radius: 20rpx;
+  border: 1rpx dashed #FFCDD2;
+  margin-bottom: 30rpx;
+}
+.btn-agree-main {
+  background: linear-gradient(135deg, #FF80AB 0%, #F48FB1 100%);
+  color: #FFFFFF;
+  font-size: 28rpx;
+  font-weight: 700;
+  border-radius: 40rpx;
+  padding: 16rpx 0;
+  border: none;
+  box-shadow: 0 6rpx 18rpx rgba(244, 143, 177, 0.4);
+}
+.btn-agree-main:active {
+  transform: scale(0.98);
+}

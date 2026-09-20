@@ -1,0 +1,44 @@
+<view class="page points">
+  <heart-rain show="{{rain}}" bind:done="onRainDone" />
+
+  <!-- ====== 双人积分卡片 ====== -->
+  <view class="card dual-card">
+    <view class="dual-user">
+      <image wx:if="{{me.avatarImg}}" class="dual-ava" src="{{me.avatar}}" mode="aspectFill" />
+      <text wx:else class="dual-ava emoji">{{me.avatar || '🐻'}}</text>
+      <view class="dual-name">{{me.nickname}}</view>
+      <view class="dual-bal"><text class="num">{{me.balance}}</text> 分</view>
+    </view>
+    <view class="dual-divider"></view>
+    <view class="dual-user">
+      <image wx:if="{{partner.avatarImg}}" class="dual-ava" src="{{partner.avatar}}" mode="aspectFill" />
+      <text wx:else class="dual-ava emoji">{{partner.avatar || '🐰'}}</text>
+      <view class="dual-name">{{partner.nickname || 'TA'}}</view>
+      <view class="dual-bal"><text class="num">{{partner.balance}}</text> 分</view>
+    </view>
+  </view>
+
+  <!-- ====== 加分 / 扣分 ====== -->
+  <view class="card">
+    <view class="mode-switch">
+      <view class="mode-item {{mode==='add'?'active':''}}" data-m="add" bindtap="setMode">❤️ 加分</view>
+      <view class="mode-item {{mode==='punish'?'active':''}}" data-m="punish" bindtap="setMode">⚡ 扣分</view>
+    </view>
+
+    <view class="tx-label-row">
+      <text class="section-label">输入分数</text>
+      <input class="input-box sm amount-input" type="number" maxlength="2" placeholder="自定义分数" value="{{amount}}" bindinput="onAmountInput" />
+    </view>
+
+    <view class="section-label">{{mode==='add'?'加分':'扣分'}}理由</view>
+    <view class="reason-wrap">
+      <view wx:for="{{reasons}}" wx:key="*this" class="chip {{reason===item&&!customReason?'active':''}}" data-r="{{item}}" bindtap="onReason">{{item}}</view>
+    </view>
+    <view class="section-label">自定义理由</view>
+    <textarea class="input-box sm custom-reason" placeholder="选填，可多行输入" value="{{customReason}}" bindinput="onCustom" maxlength="100" auto-height />
+
+    <button class="btn submit-btn" bindtap="submit" disabled="{{submitting}}">
+      {{submitting?'提交中...':mode==='add'?'确认加分':'确认扣分'}}
+    </button>
+  </view>
+</view>

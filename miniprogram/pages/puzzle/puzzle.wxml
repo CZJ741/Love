@@ -1,0 +1,166 @@
+<view class="page puzzle-page">
+  <!-- 顶部状态栏：九宫格累计进度 & 规则说明 -->
+  <view class="streak-header card">
+    <view class="streak-left">
+      <text class="streak-fire">🧩</text>
+      <view class="streak-info">
+        <view class="streak-title">已累计拼图 <text class="streak-count">{{completedGroups}}</text> / {{gridSize}} 组</view>
+        <view class="streak-sub">每天双方各拍一张合成一组，累计集满 9 组即可生成九宫格大拼图</view>
+      </view>
+    </view>
+    <button wx:if="{{canGeneratePoster}}" class="poster-unlock-btn" bindtap="openPosterModal">
+      🎨 生成九宫格
+    </button>
+  </view>
+
+  <!-- 九宫格累计进度 -->
+  <view class="progress-bar-card card">
+    <view class="grid-progress">
+      <view
+        wx:for="{{gridCells}}"
+        wx:key="index"
+        class="grid-cell {{item.filled ? 'filled' : ''}}"
+      >
+        <text wx:if="{{item.filled}}">✓</text>
+        <text wx:else>{{item.index + 1}}</text>
+      </view>
+    </view>
+    <view class="grid-progress-tip">
+      <block wx:if="{{canGeneratePoster}}">🎉 已集满 9 组，可生成九宫格大拼图啦！</block>
+      <block wx:else>再完成 <text class="tip-strong">{{remainGroups}}</text> 组，就能解锁九宫格大拼图</block>
+    </view>
+  </view>
+
+  <!-- 今日挑战主题卡片 -->
+  <view class="card theme-card">
+    <view class="theme-tag-row">
+      <text class="theme-tag">📷 今日奇怪视角</text>
+      <text class="theme-date">{{date}}</text>
+    </view>
+    <view class="theme-content">“{{theme || '加载中...'}}”</view>
+    <view class="theme-desc">双方各拍一张身边的对应视角，合成一组属于你们的拼图</view>
+  </view>
+
+  <!-- 双人反向对比视窗 -->
+  <view class="card duel-card">
+    <view class="duel-viewport">
+      <!-- 左侧：我的视角 -->
+      <view class="photo-half left-half" bindtap="{{myUploaded ? 'previewMyPhoto' : 'chooseAndUpload'}}">
+        <block wx:if="{{myUploaded && myPhotoUrl}}">
+          <image class="photo-img" src="{{myPhotoUrl}}" mode="aspectFill" />
+          <view class="photo-overlay">
+            <text class="photo-author">{{myNickname}}的视角</text>
+            <text class="reupload-tip">点击可重拍</text>
+          </view>
+        </block>
+        <block wx:else>
+          <view class="empty-placeholder">
+            <view class="cam-icon">📸</view>
+            <view class="cam-text">点击拍摄我的视角</view>
+            <view class="cam-sub">拍下身边的“{{theme}}”</view>
+          </view>
+        </block>
+      </view>
+
+      <!-- 中间分割线/装饰胶带 -->
+      <view class="split-tape">
+        <view class="tape-heart">💕</view>
+      </view>
+
+      <!-- 右侧：TA的视角 -->
+      <view class="photo-half right-half" bindtap="{{status === 'completed' && partnerPhotoUrl ? 'previewPartnerPhoto' : 'promptPartner'}}">
+        <block wx:if="{{status === 'completed' && partnerPhotoUrl}}">
+          <image class="photo-img" src="{{partnerPhotoUrl}}" mode="aspectFill" />
+          <view class="photo-overlay">
+            <text class="photo-author">{{partnerNickname}}的视角</text>
+          </view>
+        </block>
+        <!-- 对方已拍但当前用户还没拍：高斯模糊盲盒锁 -->
+        <block wx:elif="{{partnerUploaded && !myUploaded}}">
+          <view class="blur-locked-placeholder">
+            <view class="lock-icon">🔒</view>
+            <view class="lock-text">TA已拍好盲盒！</view>
+            <view class="lock-sub">上传你的视角后解锁双方画面</view>
+          </view>
+        </block>
+        <!-- 对方尚未拍摄 -->
+        <block wx:else>
+          <view class="empty-placeholder waiting">
+            <view class="cam-icon">⏳</view>
+            <view class="cam-text">{{partnerNickname}}尚未拍摄</view>
+            <view class="cam-sub">点击可生成专属催拍提醒</view>
+          </view>
+        </block>
+      </view>
+    </view>
+
+    <!-- 底部专属配文 -->
+    <view class="duel-quote">
+      <text class="quote-symbol">“</text>
+      <text class="quote-text">即使不在一个地方，我们看的也是同一个世界。</text>
+      <text class="quote-symbol">”</text>
+    </view>
+  </view>
+
+  <!-- 底部操作按钮 -->
+  <view class="action-wrap">
+    <button
+      wx:if="{{!myUploaded}}"
+      class="btn-action primary-btn"
+      loading="{{uploading}}"
+      disabled="{{uploading}}"
+      bindtap="chooseAndUpload"
+      hover-class="btn-hover"
+    >
+      <text class="btn-text">📸 上传我的视角</text>
+    </button>
+    <block wx:elif="{{status === 'completed'}}">
+      <button class="btn-action save-btn" loading="{{generating}}" disabled="{{generating}}" bindtap="generateAndSaveStitched" hover-class="btn-hover">
+        <text class="btn-text">🖼️ 生成并保存今日拼图</text>
+      </button>
+    </block>
+    <block wx:else>
+      <button class="btn-action waiting-btn" open-type="share" hover-class="btn-hover">
+        <text class="btn-text">💌 催TA来拍</text>
+      </button>
+    </block>
+  </view>
+
+  <!-- 九宫格大拼图弹窗 -->
+  <view wx:if="{{showPosterModal}}" class="poster-mask" bindtap="closePosterModal">
+    <view class="poster-modal" catchtap="noop">
+      <view class="poster-header">
+        <view class="pm-title">🎨 九宫格大拼图</view>
+        <view class="pm-sub">由已累计的 9 组合拍拼图排成一张完整九宫格</view>
+      </view>
+
+      <view class="poster-canvas-box">
+        <canvas
+          type="2d"
+          id="posterCanvas"
+          class="poster-canvas"
+        ></canvas>
+        <view wx:if="{{posterLoading}}" class="canvas-loading">
+          <text class="loading-spin">🎨</text>
+          <text class="loading-text">{{posterStatusText}}</text>
+        </view>
+      </view>
+
+      <view class="poster-actions">
+        <button class="btn-action primary-btn" loading="{{posterLoading}}" disabled="{{posterLoading}}" bindtap="savePosterToAlbum" hover-class="btn-hover">
+          <text class="btn-text">📥 保存九宫格到相册</text>
+        </button>
+        <button class="btn-action cancel-btn" bindtap="closePosterModal" hover-class="btn-hover">
+          <text class="btn-text">关闭</text>
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 隐藏的左右拼图 Canvas 用于导出高质量图片 -->
+  <canvas
+    type="2d"
+    id="stitchedCanvas"
+    class="offscreen-canvas"
+  ></canvas>
+</view>

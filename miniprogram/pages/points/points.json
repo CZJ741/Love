@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "任务",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#FFEBED",
+  "backgroundTextStyle": "dark",
+  "usingComponents": {
+    "heart-rain": "/components/heart-rain/index"
+  }
+}

@@ -1,0 +1,34 @@
+.index { padding: 30rpx; padding-bottom: calc(60rpx + constant(safe-area-inset-bottom)); padding-bottom: calc(60rpx + env(safe-area-inset-bottom)); overflow-x: hidden; }
+
+.hero { text-align: center; padding: 80rpx 0 60rpx; }
+.hero-emoji { font-size: 96rpx; }
+.hero-title {
+  font-size: 48rpx;
+  font-weight: 800;
+  color: #F48FB1;
+  margin-top: 16rpx;
+  letter-spacing: 2rpx;
+}
+.hero-sub { color: #B39B8A; font-size: 26rpx; margin-top: 8rpx; }
+
+.loading-box { text-align: center; padding: 20rpx 0; }
+.loading-line {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16rpx; font-size: 28rpx; color: #B39B8A;
+}
+.spinner {
+  width: 32rpx; height: 32rpx;
+  border: 4rpx solid #FFEBED;
+  border-top-color: #F48FB1;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-line { font-size: 28rpx; color: #B39B8A; margin-bottom: 24rpx; }
+.retry-btn {
+  display: inline-block; width: 320rpx;
+  background: #F48FB1; color: #fff;
+  font-size: 28rpx; border-radius: 999rpx;
+}
+.retry-btn::after { border: none; }

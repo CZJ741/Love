@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "我们的小窝",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#FFEBED",
+  "backgroundTextStyle": "dark",
+  "usingComponents": {}
+}

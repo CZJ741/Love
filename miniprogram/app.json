@@ -1,0 +1,44 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/home/home",
+    "pages/points/points",
+    "pages/moments/moments",
+    "pages/stats/stats",
+    "pages/tx-history/tx-history",
+    "pages/datebox/datebox",
+    "pages/puzzle/puzzle",
+    "pages/game/game",
+    "pages/location/location",
+    "pages/pet/pet"
+  ],
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于在双人小窝中与伴侣共享位置及距离朝向"
+    }
+  },
+  "window": {
+    "backgroundColor": "#FFEBED",
+    "backgroundTextStyle": "dark",
+    "navigationBarBackgroundColor": "#F48FB1",
+    "navigationBarTitleText": "子&然 小窝",
+    "navigationBarTextStyle": "white",
+    "enablePullDownRefresh": false
+  },
+  "tabBar": {
+    "color": "#BFA69A",
+    "selectedColor": "#F48FB1",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/home/home", "text": "家", "iconPath": "images/tabbar/home.png", "selectedIconPath": "images/tabbar/home-active.png" },
+      { "pagePath": "pages/points/points", "text": "任务", "iconPath": "images/tabbar/points.png", "selectedIconPath": "images/tabbar/points-active.png" },
+      { "pagePath": "pages/moments/moments", "text": "时间轴", "iconPath": "images/tabbar/moments.png", "selectedIconPath": "images/tabbar/moments-active.png" },
+      { "pagePath": "pages/stats/stats", "text": "我", "iconPath": "images/tabbar/stats.png", "selectedIconPath": "images/tabbar/stats-active.png" }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents",
+  "__usePrivacyCheck": true
+}

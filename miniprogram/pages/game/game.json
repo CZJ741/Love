@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "双人游戏大厅",
+  "navigationBarBackgroundColor": "#F48FB1",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#FFEBED",
+  "enablePullDownRefresh": true
+}

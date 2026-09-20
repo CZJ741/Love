@@ -1,0 +1,32 @@
+<view class="page">
+  <view class="tx-filter">
+    <picker mode="date" value="{{txFilterStart}}" bindchange="onTxFilterStart">
+      <view class="tx-filter-item">
+        <text class="tx-filter-label">起</text>
+        <text class="tx-filter-val">{{txFilterStart || '不限'}}</text>
+      </view>
+    </picker>
+    <text class="tx-filter-sep">—</text>
+    <picker mode="date" value="{{txFilterEnd}}" bindchange="onTxFilterEnd">
+      <view class="tx-filter-item">
+        <text class="tx-filter-label">止</text>
+        <text class="tx-filter-val">{{txFilterEnd || '不限'}}</text>
+      </view>
+    </picker>
+    <view class="tx-filter-actions">
+      <text class="tx-filter-btn" bindtap="applyFilter">筛选</text>
+      <text class="tx-filter-reset" bindtap="resetFilter">重置</text>
+    </view>
+  </view>
+
+  <view wx:if="{{txList.length}}" class="tx-list">
+    <view wx:for="{{txList}}" wx:key="_id" class="tx-row">
+      <text class="tx-icon">{{item._meta.emoji}}</text>
+      <text class="tx-reason">{{item.reason}}</text>
+      <text class="tx-to-user">→ {{item.toUser}}</text>
+      <text class="tx-val num {{item.amount > 0 ? 'pos' : 'neg'}}">{{item.amount > 0 ? '+' + item.amount : item.amount}}</text>
+      <text class="tx-time">{{item._time}}</text>
+    </view>
+  </view>
+  <view wx:else class="tx-empty">暂无记录</view>
+</view>

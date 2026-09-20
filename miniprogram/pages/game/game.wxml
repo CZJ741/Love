@@ -1,0 +1,355 @@
+<view class="page game-page">
+  <!-- ================= 模式一：游戏大厅选定游戏列表 ================= -->
+  <view wx:if="{{currentView === 'lobby'}}" class="lobby-view">
+    <!-- 大厅顶部横幅 -->
+    <view class="lobby-header card">
+      <view class="lobby-title-row">
+        <view class="lobby-icon-wrap">
+          <text class="lobby-icon">🎮</text>
+        </view>
+        <view class="lobby-header-text">
+          <view class="lobby-title-tag-row">
+            <text class="lobby-title">双人互动游戏大厅</text>
+            <text class="lobby-top-badge">经典异步</text>
+          </view>
+          <text class="lobby-sub">双方轮流行动 · 对方离线亦可落子 · 永久存档</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 游戏卡片列表 -->
+    <view class="games-list">
+      <!-- 1. 五子棋卡片 -->
+      <view class="game-card card" data-type="gobang" bindtap="selectGame">
+        <view class="game-card-main">
+          <view class="game-icon-box box-gobang">
+            <text class="game-card-emoji">⚪⚫</text>
+          </view>
+          <view class="game-card-content">
+            <view class="game-card-header">
+              <view class="game-title-group">
+                <text class="game-name">五子棋</text>
+                <text class="game-badge badge-active">经典对弈</text>
+              </view>
+              <view class="btn-play">
+                <text class="btn-play-text">开始</text>
+                <text class="btn-play-arrow">›</text>
+              </view>
+            </view>
+            <text class="game-intro">15×15 经典棋盘，先连满五子者获胜</text>
+            <view class="game-footer">
+              <view class="game-status-tag {{lobbyStatus.gobang.isMyTurn ? 'tag-my-turn' : ''}}">
+                <text class="status-dot"></text>
+                <text>{{lobbyStatus.gobang.statusText || '等待开始'}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 2. 围棋卡片 -->
+      <view class="game-card card" data-type="weiqi" bindtap="selectGame">
+        <view class="game-card-main">
+          <view class="game-icon-box box-weiqi">
+            <text class="game-card-emoji">☯️</text>
+          </view>
+          <view class="game-card-content">
+            <view class="game-card-header">
+              <view class="game-title-group">
+                <text class="game-name">围棋</text>
+                <text class="game-badge badge-active">13路对局</text>
+              </view>
+              <view class="btn-play">
+                <text class="btn-play-text">开始</text>
+                <text class="btn-play-arrow">›</text>
+              </view>
+            </view>
+            <text class="game-intro">气尽即提子，支持停一手，落子顺畅</text>
+            <view class="game-footer">
+              <view class="game-status-tag {{lobbyStatus.weiqi.isMyTurn ? 'tag-my-turn' : ''}}">
+                <text class="status-dot"></text>
+                <text>{{lobbyStatus.weiqi.statusText || '等待开始'}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 3. 飞行棋卡片 -->
+      <view class="game-card card" data-type="ludo" bindtap="selectGame">
+        <view class="game-card-main">
+          <view class="game-icon-box box-ludo">
+            <text class="game-card-emoji">✈️</text>
+          </view>
+          <view class="game-card-content">
+            <view class="game-card-header">
+              <view class="game-title-group">
+                <text class="game-name">双人飞行棋</text>
+                <text class="game-badge badge-hot">情侣趣味</text>
+              </view>
+              <view class="btn-play">
+                <text class="btn-play-text">开始</text>
+                <text class="btn-play-arrow">›</text>
+              </view>
+            </view>
+            <text class="game-intro">投掷骰子航行，踩中击退，率先飞达终点获胜</text>
+            <view class="game-footer">
+              <view class="game-status-tag {{lobbyStatus.ludo.isMyTurn ? 'tag-my-turn' : ''}}">
+                <text class="status-dot"></text>
+                <text>{{lobbyStatus.ludo.statusText || '等待开始'}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 4. 海战棋卡片 -->
+      <view class="game-card card" data-type="seabattle" bindtap="selectGame">
+        <view class="game-card-main">
+          <view class="game-icon-box box-seabattle">
+            <text class="game-card-emoji">🚢</text>
+          </view>
+          <view class="game-card-content">
+            <view class="game-card-header">
+              <view class="game-title-group">
+                <text class="game-name">海战棋</text>
+                <text class="game-badge badge-hot">战术博弈</text>
+              </view>
+              <view class="btn-play">
+                <text class="btn-play-text">开始</text>
+                <text class="btn-play-arrow">›</text>
+              </view>
+            </view>
+            <text class="game-intro">迷雾海域指定坐标炮击，率先击沉敌方舰队胜出</text>
+            <view class="game-footer">
+              <view class="game-status-tag {{lobbyStatus.seabattle.isMyTurn ? 'tag-my-turn' : ''}}">
+                <text class="status-dot"></text>
+                <text>{{lobbyStatus.seabattle.statusText || '等待开始'}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ================= 模式二：选定游戏后的对战界面 ================= -->
+  <view wx:else class="play-view">
+    <!-- 顶部导航栏 -->
+    <view class="card top-nav-card">
+      <view class="back-btn" bindtap="backToLobby">
+        <text class="back-arrow">‹</text>
+        <text class="back-text">返回大厅</text>
+      </view>
+      <view class="current-game-title">
+        <text class="cg-emoji">{{gameMeta.emoji}}</text>
+        <text class="cg-text">{{gameMeta.title}}</text>
+      </view>
+      <view class="refresh-pill" bindtap="onRefresh">
+        <text class="rp-icon">🔄</text>
+      </view>
+    </view>
+
+    <!-- 双方对弈玩家状态 -->
+    <view class="card player-card">
+      <view class="player-side {{isP1Turn ? 'turn-active' : ''}}">
+        <view class="player-avatar-wrap">
+          <text wx:if="{{!blackUser.avatar || blackUser.avatar.length <= 2}}" class="player-avatar-emoji">{{blackUser.avatar || '🔴'}}</text>
+          <image wx:else class="player-avatar-img" src="{{blackUser.avatar}}" mode="aspectFill" />
+          <view class="stone-badge {{currentGameType === 'gobang' || currentGameType === 'weiqi' ? 'black-badge' : 'p1-badge'}}">
+            {{currentGameType === 'gobang' || currentGameType === 'weiqi' ? '执黑' : '玩家1'}}
+          </view>
+        </view>
+        <view class="player-info">
+          <view class="player-name">{{blackUser.nickname || '玩家一'}} {{myRole === 'black' || myRole === 'player1' ? '(我)' : ''}}</view>
+          <view wx:if="{{currentGameType === 'weiqi'}}" class="player-sub">提子: {{game.blackCaptures || 0}}</view>
+          <view wx:elif="{{currentGameType === 'ludo'}}" class="player-sub">当前: 第{{game.player1Pos || 0}}格</view>
+          <view wx:else class="player-sub">首发行动</view>
+        </view>
+      </view>
+
+      <view class="vs-divider">
+        <text class="vs-text">VS</text>
+        <view wx:if="{{game.status === 'playing'}}" class="turn-indicator">
+          <text class="turn-dot"></text>
+          <text class="turn-text">{{isMyTurn ? '轮到你' : '等待TA'}}</text>
+        </view>
+        <view wx:else class="game-over-tag">
+          <text wx:if="{{game.status === 'draw'}}">双方和棋</text>
+          <text wx:elif="{{isWon}}">🎉 你获胜！</text>
+          <text wx:else>TA获胜啦~</text>
+        </view>
+      </view>
+
+      <view class="player-side {{isP2Turn ? 'turn-active' : ''}} right-side">
+        <view class="player-avatar-wrap">
+          <text wx:if="{{!whiteUser.avatar || whiteUser.avatar.length <= 2}}" class="player-avatar-emoji">{{whiteUser.avatar || '🔵'}}</text>
+          <image wx:else class="player-avatar-img" src="{{whiteUser.avatar}}" mode="aspectFill" />
+          <view class="stone-badge {{currentGameType === 'gobang' || currentGameType === 'weiqi' ? 'white-badge' : 'p2-badge'}}">
+            {{currentGameType === 'gobang' || currentGameType === 'weiqi' ? '执白' : '玩家2'}}
+          </view>
+        </view>
+        <view class="player-info right-info">
+          <view class="player-name">{{whiteUser.nickname || (isSolo ? '单人演练' : '伴侣')}} {{myRole === 'white' || myRole === 'player2' ? '(我)' : ''}}</view>
+          <view wx:if="{{currentGameType === 'weiqi'}}" class="player-sub">提子: {{game.whiteCaptures || 0}}</view>
+          <view wx:elif="{{currentGameType === 'ludo'}}" class="player-sub">当前: 第{{game.player2Pos || 0}}格</view>
+          <view wx:else class="player-sub">后手行动</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 提示横幅 -->
+    <view class="status-banner {{isMyTurn ? 'my-turn-bg' : 'wait-turn-bg'}}">
+      <text class="banner-icon">{{isMyTurn ? '✨' : '⏳'}}</text>
+      <text class="banner-text">{{turnNoticeText}}</text>
+    </view>
+
+    <!-- ====== 子游戏 1 & 2：五子棋 / 围棋 棋盘 ====== -->
+    <block wx:if="{{currentGameType === 'gobang' || currentGameType === 'weiqi'}}">
+      <view class="card board-container">
+        <view class="board-wood {{currentGameType === 'gobang' ? 'board-15' : 'board-13'}}">
+          <view class="grid-lines">
+            <view
+              wx:for="{{boardSize}}"
+              wx:key="*this"
+              class="grid-h-line"
+              style="top: calc({{item}} * 100% / {{boardSize - 1}});"
+            ></view>
+            <view
+              wx:for="{{boardSize}}"
+              wx:key="*this"
+              class="grid-v-line"
+              style="left: calc({{item}} * 100% / {{boardSize - 1}});"
+            ></view>
+            <view
+              wx:for="{{starPoints}}"
+              wx:key="index"
+              class="star-dot"
+              style="left: calc({{item.c}} * 100% / {{boardSize - 1}}); top: calc({{item.r}} * 100% / {{boardSize - 1}});"
+            ></view>
+          </view>
+
+          <view class="board-intersections">
+            <block wx:for="{{board}}" wx:for-item="row" wx:for-index="r" wx:key="r">
+              <view
+                wx:for="{{row}}"
+                wx:for-item="cell"
+                wx:for-index="c"
+                wx:key="c"
+                class="intersection-point"
+                style="left: calc({{c}} * 100% / {{boardSize - 1}}); top: calc({{r}} * 100% / {{boardSize - 1}});"
+                data-r="{{r}}"
+                data-c="{{c}}"
+                bindtap="onCellTap"
+              >
+                <view
+                  wx:if="{{cell !== 0}}"
+                  class="piece {{cell === 1 ? 'piece-black' : 'piece-white'}} {{game.lastMove && game.lastMove.r === r && game.lastMove.c === c ? 'piece-last' : ''}}"
+                >
+                  <view wx:if="{{game.lastMove && game.lastMove.r === r && game.lastMove.c === c}}" class="last-move-marker"></view>
+                </view>
+              </view>
+            </block>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- ====== 子游戏 3：飞行棋 游戏界面 ====== -->
+    <block wx:elif="{{currentGameType === 'ludo'}}">
+      <view class="card ludo-container">
+        <view class="ludo-header-bar">
+          <text class="ludo-tip-title">🏁 赛道全长 30 格</text>
+          <text class="ludo-tip-desc">投掷5/6点起飞 · 踩中对方击落回基地</text>
+        </view>
+
+        <!-- 跑道网格展示 -->
+        <view class="ludo-track-grid">
+          <view
+            wx:for="{{ludoCells}}"
+            wx:key="index"
+            class="ludo-track-cell {{item.isEnd ? 'ludo-end-cell' : ''}} {{item.isStart ? 'ludo-start-cell' : ''}}"
+          >
+            <text class="track-num">{{item.index === 0 ? '起' : (item.isEnd ? '终' : item.index)}}</text>
+            <!-- 飞机图标 -->
+            <view wx:if="{{game.player1Pos === item.index}}" class="plane-token plane-p1">✈️</view>
+            <view wx:if="{{game.player2Pos === item.index}}" class="plane-token plane-p2">🛩️</view>
+          </view>
+        </view>
+
+        <!-- 骰子操作台 -->
+        <view class="dice-station">
+          <view class="dice-box {{diceRolling ? 'dice-spin' : ''}}" bindtap="onRollDice">
+            <text class="dice-num">{{game.lastDice > 0 ? game.lastDice : '🎲'}}</text>
+          </view>
+          <view class="dice-prompt">
+            <view class="dice-log">{{game.lastActionLog || '点击骰子掷出点数开始起飞'}}</view>
+            <button class="btn-dice-action" disabled="{{!isMyTurn || game.status !== 'playing' || diceRolling}}" bindtap="onRollDice">
+              {{isMyTurn ? '🎲 轮到你投掷' : '⏳ 等待TA掷骰子'}}
+            </button>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- ====== 子游戏 4：海战棋 游戏界面 ====== -->
+    <block wx:elif="{{currentGameType === 'seabattle'}}">
+      <view class="card sea-container">
+        <view class="sea-top-tip">
+          <view class="sea-tip-title">🎯 点击敌方迷雾海域开火</view>
+          <view class="sea-tip-sub">🔴 命中敌舰 | ⚪ 未击中海浪 | 命中可再炮击一次</view>
+        </view>
+
+        <!-- 敌方海域（攻击盘） -->
+        <view class="sea-section-title">敌方海域（点击格子开火）</view>
+        <view class="sea-grid">
+          <block wx:for="{{seaAttacks}}" wx:for-item="row" wx:for-index="r" wx:key="r">
+            <view
+              wx:for="{{row}}"
+              wx:for-item="cell"
+              wx:for-index="c"
+              wx:key="c"
+              class="sea-cell {{cell === 1 ? 'sea-cell-hit' : (cell === 2 ? 'sea-cell-miss' : '')}}"
+              data-r="{{r}}"
+              data-c="{{c}}"
+              bindtap="onSeaAttackTap"
+            >
+              <text wx:if="{{cell === 1}}">💥</text>
+              <text wx:elif="{{cell === 2}}">🌊</text>
+            </view>
+          </block>
+        </view>
+
+        <!-- 我方舰队简报 -->
+        <view class="sea-fleet-summary">
+          <view class="sea-section-title">我方舰队隐秘状态</view>
+          <view class="fleet-chips">
+            <view wx:for="{{myFleet}}" wx:key="id" class="fleet-chip {{item.sunk ? 'chip-sunk' : ''}}">
+              <text class="chip-name">{{item.name}}</text>
+              <text class="chip-state">{{item.sunk ? '已沉没 💥' : '正常航行 🛡️'}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 操作按钮栏 -->
+    <view class="action-bar">
+      <button wx:if="{{currentGameType === 'weiqi' && isMyTurn}}" class="btn-sub" bindtap="onPass">🏳️ 停一手</button>
+      <button wx:if="{{game.status === 'playing'}}" class="btn-sub btn-danger" bindtap="onResign">🏳️ 认输</button>
+      <button class="btn-main" bindtap="onResetGame">✨ 新开一局</button>
+    </view>
+
+    <!-- 玩法规则简短说明卡片 -->
+    <view class="card rules-card">
+      <view class="rules-title">💡 游戏小贴士</view>
+      <view class="rules-desc">
+        <view>• 经典异步双人对局：每一次操作均实时保存至云端，另一方何时上线都能续关对弈。</view>
+        <view wx:if="{{currentGameType === 'gobang'}}">• 五子棋规则：横向、纵向或对角线连成五子即可获胜。</view>
+        <view wx:elif="{{currentGameType === 'weiqi'}}">• 围棋规则：13路棋盘，气尽提子，双方连续停一手判终局。</view>
+        <view wx:elif="{{currentGameType === 'ludo'}}">• 飞行棋规则：投掷5或6起飞，踩中对方将其遣返基地，率先抵达第30格胜出。</view>
+        <view wx:elif="{{currentGameType === 'seabattle'}}">• 海战棋规则：轮流指派炮火开火，成功命中获得连击，全歼敌方三艘舰船者胜出。</view>
+      </view>
+    </view>
+  </view>
+</view>

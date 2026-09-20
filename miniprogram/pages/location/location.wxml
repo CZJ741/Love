@@ -1,0 +1,134 @@
+<view class="page location-page">
+  <!-- 顶部状态横幅：双人同意意愿与权限授权 -->
+  <view class="card header-card">
+    <view class="header-main">
+      <view class="header-icon-wrap">
+        <text class="header-icon">🧭</text>
+      </view>
+      <view class="header-text">
+        <view class="header-title">情侣定位与朝向共享</view>
+        <view class="header-desc">
+          <text wx:if="{{bothAgreed}}">✨ 双方已同意，正在实时共享位置与朝向</text>
+          <text wx:elif="{{myAgreed && !partnerAgreed}}">⏳ 你已同意，等待 TA 在小窝中开启共享...</text>
+          <text wx:elif="{{!myAgreed && partnerAgreed}}">💡 TA 已同意共享，请开启你的共享开关即可查看</text>
+          <text wx:else>🔒 需双方共同开启，才可查看对方定位与当前朝向</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 双方意愿状态指示栏 -->
+    <view class="consent-status-row">
+      <view class="consent-pill {{myAgreed ? 'pill-active' : ''}}">
+        <text class="pill-dot"></text>
+        <text class="pill-label">我的共享: {{myAgreed ? '已开启' : '未开启'}}</text>
+      </view>
+      <view class="consent-pill {{partnerAgreed ? 'pill-active' : ''}}">
+        <text class="pill-dot"></text>
+        <text class="pill-label">TA的共享: {{partnerAgreed ? '已开启' : '未开启'}}</text>
+      </view>
+    </view>
+
+    <!-- 我的一键共享授权开关 -->
+    <view class="toggle-action-row">
+      <view class="toggle-text">
+        <view class="tt-title">共享我的实时位置与朝向</view>
+        <view class="tt-sub">关闭后将立即停止上报并清除云端坐标</view>
+      </view>
+      <switch color="#F48FB1" checked="{{myAgreed}}" bindchange="onToggleShare" />
+    </view>
+  </view>
+
+  <!-- 地图展示区域（双方均同意后呈现完整地图，否则呈现隐私锁屏卡片） -->
+  <block wx:if="{{bothAgreed}}">
+    <!-- 距离与朝向综合仪表盘 -->
+    <view class="card compass-card">
+      <view class="compass-top">
+        <view class="distance-box">
+          <text class="dist-label">你们之间的相隔距离</text>
+          <view class="dist-val-row">
+            <text class="dist-num">{{distanceText || '计算中...'}}</text>
+          </view>
+        </view>
+
+        <!-- 指南针朝向仪表盘 -->
+        <view class="compass-dial-box">
+          <view class="compass-dial" style="transform: rotate({{myDirection}}deg);">
+            <view class="compass-needle-n"></view>
+            <view class="compass-needle-s"></view>
+            <text class="compass-n-text">N</text>
+          </view>
+          <text class="compass-deg-text">{{myDirection}}° {{directionDesc}}</text>
+        </view>
+      </view>
+
+      <!-- 朝向 TA 的指引提示 -->
+      <view wx:if="{{targetBearing !== null}}" class="target-guidance-bar">
+        <text class="guide-icon">💘</text>
+        <text class="guide-text">面向 <text class="guide-strong">{{targetBearingDesc}} ({{targetBearing}}°)</text> 方向，就是 TA 所在的位置</text>
+      </view>
+    </view>
+
+    <!-- 微信原生 Map 地图组件 -->
+    <view class="map-wrapper card">
+      <map
+        id="loveMap"
+        class="love-map"
+        latitude="{{mapCenterLat}}"
+        longitude="{{mapCenterLng}}"
+        scale="{{mapScale}}"
+        markers="{{markers}}"
+        show-location="true"
+        enable-rotate="true"
+        enable-overlooking="true"
+      ></map>
+      <view class="map-controls">
+        <button class="map-ctrl-btn" bindtap="refreshLocation">🔄 立即刷新</button>
+        <button class="map-ctrl-btn" bindtap="fitBothPositions">🎯 居中查看双方</button>
+      </view>
+    </view>
+
+    <!-- 双方详细地址与状态卡片 -->
+    <view class="card info-card">
+      <view class="user-loc-row">
+        <view class="user-avatar-badge my-badge">我</view>
+        <view class="user-loc-info">
+          <view class="ul-name-row">
+            <text class="ul-name">{{me.nickname || '我'}}</text>
+            <text class="ul-dir-tag">朝向 {{myDirection}}° ({{directionDesc}})</text>
+          </view>
+          <text class="ul-address">{{myAddress || '已获取经纬度定位'}}</text>
+        </view>
+      </view>
+
+      <view class="loc-divider"></view>
+
+      <view class="user-loc-row">
+        <view class="user-avatar-badge partner-badge">TA</view>
+        <view class="user-loc-info">
+          <view class="ul-name-row">
+            <text class="ul-name">{{partner.nickname || 'TA'}}</text>
+            <text wx:if="{{partnerPos}}" class="ul-dir-tag">朝向 {{partnerPos.direction || 0}}°</text>
+          </view>
+          <text wx:if="{{partnerPos}}" class="ul-address">{{partnerPos.address || '已共享最新位置'}}</text>
+          <text wx:else class="ul-address ul-waiting">TA 尚未上传最新坐标</text>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 未达成双方同意时的隐私提示卡片 -->
+  <block wx:else>
+    <view class="card privacy-card">
+      <view class="privacy-icon">🔐</view>
+      <view class="privacy-title">情侣隐私安全保护</view>
+      <view class="privacy-text">
+        <view>• 位置与罗盘朝向属于情侣双方的核心私密数据。</view>
+        <view>• 只有当双方均在本页面将【共享我的实时位置】开关打开后，地图与对方的位置信息才会对彼此解锁。</view>
+        <view>• 任何一方随时关闭开关，地图将立即对双方重新上锁，并从云端彻底清空您的坐标数据。</view>
+      </view>
+      <button wx:if="{{!myAgreed}}" class="btn-agree-main" bindtap="agreeAndEnable">
+        🤝 我同意并开启共享
+      </button>
+    </view>
+  </block>
+</view>

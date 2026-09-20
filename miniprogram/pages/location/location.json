@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "查找 · 情侣共享定位",
+  "navigationBarBackgroundColor": "#F48FB1",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#FFEBED",
+  "enablePullDownRefresh": true
+}

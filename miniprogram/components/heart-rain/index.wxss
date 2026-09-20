@@ -1,0 +1,29 @@
+.hr-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 999;
+  overflow: hidden;
+}
+.hr-heart {
+  position: absolute;
+  top: -80rpx;
+  animation: hrFall linear forwards;
+  opacity: 0;
+}
+@keyframes hrFall {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(0.8);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(40deg) scale(1.15);
+    opacity: 0.9;
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "imageOpt",
+  "version": "1.0.0",
+  "description": "云存储触发器：图片上传时自动压缩转 WebP",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest",
+    "sharp": "^0.33.0"
+  }
+}

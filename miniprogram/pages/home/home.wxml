@@ -1,0 +1,436 @@
+<view class="page home">
+  <heart-rain show="{{rain}}" bind:done="onRainDone" />
+
+  <!-- 积分变动浮动文字 -->
+  <view class="balance-toast {{toastVisible ? 'show' : ''}}">{{toastText}}</view>
+
+  <!-- 冷暴力预警 -->
+  <view wx:if="{{coldWarning}}" class="cold-banner" bindtap="sendCold">
+    <text class="cold-cloud">☁️</text>
+    <view class="cold-text">
+      <view class="cold-title">3天没有发糖了哦~</view>
+      <view class="cold-sub">点击提醒TA</view>
+    </view>
+  </view>
+
+  <!-- 双人拼图头像 + 积分余额 -->
+  <view class="card puzzle-card">
+    <view class="hello-row">
+      <view class="hello">
+        <view class="hello-main">{{greeting.main}}，{{me.nickname}} 💕</view>
+        <view class="hello-sub">{{greeting.sub}}</view>
+      </view>
+      <view class="hello-chips">
+        <!-- 签到按钮（与小窝胶囊大小样式保持一致） -->
+        <view class="room-chip sign-chip" bindtap="signIn">
+          <text class="room-hash">📅</text><text class="num">签到</text>
+        </view>
+        <!-- 邀请/小窝胶囊 -->
+        <button wx:if="{{!partnerJoined}}" class="room-chip invite-chip" open-type="share">
+          <text class="room-hash">💌</text><text class="num">邀请TA入住</text>
+        </button>
+        <view wx:else class="room-chip">
+          <text class="room-hash">🏠</text><text class="num">{{roomName}}</text>
+        </view>
+      </view>
+    </view>
+    <!-- 拼图头像区 -->
+    <view class="puzzle-avatars">
+      <view class="puzzle-ava-wrap">
+        <image wx:if="{{me.avatarImg}}" class="puzzle-ava left" src="{{me.avatar}}" mode="aspectFill" />
+        <text wx:else class="puzzle-ava left emoji">{{me.avatar || '🐻'}}</text>
+      </view>
+      <view class="puzzle-ava-wrap" bindlongpress="onPartnerLongPress">
+        <text wx:if="{{!partnerJoined}}" class="puzzle-ava right emoji">?</text>
+        <image wx:elif="{{partner.avatarImg}}" class="puzzle-ava right" src="{{partner.avatar}}" mode="aspectFill" />
+        <text wx:else class="puzzle-ava right emoji">{{partner.avatar || '🐰'}}</text>
+        <!-- 在线状态：呼吸小圆点 -->
+        <view wx:if="{{partnerJoined}}" class="online-dot {{partnerOnline ? 'online' : 'offline'}}"></view>
+        <view wx:if="{{partnerJoined}}" class="praise-hint">长按赞美</view>
+        <!-- 上次在线时间 -->
+        <text wx:if="{{partnerJoined && partnerLastSeen}}" class="last-seen">{{partnerLastSeen}}</text>
+      </view>
+    </view>
+    <!-- 两边积分余额 -->
+    <view class="puzzle-balances">
+      <view class="puzzle-bal left-bal {{meGlow ? 'glow' : ''}}">
+        <view class="puzzle-bal-label">我的积分</view>
+        <view class="puzzle-bal-num">{{me.balance}}</view>
+      </view>
+      <view class="puzzle-bal right-bal {{partnerGlow ? 'glow' : ''}}">
+        <view class="puzzle-bal-label">{{partner.nickname}}的积分</view>
+        <view class="puzzle-bal-num">{{partner.balance}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ====== 陪伴时长卡片（上面叠加 Live2D 桌宠小狗，浮现在卡片之上且紧贴下边缘，完全不影响卡片原有布局） ====== -->
+  <view class="card together-card with-pet" style="background: {{togetherBg}};" bindtap="showBgPicker" bindlongpress="showBgPicker">
+    <view class="together-inner">
+      <view class="together-line1">跟宝宝在一起的时间已经</view>
+      <view class="together-line2">{{togetherDays}}<text class="together-unit">天</text></view>
+      <view class="together-line3">起始日：{{togetherStart}}</view>
+    </view>
+    <view class="together-bg-hint">长按更换背景</view>
+
+    <!-- 纯浮动桌宠层：紧贴卡片下边缘、完全不遮挡文字内容、支持单击互动/双击进宠物页 -->
+    <view class="together-pet-float" catchtap="noop">
+      <live2d-pet
+        compactMode="{{true}}"
+        pet="{{petData}}"
+        bindinteract="onPetInteract"
+        binddoubletap="goPetPage"
+        bindopenmanage="goPetPage"
+      />
+    </view>
+  </view>
+
+  <!-- 最近积分变动 -->
+  <view class="card tx-card">
+    <view class="tx-card-head" bindtap="goTxHistory">
+      <text class="tx-card-title">积分变动</text>
+      <text class="tx-card-more">更多 ›</text>
+    </view>
+    <view wx:if="{{recentTx.length}}" class="tx-list">
+      <view
+        wx:for="{{recentTx}}"
+        wx:key="_id"
+        wx:for-index="idx"
+        class="tx-row"
+        data-idx="{{idx}}"
+        bindtap="onTxTap"
+      >
+        <text class="tx-icon">{{item._meta.emoji}}</text>
+        <text class="tx-reason">{{item.reason}}</text>
+        <text class="tx-to-user">→ {{item.toUser}}</text>
+        <text class="tx-val num {{item.amount > 0 ? 'pos' : 'neg'}}">{{item.amount > 0 ? '+' + item.amount : item.amount}}</text>
+        <text class="tx-time">{{item._time}}</text>
+      </view>
+    </view>
+    <view wx:else class="tx-empty">暂无记录</view>
+  </view>
+
+  <!-- 快捷功能入口网格（一行三个） -->
+  <view class="feature-grid">
+    <!-- 任务打卡 -->
+    <view class="feature-item" bindtap="goPoints">
+      <view class="fi-icon-wrap fi-points">
+        <text class="fi-emoji">⭐</text>
+      </view>
+      <text class="fi-title">任务打卡</text>
+      <text class="fi-desc">互动加减分</text>
+    </view>
+
+    <!-- 约会盲盒 -->
+    <view class="feature-item" bindtap="goDatebox">
+      <view class="fi-icon-wrap fi-datebox">
+        <text class="fi-emoji">🎲</text>
+      </view>
+      <text class="fi-title">约会盲盒</text>
+      <text class="fi-desc">抽取小浪漫</text>
+    </view>
+
+    <!-- 合影挑战 -->
+    <view class="feature-item" bindtap="goPuzzle">
+      <view wx:if="{{puzzleStatus !== 'completed' && !puzzleMyUploaded}}" class="fi-dot"></view>
+      <view class="fi-icon-wrap fi-puzzle">
+        <text class="fi-emoji">📷</text>
+      </view>
+      <text class="fi-title">合影挑战</text>
+      <text wx:if="{{puzzleStreak > 0}}" class="fi-desc highlight">{{puzzleStreak}}/9组拼图</text>
+      <text wx:elif="{{puzzleStatus === 'completed'}}" class="fi-desc done">今日已完成</text>
+      <text wx:else class="fi-desc">双人拼照片</text>
+    </view>
+
+    <!-- 吃什么 -->
+    <view class="feature-item" bindtap="openFoodWheel">
+      <view class="fi-icon-wrap fi-food">
+        <text class="fi-emoji">🍲</text>
+      </view>
+      <text class="fi-title">今天吃啥</text>
+      <text class="fi-desc">美食大转盘</text>
+    </view>
+
+    <!-- 查找（情侣共享定位） -->
+    <view class="feature-item" bindtap="goLocation">
+      <view class="fi-icon-wrap fi-location">
+        <text class="fi-emoji">🧭</text>
+      </view>
+      <text class="fi-title">查找</text>
+      <text class="fi-desc">共享定位朝向</text>
+    </view>
+
+    <!-- 萌宠小窝入口 -->
+    <view class="feature-item" bindtap="goPetPage">
+      <view class="fi-icon-wrap fi-pet">
+        <text class="fi-emoji">🐶</text>
+      </view>
+      <text class="fi-title">萌宠宝贝</text>
+      <text class="fi-desc">双人爱心共养</text>
+    </view>
+  </view>
+
+  <!-- 游戏大厅入口（独占一行） -->
+  <view class="game-lobby-entry" bindtap="goGameLobby">
+    <view class="gle-left">
+      <view class="gle-icon-wrap">
+        <text class="gle-emoji">🎮</text>
+      </view>
+      <view class="gle-text">
+        <view class="gle-title-row">
+          <text class="gle-title">双人游戏大厅</text>
+          <text class="gle-tag">经典对弈</text>
+        </view>
+        <text class="gle-desc">五子棋 · 围棋 · 飞行棋 · 海战棋</text>
+      </view>
+    </view>
+    <view class="gle-right">
+      <text class="gle-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- ============ 弹窗 ============ -->
+
+  <!-- 快捷赞美弹窗 -->
+  <view wx:if="{{showPraise}}" class="mask" bindtap="closePraise">
+    <view class="modal" catchtap="noop">
+      <view class="modal-title">💬 赞美 {{partner.nickname}}</view>
+      <view class="praise-values">
+        <view
+          wx:for="{{praiseValues}}"
+          wx:key="*this"
+          class="praise-val {{praiseAmount === item ? 'active' : ''}}"
+          data-n="{{item}}"
+          bindtap="onPraiseAmount"
+        >+{{item}}</view>
+      </view>
+      <view class="section-label">赞美理由</view>
+      <view class="reason-wrap">
+        <view
+          wx:for="{{praiseReasons}}"
+          wx:key="*this"
+          class="chip {{praiseReason === item ? 'active' : ''}}"
+          data-r="{{item}}"
+          bindtap="onPraiseReason"
+        >{{item}}</view>
+      </view>
+      <button class="btn submit-btn" bindtap="submitPraise">确认赞美 💕</button>
+    </view>
+  </view>
+
+  <!-- 流水详情弹窗 -->
+  <view wx:if="{{showTxDetail && txDetail}}" class="mask" bindtap="closeTxDetail">
+    <view class="modal" catchtap="noop">
+      <view class="modal-title">{{txDetail._meta.emoji}} 积分详情</view>
+      <view class="detail-grid">
+        <view class="d-row"><text class="d-label">类型</text><text class="d-val">{{txDetail._meta.text}}</text></view>
+        <view class="d-row"><text class="d-label">事由</text><text class="d-val">{{txDetail.reason}}</text></view>
+        <view class="d-row"><text class="d-label">发起方</text><text class="d-val">{{txDetail.fromUser}}</text></view>
+        <view class="d-row"><text class="d-label">接收方</text><text class="d-val">{{txDetail.toUser}}</text></view>
+        <view class="d-row"><text class="d-label">时间</text><text class="d-val">{{txDetail._time}}</text></view>
+        <view class="d-row"><text class="d-label">数额</text><text class="d-val num {{txDetail.amount > 0 ? 'pos' : 'neg'}}">{{txDetail.amount > 0 ? '+' + txDetail.amount : txDetail.amount}}</text></view>
+      </view>
+      <button class="btn secondary submit-btn" bindtap="closeTxDetail">关闭</button>
+    </view>
+  </view>
+
+  <!-- ====== 背景选择弹窗 ====== -->
+  <view wx:if="{{showBgPicker}}" class="mask" bindtap="closeBgPicker">
+    <view class="modal" catchtap="noop">
+      <view class="modal-title">🎨 选择卡片背景</view>
+      <view class="bg-grid">
+        <view
+          wx:for="{{bgOptions}}"
+          wx:key="key"
+          class="bg-cell {{togetherBg === item.value ? 'selected' : ''}}"
+          style="background: {{item.value}};"
+          data-val="{{item.value}}"
+          bindtap="selectBg"
+        >
+          <text wx:if="{{togetherBg === item.value}}" class="bg-check">✓</text>
+        </view>
+      </view>
+      <button class="btn secondary submit-btn" bindtap="closeBgPicker" style="margin-top:12rpx">关闭</button>
+    </view>
+  </view>
+
+  <!-- ====== 食物转盘主弹窗 ====== -->
+  <view wx:if="{{showFoodWheel}}" class="mask" bindtap="closeFoodWheel">
+    <view class="food-wheel-modal" catchtap="noop">
+      <view class="fwm-header">
+        <view class="fwm-title">🍲 今天吃什么</view>
+        <view class="fwm-actions">
+          <view class="fwm-btn-list" bindtap="openFoodManage">📝 食物清单</view>
+          <view class="fwm-close" bindtap="closeFoodWheel">✕</view>
+        </view>
+      </view>
+
+      <!-- 转盘容器区 -->
+      <view class="wheel-area">
+        <!-- 顶部指引指针 -->
+        <view class="wheel-pointer">▼</view>
+
+        <!-- 转动转盘主体 -->
+        <view
+          class="wheel-disc"
+          style="background: {{wheelConicBg}}; transform: rotate({{wheelRotation}}deg); transition: {{wheelTransition}};"
+        >
+          <!-- 转盘扇区 -->
+          <view
+            wx:for="{{foodWheelList}}"
+            wx:key="id"
+            class="wheel-sector"
+            style="transform: rotate({{item.angle}}deg);"
+          >
+            <view class="sector-content">
+              <text class="sector-emoji">{{item.emoji}}</text>
+              <text class="sector-name">{{item.name}}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 转盘中心GO按钮 -->
+        <view
+          class="wheel-center-btn {{isSpinning ? 'disabled' : ''}}"
+          bindtap="spinFoodWheel"
+        >
+          <text class="wcb-text">{{isSpinning ? '抽中中' : '开始\n抽奖'}}</text>
+        </view>
+      </view>
+
+      <!-- 抽奖结果展示区 -->
+      <view class="spin-result-box" wx:if="{{wheelResult}}">
+        <text class="srb-tag">🎯 本次决定吃：</text>
+        <view class="srb-val">
+          <text class="srb-emoji">{{wheelResult.emoji}}</text>
+          <text class="srb-name">{{wheelResult.name}}</text>
+        </view>
+        <view class="srb-again-tip">不满意？可点击中心按钮直接再抽一次哦~</view>
+      </view>
+      <view class="spin-hint-box" wx:else>
+        <text class="shb-text">点击中间「开始抽奖」，让转盘帮你选择今天的美味吧！</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ====== 食物列表管理弹窗（增删改） ====== -->
+  <view wx:if="{{showFoodManage}}" class="mask" bindtap="closeFoodManage">
+    <view class="food-manage-modal" catchtap="noop">
+      <view class="fmm-header">
+        <view class="fmm-title">📝 自定义食物清单 ({{foodWheelList.length}}项)</view>
+        <view class="fmm-close" bindtap="closeFoodManage">✕</view>
+      </view>
+
+      <!-- 新增/编辑输入区 -->
+      <view class="fmm-input-bar">
+        <!-- Emoji 快捷切换 -->
+        <view class="fmm-emoji-btn" bindtap="cycleInputEmoji">{{currentFoodEmoji}}</view>
+        <input
+          class="fmm-input"
+          placeholder="输入食物名称，如：麻辣烫"
+          value="{{foodInputName}}"
+          bindinput="onFoodInputName"
+          maxlength="12"
+        />
+        <button wx:if="{{editingFoodId}}" class="fmm-action-btn edit-ok" bindtap="saveEditFood">保存</button>
+        <button wx:if="{{editingFoodId}}" class="fmm-action-btn cancel" bindtap="cancelEditFood">取消</button>
+        <button wx:if="{{!editingFoodId}}" class="fmm-action-btn add" bindtap="addFood">添加</button>
+      </view>
+
+      <!-- 食物列表可滚动区 -->
+      <scroll-view scroll-y class="fmm-list-scroll">
+        <view wx:if="{{!foodWheelList.length}}" class="fmm-empty">清单空空如也，快添加一些你想吃的美食吧~</view>
+        <view
+          wx:for="{{foodWheelList}}"
+          wx:key="id"
+          class="fmm-item {{editingFoodId === item.id ? 'editing' : ''}}"
+        >
+          <text class="fmm-item-emoji">{{item.emoji}}</text>
+          <text class="fmm-item-name">{{item.name}}</text>
+          <view class="fmm-item-ops">
+            <view class="fmm-op-btn edit" data-id="{{item.id}}" bindtap="startEditFood">✏️</view>
+            <view class="fmm-op-btn del" data-id="{{item.id}}" bindtap="deleteFood">🗑️</view>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="fmm-footer">
+        <button class="btn secondary fmm-reset-btn" bindtap="resetDefaultFoods">恢复预设菜单</button>
+        <button class="btn submit-btn fmm-done-btn" bindtap="closeFoodManage">完成</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- ====== QQ宠物式桌宠养成与互动弹窗 ====== -->
+  <view wx:if="{{showPetModal}}" class="mask" bindtap="closePetModal">
+    <view class="pet-manage-modal" catchtap="noop">
+      <view class="pmm-header">
+        <view class="pmm-title">🐶 {{petData.name || '小糯米'}}的爱心小窝</view>
+        <view class="pmm-close" bindtap="closePetModal">✕</view>
+      </view>
+
+      <!-- 宠物等级与属性三维卡片 -->
+      <view class="pmm-status-card">
+        <view class="pmm-level-row">
+          <text class="pmm-level">Lv.{{petData.level || 1}} 萌宠宝贝</text>
+          <text class="pmm-exp">成长值: {{petData.exp || 0}}/100</text>
+        </view>
+        <view class="pmm-stat-row">
+          <view class="pmm-stat-item">
+            <text class="psi-name">🍖 饱食度</text>
+            <view class="pmm-bar"><view class="pmm-bar-inner hunger" style="width: {{petData.hunger || 0}}%;"></view></view>
+            <text class="psi-val">{{petData.hunger || 0}}/100</text>
+          </view>
+          <view class="pmm-stat-item">
+            <text class="psi-name">💖 心情值</text>
+            <view class="pmm-bar"><view class="pmm-bar-inner mood" style="width: {{petData.mood || 0}}%;"></view></view>
+            <text class="psi-val">{{petData.mood || 0}}/100</text>
+          </view>
+          <view class="pmm-stat-item">
+            <text class="psi-name">⚡ 体力值</text>
+            <view class="pmm-bar"><view class="pmm-bar-inner energy" style="width: {{petData.energy || 0}}%;"></view></view>
+            <text class="psi-val">{{petData.energy || 0}}/100</text>
+          </view>
+        </view>
+        <view class="pmm-recent-log">
+          <text class="prl-icon">🐾</text>
+          <text class="prl-text">{{petData.lastActionText || '小狗正乖巧地待在你们身边'}}</text>
+        </view>
+      </view>
+
+      <!-- 6大核心养成互动操作盘 -->
+      <view class="pmm-actions-grid">
+        <view class="pmm-action-btn" data-act="feed" bindtap="doPetAction">
+          <view class="pab-icon-box box-feed">🍖</view>
+          <text class="pab-title">投喂肉干</text>
+          <text class="pab-desc">饱食+25 心情+10</text>
+        </view>
+        <view class="pmm-action-btn" data-act="pet" bindtap="doPetAction">
+          <view class="pab-icon-box box-pet">🤗</view>
+          <text class="pab-title">温柔摸摸</text>
+          <text class="pab-desc">心情+18 撒娇期待</text>
+        </view>
+        <view class="pmm-action-btn" data-act="play" bindtap="doPetAction">
+          <view class="pab-icon-box box-play">🎾</view>
+          <text class="pab-title">飞盘玩耍</text>
+          <text class="pab-desc">心情+25 消耗体力</text>
+        </view>
+        <view class="pmm-action-btn" data-act="gift" bindtap="doPetAction">
+          <view class="pab-icon-box box-gift">🎁</view>
+          <text class="pab-title">赠送礼盒</text>
+          <text class="pab-desc">心情+30 惊喜转圈</text>
+        </view>
+        <view class="pmm-action-btn" data-act="sleep" bindtap="doPetAction">
+          <view class="pab-icon-box box-sleep">💤</view>
+          <text class="pab-title">抱去睡觉</text>
+          <text class="pab-desc">体力+40 甜甜美梦</text>
+        </view>
+        <view class="pmm-action-btn" bindtap="promptRenamePet">
+          <view class="pab-icon-box box-rename">✏️</view>
+          <text class="pab-title">修改名字</text>
+          <text class="pab-desc">专属爱称</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

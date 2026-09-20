@@ -1,0 +1,22 @@
+{
+  "users": {
+    "read": "true",
+    "write": "false"
+  },
+  "transactions": {
+    "read": "true",
+    "write": "false"
+  },
+  "wishes": {
+    "read": "true",
+    "write": "false"
+  },
+  "dailies": {
+    "read": "true",
+    "write": "false"
+  },
+  "moments": {
+    "read": "true",
+    "write": "false"
+  }
+}

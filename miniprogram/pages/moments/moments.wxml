@@ -1,0 +1,238 @@
+<view class="page timeline">
+
+  <!-- 顶部导航：当日日期 + 总篇数 -->
+  <view class="tl-nav" bindtap="toggleCalendar">
+    <view class="tl-date-wrap">
+      <text class="tl-today">{{todayDate}}</text>
+      <text class="tl-arrow">{{showCalendar ? '▲' : '▼'}}</text>
+    </view>
+    <text class="tl-count">共 {{totalCount}} 篇</text>
+  </view>
+
+  <!-- 日历选择器 -->
+  <view wx:if="{{showCalendar}}" class="cal-card">
+    <view class="cal-head">
+      <text class="cal-nav-btn" bindtap="prevMonth">‹</text>
+      <text class="cal-month">{{calYear}}年{{calMonth}}月</text>
+      <text class="cal-nav-btn" bindtap="nextMonth">›</text>
+    </view>
+    <view class="cal-weekdays">
+      <text class="cal-wd">一</text>
+      <text class="cal-wd">二</text>
+      <text class="cal-wd">三</text>
+      <text class="cal-wd">四</text>
+      <text class="cal-wd">五</text>
+      <text class="cal-wd">六</text>
+      <text class="cal-wd">日</text>
+    </view>
+    <view class="cal-grid">
+      <view wx:for="{{calWeeks}}" wx:for-item="week" wx:key="*this" class="cal-week">
+        <view
+          wx:for="{{week}}" wx:for-item="day" wx:key="idx"
+          class="cal-day {{day.empty ? '' : ''}}"
+        >
+          <view
+            wx:if="{{!day.empty}}"
+            class="cal-day-num {{day.hasEntry ? 'marked' : ''}} {{day.isToday ? 'today' : ''}}"
+            data-date="{{day.dateStr}}"
+            bindtap="onCalDayTap"
+          >{{day.day}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 往年今日卡片 -->
+  <view wx:if="{{memoryCard}}" class="memory-card" bindtap="onMemoryTap">
+    <view class="mc-bg" wx:if="{{memoryCard.bgImg}}">
+      <image class="mc-bg-img" src="{{memoryCard.bgImg}}" mode="aspectFill" />
+      <view class="mc-bg-mask"></view>
+    </view>
+    <view class="mc-content">
+      <text class="mc-title">往年今日</text>
+      <text class="mc-ago">{{memoryCard.agoText}}</text>
+      <view class="mc-text">{{memoryCard.text}}</view>
+    </view>
+  </view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{loading}}" class="empty">
+    <text class="e-emoji">⏳</text>加载中...
+  </view>
+
+  <!-- 时间轴主体 -->
+  <view wx:elif="{{groupedMoments.length}}" class="tl-container">
+    <block wx:for="{{groupedMoments}}" wx:key="key">
+      <view class="tl-item" id="tx-day-{{item.dateKey}}">
+        <!-- 左侧日期 + 头像 -->
+        <view class="tl-left">
+          <text class="tl-left-day">{{item.dayStr}}</text>
+          <text class="tl-left-sub">{{item.monthStr}}/{{item.weekdayStr}}</text>
+          <image wx:if="{{item.avatarImg}}" class="tl-left-ava" src="{{item.avatar}}" mode="aspectFill" />
+          <text wx:else class="tl-left-ava emoji">{{item.avatar || '📝'}}</text>
+        </view>
+        <!-- 右侧卡片 -->
+        <view class="tl-card" data-idx="{{item._origIdx}}" bindtap="onTap">
+          <!-- 正文 -->
+          <view wx:if="{{item.text}}" class="tl-card-text">{{item.text}}</view>
+          <!-- 图片 -->
+          <view wx:if="{{item.imageUrls && item.imageUrls.length}}" class="tl-card-imgs">
+            <view
+              wx:for="{{item.imageUrls}}" wx:for-item="img" wx:key="*this"
+              class="tl-card-img-wrap"
+            >
+              <image
+                class="tl-card-img"
+                src="{{img}}"
+                mode="aspectFill"
+                data-urls="{{item.imageUrls}}"
+                data-cur="{{img}}"
+                catchtap="previewImage"
+              />
+            </view>
+          </view>
+          <!-- 时间与评论徽标 -->
+          <view class="tl-card-footer">
+            <text class="tl-card-time">{{item.timeStr}}</text>
+            <view class="tl-card-comment-badge" wx:if="{{item.commentCount > 0}}">
+              <text class="c-badge-icon">💬</text>
+              <text class="c-badge-count">{{item.commentCount}}</text>
+            </view>
+          </view>
+          <!-- 评论预览（最多2条） -->
+          <view wx:if="{{item.comments && item.comments.length}}" class="tl-card-comments">
+            <view wx:for="{{item.comments}}" wx:for-item="c" wx:for-index="cidx" wx:key="id" wx:if="{{cidx < 2}}" class="tl-card-c-item">
+              <text class="c-preview-author">{{c.author}}：</text>
+              <text class="c-preview-text">{{c.text}}</text>
+            </view>
+            <text wx:if="{{item.commentCount > 2}}" class="c-preview-more">共 {{item.commentCount}} 条评论...</text>
+          </view>
+        </view>
+      </view>
+    </block>
+  </view>
+  <view wx:else class="empty"><text class="e-emoji">📸</text>还没有日记，记录你们的第一个瞬间吧</view>
+
+  <!-- 右下角悬浮+按钮 -->
+  <view class="tl-fab" bindtap="openPost">
+    <text class="tl-fab-icon">+</text>
+  </view>
+
+  <!-- ====== 发帖弹窗 ====== -->
+  <view wx:if="{{showPost}}" class="mask" bindtap="closePost">
+    <view class="modal post-modal" catchtap="noop">
+      <view class="modal-title">📝 写日记</view>
+      <textarea class="post-area" placeholder="今天想说什么..." value="{{postText}}" bindinput="onText" maxlength="500" auto-height />
+      <view class="post-imgs">
+        <view wx:for="{{postImages}}" wx:key="*this" wx:for-index="idx" class="pi-item">
+          <image class="pi-img" src="{{item.temp}}" mode="aspectFill" />
+          <view class="pi-del" data-idx="{{idx}}" catchtap="removeImage">✕</view>
+        </view>
+        <view wx:if="{{postImages.length < 9}}" class="pi-add" bindtap="chooseImage">＋</view>
+      </view>
+      <view class="post-meta">
+        <picker class="picker-date" mode="date" value="{{postDate}}" bindchange="onDateChange">
+          <view class="picker-val">{{postDate}}</view>
+        </picker>
+        <picker class="picker-time" mode="time" value="{{postTime}}" bindchange="onTimeChange">
+          <view class="picker-val">{{postTime}}</view>
+        </picker>
+      </view>
+      <button class="btn submit-btn" bindtap="submitPost" disabled="{{posting}}">{{posting ? '发布中...' : '发布'}}</button>
+    </view>
+  </view>
+
+  <!-- ====== 详情弹窗 ====== -->
+  <view wx:if="{{showDetail && detailItem}}" class="mask" bindtap="closeDetail">
+    <view class="modal detail-modal" catchtap="noop">
+      <view class="detail-head">
+        <text class="detail-day">{{detailItem.dayStr}}</text>
+        <text class="detail-sub">{{detailItem.monthStr}}/{{detailItem.weekdayStr}}</text>
+      </view>
+      <!-- 查看模式 -->
+      <block wx:if="{{!editMode}}">
+        <view wx:if="{{detailItem.text}}" class="m-text detail-text">{{detailItem.text}}</view>
+        <view wx:if="{{detailItem.imageUrls && detailItem.imageUrls.length}}" class="m-imgs">
+          <image
+            wx:for="{{detailItem.imageUrls}}" wx:for-item="img" wx:key="*this"
+            class="m-img full"
+            src="{{img}}"
+            mode="widthFix"
+            data-urls="{{detailItem.imageUrls}}"
+            data-cur="{{img}}"
+            catchtap="previewImage"
+          />
+        </view>
+        <text class="tl-card-time">{{detailItem.timeStr}}</text>
+
+        <!-- 评论互动区 -->
+        <view class="detail-comments-section">
+          <view class="detail-c-title">
+            <text class="c-title-text">甜蜜互动</text>
+            <text class="c-title-count" wx:if="{{detailItem.commentCount > 0}}">({{detailItem.commentCount}})</text>
+          </view>
+
+          <!-- 评论列表 -->
+          <view class="detail-c-list">
+            <block wx:if="{{detailItem.comments && detailItem.comments.length}}">
+              <view wx:for="{{detailItem.comments}}" wx:for-item="c" wx:key="id" class="detail-c-item">
+                <image wx:if="{{c.avatarImg}}" class="detail-c-ava" src="{{c.avatar}}" mode="aspectFill" />
+                <text wx:else class="detail-c-ava emoji">{{c.avatar || '🐰'}}</text>
+                <view class="detail-c-body">
+                  <view class="detail-c-meta">
+                    <text class="detail-c-author">{{c.author}}</text>
+                    <text class="detail-c-time">{{c.timeStr}}</text>
+                  </view>
+                  <text class="detail-c-text" user-select>{{c.text}}</text>
+                </view>
+                <view wx:if="{{c.canDelete}}" class="detail-c-del" data-id="{{c.id}}" catchtap="deleteComment">
+                  <text class="c-del-icon">✕</text>
+                </view>
+              </view>
+            </block>
+            <view wx:else class="detail-c-empty">
+              <text class="c-empty-text">还没有留言，说点悄悄话吧~ 💕</text>
+            </view>
+          </view>
+
+          <!-- 评论输入框 -->
+          <view class="detail-c-input-bar">
+            <input
+              class="detail-c-input"
+              placeholder="写下你想对TA说的话..."
+              placeholder-class="c-input-ph"
+              value="{{commentInput}}"
+              bindinput="onCommentInput"
+              confirm-type="send"
+              bindconfirm="sendComment"
+              maxlength="200"
+            />
+            <button
+              class="btn detail-c-send-btn"
+              bindtap="sendComment"
+              disabled="{{submittingComment || !commentInput}}"
+            >发送</button>
+          </view>
+        </view>
+      </block>
+      <!-- 编辑模式 -->
+      <block wx:else>
+        <textarea class="post-area" style="margin-bottom:16rpx" value="{{editText}}" bindinput="onEditText" maxlength="500" auto-height />
+        <view class="post-imgs">
+          <view wx:for="{{editImages}}" wx:key="*this" wx:for-index="idx" class="pi-item">
+            <image class="pi-img" src="{{item.temp || item}}" mode="aspectFill" />
+            <view class="pi-del" data-idx="{{idx}}" catchtap="removeEditImage">✕</view>
+          </view>
+          <view wx:if="{{editImages.length < 9}}" class="pi-add" bindtap="chooseEditImage">＋</view>
+        </view>
+      </block>
+      <view class="detail-btns">
+        <button wx:if="{{!editMode && me && detailItem.openid === me.openid}}" class="btn secondary" bindtap="startEdit">编辑</button>
+        <button wx:if="{{!editMode && me && detailItem.openid === me.openid}}" class="btn danger-btn" bindtap="confirmDelete">删除</button>
+        <button wx:if="{{editMode}}" class="btn secondary" bindtap="cancelEdit">取消</button>
+        <button wx:if="{{editMode}}" class="btn submit-btn" style="margin-top:0" bindtap="saveEdit" disabled="{{editing}}">{{editing ? '保存中...' : '保存'}}</button>
+        <button wx:if="{{!editMode}}" class="btn secondary submit-btn" bindtap="closeDetail">关闭</button>
+      </view>
+    </view>
+  </view>
+</view>

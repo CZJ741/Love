@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "家",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#FFEBED",
+  "backgroundTextStyle": "dark",
+  "usingComponents": {
+    "heart-rain": "/components/heart-rain/index",
+    "live2d-pet": "/components/live2d-pet/index"
+  }
+}

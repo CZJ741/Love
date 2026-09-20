@@ -1,0 +1,8 @@
+<view wx:if="{{hearts.length}}" class="hr-mask">
+  <view
+    wx:for="{{hearts}}"
+    wx:key="id"
+    class="hr-heart"
+    style="left:{{item.left}};font-size:{{item.size}};animation-delay:{{item.delay}};animation-duration:{{item.dur}};"
+  >{{item.emoji}}</view>
+</view>

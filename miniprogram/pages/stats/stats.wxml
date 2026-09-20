@@ -1,0 +1,63 @@
+<view class="page stats">
+
+  <!-- 冷暴力预警提示 -->
+  <view wx:if="{{coldWarning}}" class="cold-banner-stats">
+    <text class="emoji">☁️</text>
+    <text>冷暴力预警：已经3天没有互动发糖了哦~</text>
+  </view>
+
+  <!-- 互动热力图 -->
+  <view class="card">
+    <view class="card-title"><text class="emoji">🔥</text>互动热力图</view>
+    <view class="heat-grid">
+      <view wx:for="{{heatmap}}" wx:key="key" wx:for-item="cell" class="heat-cell l{{cell.level}}"></view>
+    </view>
+    <view class="heat-legend">
+      <text>少</text>
+      <view class="legend-cell l0"></view><view class="legend-cell l1"></view><view class="legend-cell l2"></view><view class="legend-cell l3"></view><view class="legend-cell l4"></view>
+      <text>多</text>
+      <view class="heat-note">最近84天</view>
+    </view>
+  </view>
+
+  <!-- ====== 个人设置 ====== -->
+  <view class="card settings-card">
+    <view class="card-title"><text class="emoji">⚙️</text>个人设置</view>
+
+    <!-- 头像 -->
+    <view class="settings-row">
+      <view class="s-label">头像</view>
+      <view class="avatar-pick" bindtap="openAvatarPicker">
+        <text class="avatar-emoji">{{selectedAvatar || me.avatar || '👤'}}</text>
+      </view>
+      <text class="s-tip">点击挑选头像</text>
+    </view>
+
+    <!-- 头像选择弹窗 -->
+    <view wx:if="{{showAvatarPicker}}" class="mask" bindtap="closeAvatarPicker">
+      <view class="modal" catchtap="noop">
+        <view class="modal-title">🎨 选择头像</view>
+        <view class="avatar-grid">
+          <view
+            wx:for="{{avatarOptions}}"
+            wx:key="*this"
+            class="avatar-option {{selectedAvatar === item || (!selectedAvatar && me.avatar === item) ? 'active' : ''}}"
+            data-avatar="{{item}}"
+            bindtap="selectAvatar"
+          >{{item}}</view>
+        </view>
+        <button class="btn secondary submit-btn" bindtap="closeAvatarPicker">关闭</button>
+      </view>
+    </view>
+
+    <!-- 昵称 -->
+    <view class="settings-row">
+      <view class="s-label">昵称</view>
+      <input class="input-box s-input" type="nickname" placeholder="{{me.nickname}}" value="{{editNickname}}" data-field="editNickname" bindinput="onInput" maxlength="8" />
+    </view>
+
+    <button class="btn submit-btn" bindtap="saveProfile" disabled="{{saving}}">
+      {{saving ? '保存中...' : '保存设置'}}
+    </button>
+  </view>
+</view>

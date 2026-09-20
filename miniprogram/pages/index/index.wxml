@@ -1,0 +1,20 @@
+<view class="page index">
+  <!-- 品牌区 -->
+  <view class="hero">
+    <view class="hero-emoji">🏠💕</view>
+    <view class="hero-title">子&然 小窝</view>
+    <view class="hero-sub">两个人的小天地</view>
+  </view>
+
+  <!-- 自动进入中 / 失败重试 -->
+  <view class="loading-box">
+    <view wx:if="{{loading}}" class="loading-line">
+      <view class="spinner"></view>
+      <text>正在进入小窝…</text>
+    </view>
+    <block wx:else>
+      <view class="error-line">{{error}}</view>
+      <button class="btn retry-btn" bindtap="retry">重试</button>
+    </block>
+  </view>
+</view>
