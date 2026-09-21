@@ -10,9 +10,9 @@
         <view class="lobby-header-text">
           <view class="lobby-title-tag-row">
             <text class="lobby-title">双人互动游戏大厅</text>
-            <text class="lobby-top-badge">经典异步</text>
+            <text class="lobby-top-badge">实时在线同步</text>
           </view>
-          <text class="lobby-sub">双方轮流行动 · 对方离线亦可落子 · 永久存档</text>
+          <text class="lobby-sub">同屏对弈实时同步 · 双方在线网络监测 · 数据长久留存</text>
         </view>
       </view>
     </view>
@@ -153,11 +153,18 @@
     <!-- 双方对弈玩家状态 -->
     <view class="card player-card">
       <view class="player-side {{isP1Turn ? 'turn-active' : ''}}">
-        <view class="player-avatar-wrap">
-          <text wx:if="{{!blackUser.avatar || blackUser.avatar.length <= 2}}" class="player-avatar-emoji">{{blackUser.avatar || '🔴'}}</text>
-          <image wx:else class="player-avatar-img" src="{{blackUser.avatar}}" mode="aspectFill" />
-          <view class="stone-badge {{currentGameType === 'gobang' || currentGameType === 'weiqi' ? 'black-badge' : 'p1-badge'}}">
-            {{currentGameType === 'gobang' || currentGameType === 'weiqi' ? '执黑' : '玩家1'}}
+        <!-- 玩家1头像与网络状态 -->
+        <view class="player-avatar-column">
+          <view class="net-badge net-{{player1NetStatus.level}}">
+            <text class="net-dot"></text>
+            <text class="net-label">{{player1NetStatus.text}}</text>
+          </view>
+          <view class="player-avatar-wrap">
+            <text wx:if="{{!blackUser.avatar || blackUser.avatar.length <= 2}}" class="player-avatar-emoji">{{blackUser.avatar || '🔴'}}</text>
+            <image wx:else class="player-avatar-img" src="{{blackUser.avatar}}" mode="aspectFill" />
+            <view class="stone-badge {{currentGameType === 'gobang' || currentGameType === 'weiqi' ? 'black-badge' : 'p1-badge'}}">
+              {{currentGameType === 'gobang' || currentGameType === 'weiqi' ? '执黑' : '玩家1'}}
+            </view>
           </view>
         </view>
         <view class="player-info">
@@ -169,6 +176,10 @@
       </view>
 
       <view class="vs-divider">
+        <view class="live-sync-pill">
+          <text class="live-pulse-dot"></text>
+          <text class="live-text">实时同步</text>
+        </view>
         <text class="vs-text">VS</text>
         <view wx:if="{{game.status === 'playing'}}" class="turn-indicator">
           <text class="turn-dot"></text>
@@ -182,11 +193,18 @@
       </view>
 
       <view class="player-side {{isP2Turn ? 'turn-active' : ''}} right-side">
-        <view class="player-avatar-wrap">
-          <text wx:if="{{!whiteUser.avatar || whiteUser.avatar.length <= 2}}" class="player-avatar-emoji">{{whiteUser.avatar || '🔵'}}</text>
-          <image wx:else class="player-avatar-img" src="{{whiteUser.avatar}}" mode="aspectFill" />
-          <view class="stone-badge {{currentGameType === 'gobang' || currentGameType === 'weiqi' ? 'white-badge' : 'p2-badge'}}">
-            {{currentGameType === 'gobang' || currentGameType === 'weiqi' ? '执白' : '玩家2'}}
+        <!-- 玩家2头像与网络状态 -->
+        <view class="player-avatar-column">
+          <view class="net-badge net-{{player2NetStatus.level}}">
+            <text class="net-dot"></text>
+            <text class="net-label">{{player2NetStatus.text}}</text>
+          </view>
+          <view class="player-avatar-wrap">
+            <text wx:if="{{!whiteUser.avatar || whiteUser.avatar.length <= 2}}" class="player-avatar-emoji">{{whiteUser.avatar || '🔵'}}</text>
+            <image wx:else class="player-avatar-img" src="{{whiteUser.avatar}}" mode="aspectFill" />
+            <view class="stone-badge {{currentGameType === 'gobang' || currentGameType === 'weiqi' ? 'white-badge' : 'p2-badge'}}">
+              {{currentGameType === 'gobang' || currentGameType === 'weiqi' ? '执白' : '玩家2'}}
+            </view>
           </view>
         </view>
         <view class="player-info right-info">

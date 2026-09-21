@@ -323,8 +323,8 @@ async function gameGet(event, ctx) {
       partnerRole: (gameType === 'gobang' || gameType === 'weiqi') ? (partnerRole === 'player1' ? 'black' : 'white') : partnerRole,
       isMyTurn,
       isSolo,
-      me: { openid: me.openid, nickname: me.nickname, avatar: me.avatar },
-      partner: partner ? { openid: partner.openid, nickname: partner.nickname, avatar: partner.avatar } : null
+      me: { openid: me.openid, nickname: me.nickname, avatar: me.avatar, lastActiveAt: me.lastActiveAt, networkType: me.networkType },
+      partner: partner ? { openid: partner.openid, nickname: partner.nickname, avatar: partner.avatar, lastActiveAt: partner.lastActiveAt, networkType: partner.networkType } : null
     }
   }
 }

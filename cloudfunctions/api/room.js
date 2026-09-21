@@ -194,8 +194,13 @@ async function heartbeat(event, ctx) {
   const me = await getUserByOpenid(OPENID)
   if (!me) return { code: 0, msg: 'ok' }
 
+  const data = { lastActiveAt: db.serverDate() }
+  if (event.networkType) {
+    data.networkType = String(event.networkType).slice(0, 20)
+  }
+
   await db.collection('users').doc(me._id).update({
-    data: { lastActiveAt: db.serverDate() },
+    data,
   })
   return { code: 0, msg: 'ok' }
 }

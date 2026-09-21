@@ -255,13 +255,32 @@ function prependMoment(m) {
 
 // ======== 在线状态 ========
 let _lastHeartbeat = 0
-function heartbeat() {
+let _currentNetworkType = 'wifi'
+
+if (typeof wx !== 'undefined' && wx.getNetworkType) {
+  wx.getNetworkType({
+    success: (res) => {
+      _currentNetworkType = (res && res.networkType) || 'wifi'
+    }
+  })
+  if (wx.onNetworkStatusChange) {
+    wx.onNetworkStatusChange((res) => {
+      _currentNetworkType = (res && res.networkType) || 'none'
+    })
+  }
+}
+
+function heartbeat(force = false) {
   const now = Date.now()
-  // 节流：最多 30 秒发一次心跳
-  if (now - _lastHeartbeat < 30000) return
+  // 节流：普通状态下最多 30 秒发一次心跳，force 强制立即上报
+  if (!force && (now - _lastHeartbeat < 30000)) return
   _lastHeartbeat = now
   const api = require('./api')
-  api.call('heartbeat').catch(e => console.error('heartbeat', e))
+  api.call('heartbeat', { networkType: _currentNetworkType }).catch(e => console.error('heartbeat', e))
+}
+
+function getMyNetworkType() {
+  return _currentNetworkType
 }
 
 // 判断对方是否在线（lastActiveAt 在 3 分钟内视为在线）
@@ -299,5 +318,5 @@ module.exports = {
   getRoomDoc() { return roomDoc },
   getMe, getPartner, getUsers, getTransactions, getWishes, getMoments,
   checkColdWarning, fetchMoments, prependMoment,
-  heartbeat, isPartnerOnline, lastSeenText,
+  heartbeat, isPartnerOnline, lastSeenText, getMyNetworkType,
 }

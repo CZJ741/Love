@@ -1,5 +1,6 @@
 // 游戏大厅（选定游戏列表 & 四大经典对战：五子棋、围棋、飞行棋、海战棋）页面逻辑
 const api = require('../../lib/api')
+const realtime = require('../../lib/realtime')
 
 const GOBANG_STAR_POINTS = [
   { r: 3, c: 3 }, { r: 3, c: 11 },
@@ -59,10 +60,22 @@ Page({
     blackUser: {},
     whiteUser: {},
     submitting: false,
+
+    // 网络状态显示 (player1 & player2)
+    player1NetStatus: { text: '连接中', level: 'warn' },
+    player2NetStatus: { text: '连接中', level: 'warn' },
   },
+
+  // 内部监听器与计时器
+  _gameWatcher: null,
+  _lobbyTimer: null,
+  _netTimer: null,
+  _currentGameId: null,
 
   onLoad(options) {
     this._initLudoCells()
+    this._initNetworkListener()
+
     if (options && options.game) {
       this.setData({
         currentView: 'play',
@@ -74,13 +87,37 @@ Page({
     } else {
       this.fetchLobbyOverview()
     }
+
+    // 监听全局 users 变更，同步网络与状态
+    realtime.on('users', this._onUsersChange = () => {
+      this._updateBothNetworkStatus()
+    })
   },
 
   onShow() {
+    realtime.heartbeat(true)
+    this._startLobbyPolling()
+    this._startNetTicker()
+
     if (this.data.currentView === 'play') {
       this.fetchGameData(true)
     } else {
       this.fetchLobbyOverview(true)
+    }
+  },
+
+  onHide() {
+    this._stopGameWatcher()
+    this._stopLobbyPolling()
+    this._stopNetTicker()
+  },
+
+  onUnload() {
+    this._stopGameWatcher()
+    this._stopLobbyPolling()
+    this._stopNetTicker()
+    if (this._onUsersChange) {
+      realtime.off('users', this._onUsersChange)
     }
   },
 
@@ -102,6 +139,180 @@ Page({
       })
     }
     this.setData({ ludoCells: cells })
+  },
+
+  // ================= 实时网络监听与状态判定 =================
+  _initNetworkListener() {
+    if (wx.onNetworkStatusChange) {
+      wx.onNetworkStatusChange(() => {
+        this._updateBothNetworkStatus()
+      })
+    }
+  },
+
+  _startNetTicker() {
+    this._stopNetTicker()
+    this._updateBothNetworkStatus()
+    this._netTimer = setInterval(() => {
+      realtime.heartbeat()
+      this._updateBothNetworkStatus()
+    }, 10000)
+  },
+
+  _stopNetTicker() {
+    if (this._netTimer) {
+      clearInterval(this._netTimer)
+      this._netTimer = null
+    }
+  },
+
+  _resolveUserNet(user, isMe, isSolo) {
+    if (isSolo && !isMe) {
+      return { text: '单机演练', level: 'solo' }
+    }
+    if (isMe) {
+      const type = (realtime.getMyNetworkType && realtime.getMyNetworkType()) || 'wifi'
+      const typeMap = { wifi: 'WiFi良好', '5g': '5G在线', '4g': '4G在线', '3g': '3G弱网', '2g': '2G慢速', none: '网络断开' }
+      const level = (type === 'none') ? 'bad' : ((type === '2g' || type === '3g') ? 'warn' : 'good')
+      return { text: typeMap[type] || `${type.toUpperCase()}在线`, level }
+    }
+
+    // 对方网络判断：根据 lastActiveAt 与 networkType
+    if (!user || !user.lastActiveAt) {
+      return { text: '离线', level: 'bad' }
+    }
+
+    let ts = 0
+    if (user.lastActiveAt instanceof Date) ts = user.lastActiveAt.getTime()
+    else if (typeof user.lastActiveAt === 'number') ts = user.lastActiveAt
+    else if (typeof user.lastActiveAt === 'string') ts = new Date(user.lastActiveAt).getTime()
+
+    if (!ts || isNaN(ts)) return { text: '离线', level: 'bad' }
+
+    const diff = Date.now() - ts
+    const netType = (user.networkType || '4g').toUpperCase()
+
+    if (diff <= 35 * 1000) {
+      return { text: `${netType}在线`, level: 'good' }
+    } else if (diff <= 90 * 1000) {
+      return { text: '网络波动', level: 'warn' }
+    } else if (diff <= 300 * 1000) {
+      return { text: '暂时离开', level: 'warn' }
+    } else {
+      return { text: '离线', level: 'bad' }
+    }
+  },
+
+  _updateBothNetworkStatus() {
+    const { blackUser, whiteUser, myRole, isSolo } = this.data
+    const isMeP1 = (myRole === 'black' || myRole === 'player1')
+    const isMeP2 = (myRole === 'white' || myRole === 'player2')
+
+    const p1Net = this._resolveUserNet(blackUser, isMeP1, isSolo)
+    const p2Net = this._resolveUserNet(whiteUser, isMeP2, isSolo)
+
+    this.setData({
+      player1NetStatus: p1Net,
+      player2NetStatus: p2Net,
+    })
+  },
+
+  // ================= 实时在线 Watch 模块 =================
+  _startGameWatcher(gameId) {
+    if (!gameId) return
+    if (this._gameWatcher && this._currentGameId === gameId) return
+
+    this._stopGameWatcher()
+    this._currentGameId = gameId
+
+    try {
+      const db = wx.cloud.database()
+      this._gameWatcher = db.collection('board_games').doc(gameId).watch({
+        onChange: (snapshot) => {
+          if (!snapshot.docs || !snapshot.docs.length) return
+          const updatedDoc = snapshot.docs[0]
+          this._applyRealtimeGameDoc(updatedDoc)
+        },
+        onError: (err) => {
+          console.warn('[board_games watch error]', err)
+        }
+      })
+    } catch (e) {
+      console.warn('watch not supported or failed', e)
+    }
+  },
+
+  _stopGameWatcher() {
+    if (this._gameWatcher) {
+      try { this._gameWatcher.close() } catch (e) {}
+      this._gameWatcher = null
+      this._currentGameId = null
+    }
+  },
+
+  _applyRealtimeGameDoc(doc) {
+    if (!doc || this.data.currentView !== 'play') return
+    const { myRole, currentGameType } = this.data
+    const isPlaying = doc.status === 'playing'
+    const turnRole = (doc.currentTurn === 'black' || doc.currentTurn === 'player1') ? 'player1' : 'player2'
+    const isMyTurn = isPlaying && (this.data.isSolo || turnRole === myRole)
+
+    const isP1Turn = doc.currentTurn === 'black' || doc.currentTurn === 'player1'
+    const isP2Turn = doc.currentTurn === 'white' || doc.currentTurn === 'player2'
+
+    const isWon = (doc.status === 'black_win' && myRole === 'black') ||
+                  (doc.status === 'white_win' && myRole === 'white') ||
+                  (doc.status === 'player1_win' && myRole === 'player1') ||
+                  (doc.status === 'player2_win' && myRole === 'player2')
+
+    let safeDoc = { ...doc }
+    if (!safeDoc.lastMove || typeof safeDoc.lastMove !== 'object') {
+      if (safeDoc.lastR !== undefined && safeDoc.lastR >= 0) {
+        safeDoc.lastMove = { r: safeDoc.lastR, c: safeDoc.lastC, piece: safeDoc.lastPiece }
+      } else {
+        safeDoc.lastMove = {}
+      }
+    }
+
+    const nextData = {
+      game: safeDoc,
+      isMyTurn,
+      isP1Turn,
+      isP2Turn,
+      isWon,
+    }
+
+    if (currentGameType === 'gobang' || currentGameType === 'weiqi') {
+      if (safeDoc.board) nextData.board = safeDoc.board
+    } else if (currentGameType === 'seabattle') {
+      const myAttacks = myRole === 'player1' ? safeDoc.player1Attacks : safeDoc.player2Attacks
+      const myFleet = myRole === 'player1' ? safeDoc.player1Ships : safeDoc.player2Ships
+      if (myAttacks) nextData.seaAttacks = myAttacks
+      if (myFleet) nextData.myFleet = myFleet
+    }
+
+    this.setData(nextData)
+    this.updateNoticeText()
+  },
+
+  // 大厅后台定时轮询保活
+  _startLobbyPolling() {
+    this._stopLobbyPolling()
+    this._lobbyTimer = setInterval(() => {
+      if (this.data.currentView === 'lobby') {
+        this.fetchLobbyOverview(true)
+      } else if (!this._gameWatcher) {
+        // 若 watch 不可用，自动降级为平滑轮询
+        this.fetchGameData(true)
+      }
+    }, 4000)
+  },
+
+  _stopLobbyPolling() {
+    if (this._lobbyTimer) {
+      clearInterval(this._lobbyTimer)
+      this._lobbyTimer = null
+    }
   },
 
   // 1. 获取大厅概览
@@ -160,6 +371,7 @@ Page({
 
   // 3. 返回大厅
   backToLobby() {
+    this._stopGameWatcher()
     this.setData({ currentView: 'lobby' })
     this.fetchLobbyOverview(true)
   },
@@ -206,6 +418,11 @@ Page({
           whiteUser,
         })
         this.updateNoticeText()
+        this._updateBothNetworkStatus()
+        // 开启当前对局的实时长连接监听
+        if (game && game._id) {
+          this._startGameWatcher(game._id)
+        }
       })
       .catch(err => {
         wx.showToast({ title: err.message || '加载失败', icon: 'none' })
@@ -231,7 +448,7 @@ Page({
           this.setData({ turnNoticeText: '轮到你开火，点击海域指定炮击点！' })
         }
       } else {
-        this.setData({ turnNoticeText: '对方行动中，数据实时存档，稍候回来看看~' })
+        this.setData({ turnNoticeText: '对方行动中，对局实时同步中…' })
       }
     } else if (game.status === 'draw') {
       this.setData({ turnNoticeText: '双方握手言和，平局终局！' })
