@@ -7,12 +7,6 @@
       </view>
       <view class="header-text">
         <view class="header-title">情侣定位与朝向共享</view>
-        <view class="header-desc">
-          <text wx:if="{{bothAgreed}}">✨ 双方已同意，正在实时共享位置与朝向</text>
-          <text wx:elif="{{myAgreed && !partnerAgreed}}">⏳ 你已同意，等待 TA 在小窝中开启共享...</text>
-          <text wx:elif="{{!myAgreed && partnerAgreed}}">💡 TA 已同意共享，请开启你的共享开关即可查看</text>
-          <text wx:else>🔒 需双方共同开启，才可查看对方定位与当前朝向</text>
-        </view>
       </view>
     </view>
 
@@ -32,7 +26,6 @@
     <view class="toggle-action-row">
       <view class="toggle-text">
         <view class="tt-title">共享我的实时位置与朝向</view>
-        <view class="tt-sub">关闭后将立即停止上报并清除云端坐标</view>
       </view>
       <switch color="#F48FB1" checked="{{myAgreed}}" bindchange="onToggleShare" />
     </view>
@@ -94,12 +87,9 @@
         <view class="user-loc-info">
           <view class="ul-name-row">
             <text class="ul-name">{{me.nickname || '我'}}</text>
-            <view class="ul-tags">
-              <text wx:if="{{myUpdatedTimeText}}" class="ul-time-tag">⏱️ {{myUpdatedTimeText}}</text>
-              <text class="ul-dir-tag">{{myDirection}}° ({{directionDesc}})</text>
-            </view>
+            <text class="ul-dir-tag">{{myDirection}}° ({{directionDesc}})</text>
           </view>
-          <text class="ul-address">{{myAddress || '已获取经纬度定位'}}</text>
+          <text class="ul-address">{{myAddress || (myUpdatedTimeText ? '更新于 ' + myUpdatedTimeText : '定位中...')}}</text>
         </view>
       </view>
 
@@ -110,13 +100,10 @@
         <view class="user-loc-info">
           <view class="ul-name-row">
             <text class="ul-name">{{partner.nickname || 'TA'}}</text>
-            <view class="ul-tags">
-              <text wx:if="{{partnerUpdatedTimeText}}" class="ul-time-tag">⏱️ {{partnerUpdatedTimeText}}</text>
-              <text wx:if="{{partnerPos}}" class="ul-dir-tag">朝向 {{partnerPos.direction || 0}}°</text>
-            </view>
+            <text wx:if="{{partnerPos}}" class="ul-dir-tag">朝向 {{partnerPos.direction || 0}}°</text>
           </view>
-          <text wx:if="{{partnerPos}}" class="ul-address">{{partnerPos.address || '已共享最新位置'}}</text>
-          <text wx:else class="ul-address ul-waiting">TA 尚未上传最新坐标</text>
+          <text wx:if="{{partnerPos}}" class="ul-address">{{partnerPos.address || (partnerUpdatedTimeText ? '更新于 ' + partnerUpdatedTimeText : '')}}</text>
+          <text wx:else class="ul-address ul-waiting">TA 尚未开启或上传坐标</text>
         </view>
       </view>
     </view>

@@ -295,19 +295,6 @@
   font-weight: 700;
   color: #5A4636;
 }
-.ul-tags {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-}
-.ul-time-tag {
-  font-size: 20rpx;
-  color: #795548;
-  background: #EFEBE9;
-  border-radius: 10rpx;
-  padding: 2rpx 10rpx;
-  font-weight: 500;
-}
 .ul-dir-tag {
   font-size: 20rpx;
   color: #E91E63;
