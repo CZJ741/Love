@@ -54,6 +54,10 @@
   - 待补充（当前依赖微信开发者工具调试器与真机预览）。
 
 ## 6. 最近改动记录
+- **2026-09-24**：实施全套性能、开销与后台运行优化（长连接休眠、定时器解耦、图片 100KB 阶梯压缩）：
+  - 长连接休眠：`lib/realtime.js` 导出 `pauseWatches` 与 `resumeWatches`，在 `app.js` 的 `onHide` 与 `onShow` 中自动切换，避免小程序退入后台仍持续计费与占用 WebSocket 连接；
+  - 组件生命周期绑定：`components/live2d-pet/index.js` 接入 `pageLifetimes`（show/hide），页面隐藏或退后台时彻底清除待机与眨眼定时器，防止空转与无效 `setData`；
+  - 智能图片压缩至 ~100KB：新建 `lib/image.js`，基于 `wx.getFileInfo` 与 `wx.compressImage` 实现阶梯式压缩与统一云存储上传，并在 `moments`（日记发帖与编辑）及 `puzzle`（反向视角打卡）中全面接入，云存储容量和 CDN 出网流量节约 85% 以上。
 - **2026-09-24**：移除游戏大厅所有下方的游戏小贴士冗余文本，并在 CLAUDE.md 中明确“克制精炼、拒绝多余文字说明”的 UI 规范。
 - **2026-09-24**：实现房间成立时（伴侣加入小窝后）房主首次设定恋爱纪念日与单向锁定机制：
   - 云函数：在 `cloudfunctions/api/room.js` 的 `setRelationshipInfo` 中加入房主权限强校验与防篡改逻辑（一旦 `startDate` 设定成功则不可再次修改，修改卡片背景不受影响）；

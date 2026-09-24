@@ -48,6 +48,18 @@ Component({
     showZzzFx: false,
   },
 
+  pageLifetimes: {
+    show() {
+      // 页面显示或切回前台时，恢复待机动画与眨眼动画循环
+      this._startIdleActionLoop()
+      this._startBlinkLoop()
+    },
+    hide() {
+      // 页面隐藏或进入后台时，清理定时器防止空转与无效 setData
+      this._clearAllTimers()
+    },
+  },
+
   lifetimes: {
     attached() {
       this._startIdleActionLoop()

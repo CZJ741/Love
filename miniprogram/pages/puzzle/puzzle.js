@@ -1,5 +1,6 @@
 // pages/puzzle/puzzle.js
 const api = require('../../lib/api')
+const { uploadImageWithCompress } = require('../../lib/image')
 
 const GRID_SIZE = 9
 
@@ -127,15 +128,9 @@ Page({
             this.setData({ uploading: true })
             wx.showLoading({ title: '正在上传视角...' })
 
-            // 1. 上传至微信云存储
-            const ext = tempPath.match(/\.[^.]+$/) ? tempPath.match(/\.[^.]+$/)[0] : '.jpg'
-            const cloudPath = `reverse_photos/${Date.now()}-${Math.floor(Math.random() * 1e6)}${ext}`
-            const uploadRes = await wx.cloud.uploadFile({
-              cloudPath,
-              filePath: tempPath,
-            })
+            // 1. 智能阶梯压缩至约 100KB 并上传至微信云存储
+            const fileId = await uploadImageWithCompress(tempPath, 'reverse_photos')
 
-            const fileId = uploadRes.fileID
             // 2. 调用云函数记录
             const upRes = await api.call('puzzleUpload', { fileId })
 

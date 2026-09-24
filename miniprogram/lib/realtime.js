@@ -185,9 +185,30 @@ function startWatches() {
   }))
 }
 
+let isPaused = false
+
 function stopWatches() {
   watchers.forEach(w => { try { w.close() } catch (e) {} })
   watchers = []
+}
+
+// 切后台暂停长连接（休眠，停止持续计费与流量消耗）
+function pauseWatches() {
+  if (isPaused) return
+  isPaused = true
+  stopWatches()
+  console.log('[realtime] watches paused (app onHide)')
+}
+
+// 切前台恢复长连接（自动重连并同步最新快照）
+function resumeWatches() {
+  if (!isPaused) return
+  isPaused = false
+  if (!roomId) return
+  console.log('[realtime] watches resumed (app onShow)')
+  startWatches()
+  fetchOnce().catch(err => console.error('[realtime] resume fetchOnce err:', err))
+  heartbeat(true)
 }
 
 // 格式化点滴时间展示
@@ -319,4 +340,5 @@ module.exports = {
   getMe, getPartner, getUsers, getTransactions, getWishes, getMoments,
   checkColdWarning, fetchMoments, prependMoment,
   heartbeat, isPartnerOnline, lastSeenText, getMyNetworkType,
+  pauseWatches, resumeWatches,
 }

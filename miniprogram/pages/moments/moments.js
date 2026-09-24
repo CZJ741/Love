@@ -2,6 +2,7 @@
 const api = require('../../lib/api')
 const realtime = require('../../lib/realtime')
 const { isCloudFile } = require('../../utils/format')
+const { uploadImageWithCompress } = require('../../lib/image')
 
 const WEEKDAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
@@ -427,11 +428,9 @@ Page({
       const uploaded = []
       for (const img of postImages) {
         if (img.cloudId) { uploaded.push(img.cloudId); continue }
-        const res = await wx.cloud.uploadFile({
-          cloudPath: `moments/${Date.now()}-${Math.floor(Math.random() * 1e6)}.jpg`,
-          filePath: img.temp,
-        })
-        uploaded.push(res.fileID)
+        // 智能阶梯压缩至约 100KB 后再上传云存储
+        const fileId = await uploadImageWithCompress(img.temp, 'moments')
+        uploaded.push(fileId)
       }
 
       const customTime = (this.data.postDate && this.data.postTime)
@@ -654,11 +653,9 @@ Page({
       const uploaded = []
       for (const img of editImages) {
         if (img.startsWith('cloud://')) { uploaded.push(img); continue }
-        const res = await wx.cloud.uploadFile({
-          cloudPath: `moments/${Date.now()}-${Math.floor(Math.random() * 1e6)}.jpg`,
-          filePath: img,
-        })
-        uploaded.push(res.fileID)
+        // 智能阶梯压缩至约 100KB 后再上传云存储
+        const fileId = await uploadImageWithCompress(img, 'moments')
+        uploaded.push(fileId)
       }
 
       await api.call('updateMoment', {

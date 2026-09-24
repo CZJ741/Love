@@ -68,4 +68,14 @@ App({
         })
     }
   },
+
+  onShow() {
+    // 小程序切回前台：恢复长连接并拉取最新快照
+    realtime.resumeWatches()
+  },
+
+  onHide() {
+    // 小程序切到后台：休眠实时监听，停止持续消耗配额与流量
+    realtime.pauseWatches()
+  },
 })
