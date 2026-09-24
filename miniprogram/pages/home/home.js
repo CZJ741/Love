@@ -79,11 +79,15 @@ Page({
     // 对方是否已加入房间
     partnerJoined: false,
 
-    // 陪伴时长
+    // 陪伴时长与纪念日锁定
     togetherDays: 0,
-    togetherStart: '2026-07-08',
+    togetherStart: '',
+    startDateLocked: false,
     togetherBg: '',
     showBgPicker: false,
+    showDateModal: false,
+    tempStartDate: '',
+    todayStr: '',
     bgOptions: [
       { key: 'sunset', value: 'linear-gradient(135deg, #FFDEE9 0%, #B5FFFC 100%)' },
       { key: 'warm', value: 'linear-gradient(135deg, #FFE0C0 0%, #FFD1A9 100%)' },
@@ -399,29 +403,100 @@ Page({
     }
   },
 
-  // -------- 陪伴时长 --------
+  // -------- 陪伴时长与纪念日设置 --------
   fetchRelationshipInfo() {
+    const today = new Date()
+    const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0')
+    this.setData({ todayStr })
+
     api.call('getRelationshipInfo', {})
       .then(data => {
         const d = data.data || data
+        const startDate = d.startDate || ''
+        const startDateLocked = Boolean(d.startDateLocked || startDate)
+        const me = realtime.getMe()
+        const isHost = me ? Boolean(me.host) : Boolean(d.isHost)
+
         this.setData({
-          togetherStart: d.startDate || '2026-07-08',
+          togetherStart: startDate,
+          startDateLocked,
           togetherBg: d.cardBg || '',
+          tempStartDate: startDate || todayStr,
         })
-        this.calcTogetherDays()
+
+        if (startDate) {
+          this.calcTogetherDays()
+        } else {
+          this.setData({ togetherDays: 0 })
+          // 当双方到齐且当前用户为房主、且尚未设置纪念日时，主动引导房主设置
+          const partner = realtime.getPartner()
+          if (partner && isHost && !this._promptedDate) {
+            this._promptedDate = true
+            this.setData({ showDateModal: true })
+          }
+        }
       })
       .catch(() => {})
   },
 
   calcTogetherDays() {
     const start = this.data.togetherStart
-    if (!start) return
+    if (!start) {
+      this.setData({ togetherDays: 0 })
+      return
+    }
     const startDate = new Date(start.replace(/-/g, '/'))
     if (isNaN(startDate.getTime())) return
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const diff = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
     this.setData({ togetherDays: Math.max(0, diff) })
+  },
+
+  // 点击卡片：未锁定且是房主时打开选日弹窗；已锁定则只支持长按换背景
+  onTogetherCardTap() {
+    const me = realtime.getMe()
+    const isHost = me ? Boolean(me.host) : false
+    if (!this.data.startDateLocked) {
+      if (isHost) {
+        if (!this.data.partnerJoined) {
+          wx.showToast({ title: '等待TA加入小窝', icon: 'none' })
+          return
+        }
+        this.setData({ showDateModal: true })
+      } else {
+        wx.showToast({ title: '等待房主设定起始日', icon: 'none' })
+      }
+    }
+  },
+
+  onDateChange(e) {
+    this.setData({ tempStartDate: e.detail.value })
+  },
+
+  closeDateModal() {
+    this.setData({ showDateModal: false })
+  },
+
+  confirmStartDate() {
+    const date = this.data.tempStartDate
+    if (!date) return
+    wx.showLoading({ title: '保存中...' })
+    api.call('setRelationshipInfo', { startDate: date })
+      .then(() => {
+        wx.hideLoading()
+        this.setData({
+          togetherStart: date,
+          startDateLocked: true,
+          showDateModal: false,
+        })
+        this.calcTogetherDays()
+        wx.showToast({ title: '纪念日已锁定', icon: 'success' })
+      })
+      .catch(e => {
+        wx.hideLoading()
+        wx.showToast({ title: e.message || '设置失败', icon: 'none' })
+      })
   },
 
   showBgPicker() {

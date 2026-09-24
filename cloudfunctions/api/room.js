@@ -160,9 +160,12 @@ async function getRelationshipInfo(event, ctx) {
   if (!me || !me.roomId) throw new Error('请先创建档案')
 
   const roomDoc = await getRoomById(me.roomId)
+  const startDate = (roomDoc && roomDoc.startDate) || ''
   const info = {
-    startDate: roomDoc && roomDoc.startDate ? roomDoc.startDate : '2026-07-08',
-    cardBg: roomDoc && roomDoc.cardBg ? roomDoc.cardBg : '',
+    startDate,
+    startDateLocked: Boolean(startDate),
+    cardBg: (roomDoc && roomDoc.cardBg) || '',
+    isHost: Boolean(me.host),
   }
   return { code: 0, msg: 'ok', data: info }
 }
@@ -173,15 +176,36 @@ async function setRelationshipInfo(event, ctx) {
   const me = await getUserByOpenid(OPENID)
   if (!me || !me.roomId) throw new Error('请先创建档案')
 
+  const roomDoc = await getRoomById(me.roomId)
   const data = {}
+
   if (event.startDate !== undefined) {
+    // 权限校验：只有房主可以设定恋爱纪念日
+    if (!me.host) {
+      throw new Error('只有房主可以设定恋爱纪念日')
+    }
+    // 防篡改单向锁定校验：一旦设定过恋爱纪念日，后期无法修改
+    if (roomDoc && roomDoc.startDate) {
+      throw new Error('恋爱纪念日已锁定，无法修改')
+    }
+
     const d = String(event.startDate).trim()
     if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) throw new Error('日期格式应为 YYYY-MM-DD')
+
+    // 不能选未来时间
+    const nowCnStr = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 10)
+    if (d > nowCnStr) {
+      throw new Error('恋爱纪念日不能是未来时间')
+    }
+
     data.startDate = d
+    data.startDateLocked = true
   }
+
   if (event.cardBg !== undefined) {
     data.cardBg = String(event.cardBg)
   }
+
   if (!Object.keys(data).length) throw new Error('没有需要修改的内容')
 
   await db.collection('rooms').doc(me.roomId).update({ data })

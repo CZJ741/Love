@@ -65,11 +65,31 @@
   </view>
 
   <!-- ====== 陪伴时长卡片（上面叠加 Live2D 桌宠小狗，浮现在卡片之上且紧贴下边缘，完全不影响卡片原有布局） ====== -->
-  <view class="card together-card with-pet" style="background: {{togetherBg}};" bindtap="showBgPicker" bindlongpress="showBgPicker">
+  <view class="card together-card with-pet {{!startDateLocked ? 'unlocked' : ''}}" style="background: {{togetherBg}};" bindtap="onTogetherCardTap" bindlongpress="showBgPicker">
     <view class="together-inner">
       <view class="together-line1">跟宝宝在一起的时间已经</view>
-      <view class="together-line2">{{togetherDays}}<text class="together-unit">天</text></view>
-      <view class="together-line3">起始日：{{togetherStart}}</view>
+      <view class="together-line2">
+        <block wx:if="{{startDateLocked}}">
+          {{togetherDays}}<text class="together-unit">天</text>
+        </block>
+        <block wx:else>
+          <text class="together-pending">—</text>
+        </block>
+      </view>
+      <view class="together-line3">
+        <block wx:if="{{startDateLocked}}">
+          起始日：{{togetherStart}}
+        </block>
+        <block wx:elif="{{me.host && partnerJoined}}">
+          点击设定恋爱起始日 ›
+        </block>
+        <block wx:elif="{{me.host && !partnerJoined}}">
+          待伴侣入住后设定起始日
+        </block>
+        <block wx:else>
+          待房主设定起始日
+        </block>
+      </view>
     </view>
     <view class="together-bg-hint">长按更换背景</view>
 
@@ -251,6 +271,23 @@
         </view>
       </view>
       <button class="btn secondary submit-btn" bindtap="closeBgPicker" style="margin-top:12rpx">关闭</button>
+    </view>
+  </view>
+
+  <!-- ====== 恋爱起始日设定弹窗（房主专属，仅一次设置永久锁定） ====== -->
+  <view wx:if="{{showDateModal}}" class="mask" bindtap="closeDateModal">
+    <view class="date-modal" catchtap="noop">
+      <view class="dm-title">💕 设定恋爱纪念日</view>
+      <picker mode="date" value="{{tempStartDate}}" end="{{todayStr}}" bindchange="onDateChange">
+        <view class="dm-picker-box">
+          <text class="dm-date-val">{{tempStartDate}}</text>
+          <text class="dm-arrow">📅</text>
+        </view>
+      </picker>
+      <view class="dm-actions">
+        <button class="btn-sub dm-btn" bindtap="closeDateModal">取消</button>
+        <button class="btn-main dm-btn" bindtap="confirmStartDate">确定</button>
+      </view>
     </view>
   </view>
 

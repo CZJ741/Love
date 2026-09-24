@@ -889,19 +889,3 @@
 .btn-main:active {
   transform: scale(0.97);
 }
-
-/* 玩法规则卡片 */
-.rules-card {
-  padding: 24rpx;
-}
-.rules-title {
-  font-size: 26rpx;
-  font-weight: 700;
-  color: #5A4636;
-  margin-bottom: 12rpx;
-}
-.rules-desc {
-  font-size: 22rpx;
-  color: #8C7565;
-  line-height: 1.6;
-}

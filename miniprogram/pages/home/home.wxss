@@ -491,15 +491,89 @@
   font-family: 'DIN Alternate', 'Bahnschrift', monospace;
   line-height: 1.1;
 }
+.together-pending {
+  font-size: 56rpx;
+  color: #B39B8A;
+  font-weight: 700;
+}
 .together-unit {
   font-size: 32rpx; font-weight: 600; color: #8B7355; margin-left: 8rpx;
 }
 .together-line3 {
   font-size: 24rpx; color: rgba(0,0,0,0.35); margin-top: 16rpx;
 }
+.together-card.unlocked .together-line3 {
+  color: #E91E63;
+  font-weight: 600;
+}
 .together-bg-hint {
   position: absolute; bottom: 12rpx; right: 20rpx;
   font-size: 20rpx; color: rgba(0,0,0,0.2); z-index: 1;
+}
+
+/* 恋爱纪念日设定弹窗 */
+.date-modal {
+  position: relative;
+  background: #FFFFFF;
+  border-radius: 36rpx;
+  padding: 36rpx 32rpx;
+  width: 580rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20rpx 60rpx rgba(0,0,0,0.18);
+  animation: modalPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.dm-title {
+  font-size: 32rpx;
+  font-weight: 800;
+  color: #5A4636;
+  text-align: center;
+  margin-bottom: 32rpx;
+}
+.dm-picker-box {
+  background: #FFF5F7;
+  border: 2rpx solid #FFD1DC;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 36rpx;
+}
+.dm-date-val {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #F48FB1;
+  font-family: 'DIN Alternate', 'Bahnschrift', monospace;
+}
+.dm-arrow {
+  font-size: 32rpx;
+}
+.dm-actions {
+  display: flex;
+  gap: 16rpx;
+}
+.dm-btn {
+  flex: 1;
+  height: 80rpx;
+  border-radius: 999rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
+.btn-sub {
+  background: #F5EDE6;
+  color: #8A6A58;
+}
+.btn-main {
+  background: linear-gradient(135deg, #FF80AB 0%, #F48FB1 100%);
+  color: #FFFFFF;
+  box-shadow: 0 6rpx 16rpx rgba(244, 143, 177, 0.4);
 }
 
 /* 背景选择弹窗 */

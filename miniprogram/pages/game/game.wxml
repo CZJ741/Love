@@ -357,17 +357,5 @@
       <button wx:if="{{game.status === 'playing'}}" class="btn-sub btn-danger" bindtap="onResign">🏳️ 认输</button>
       <button class="btn-main" bindtap="onResetGame">✨ 新开一局</button>
     </view>
-
-    <!-- 玩法规则简短说明卡片 -->
-    <view class="card rules-card">
-      <view class="rules-title">💡 游戏小贴士</view>
-      <view class="rules-desc">
-        <view>• 经典异步双人对局：每一次操作均实时保存至云端，另一方何时上线都能续关对弈。</view>
-        <view wx:if="{{currentGameType === 'gobang'}}">• 五子棋规则：横向、纵向或对角线连成五子即可获胜。</view>
-        <view wx:elif="{{currentGameType === 'weiqi'}}">• 围棋规则：13路棋盘，气尽提子，双方连续停一手判终局。</view>
-        <view wx:elif="{{currentGameType === 'ludo'}}">• 飞行棋规则：投掷5或6起飞，踩中对方将其遣返基地，率先抵达第30格胜出。</view>
-        <view wx:elif="{{currentGameType === 'seabattle'}}">• 海战棋规则：轮流指派炮火开火，成功命中获得连击，全歼敌方三艘舰船者胜出。</view>
-      </view>
-    </view>
   </view>
 </view>
