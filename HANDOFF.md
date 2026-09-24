@@ -54,6 +54,9 @@
   - 待补充（当前依赖微信开发者工具调试器与真机预览）。
 
 ## 6. 最近改动记录
+- **2026-09-24**：情侣定位共享功能增加最新位置更新时间展示：
+  - 在 `miniprogram/pages/location/` 中实现了友好时间格式化（`刚刚`、`X分钟前`、`今天 HH:mm` 等）；
+  - 在地图标注点（Callout 气泡）以及下方双方地址卡片中同步呈现最新更新时间标签（`⏱️ 刚刚更新`），让双方清晰掌握对方坐标的时效性。
 - **2026-09-24**：实施全套性能、开销与后台运行优化（长连接休眠、定时器解耦、图片 100KB 阶梯压缩）：
   - 长连接休眠：`lib/realtime.js` 导出 `pauseWatches` 与 `resumeWatches`，在 `app.js` 的 `onHide` 与 `onShow` 中自动切换，避免小程序退入后台仍持续计费与占用 WebSocket 连接；
   - 组件生命周期绑定：`components/live2d-pet/index.js` 接入 `pageLifetimes`（show/hide），页面隐藏或退后台时彻底清除待机与眨眼定时器，防止空转与无效 `setData`；

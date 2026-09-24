@@ -94,7 +94,10 @@
         <view class="user-loc-info">
           <view class="ul-name-row">
             <text class="ul-name">{{me.nickname || '我'}}</text>
-            <text class="ul-dir-tag">朝向 {{myDirection}}° ({{directionDesc}})</text>
+            <view class="ul-tags">
+              <text wx:if="{{myUpdatedTimeText}}" class="ul-time-tag">⏱️ {{myUpdatedTimeText}}</text>
+              <text class="ul-dir-tag">{{myDirection}}° ({{directionDesc}})</text>
+            </view>
           </view>
           <text class="ul-address">{{myAddress || '已获取经纬度定位'}}</text>
         </view>
@@ -107,7 +110,10 @@
         <view class="user-loc-info">
           <view class="ul-name-row">
             <text class="ul-name">{{partner.nickname || 'TA'}}</text>
-            <text wx:if="{{partnerPos}}" class="ul-dir-tag">朝向 {{partnerPos.direction || 0}}°</text>
+            <view class="ul-tags">
+              <text wx:if="{{partnerUpdatedTimeText}}" class="ul-time-tag">⏱️ {{partnerUpdatedTimeText}}</text>
+              <text wx:if="{{partnerPos}}" class="ul-dir-tag">朝向 {{partnerPos.direction || 0}}°</text>
+            </view>
           </view>
           <text wx:if="{{partnerPos}}" class="ul-address">{{partnerPos.address || '已共享最新位置'}}</text>
           <text wx:else class="ul-address ul-waiting">TA 尚未上传最新坐标</text>

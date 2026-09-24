@@ -30,6 +30,31 @@ function calculateBearing(lat1, lon1, lat2, lon2) {
   return (Math.round(brng) + 360) % 360
 }
 
+// 格式化位置更新时间展示
+function formatLocTime(ts) {
+  if (!ts) return ''
+  const t = typeof ts === 'number' ? ts : new Date(ts).getTime()
+  if (isNaN(t) || t <= 0) return ''
+  const now = Date.now()
+  const diffSec = Math.floor((now - t) / 1000)
+  if (diffSec < 60) return '刚刚'
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}分钟前`
+
+  const d = new Date(t)
+  const pad = n => (n < 10 ? '0' + n : '' + n)
+  const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}`
+
+  const nowDate = new Date()
+  if (
+    d.getFullYear() === nowDate.getFullYear() &&
+    d.getMonth() === nowDate.getMonth() &&
+    d.getDate() === nowDate.getDate()
+  ) {
+    return `今天 ${timeStr}`
+  }
+  return `${d.getMonth() + 1}月${d.getDate()}日 ${timeStr}`
+}
+
 Page({
   data: {
     myAgreed: false,
@@ -40,6 +65,10 @@ Page({
     partnerPos: null,
     me: {},
     partner: {},
+
+    // 格式化后的双方最新位置更新时间
+    myUpdatedTimeText: '',
+    partnerUpdatedTimeText: '',
 
     // 罗盘与朝向数据
     myDirection: 0,
@@ -88,6 +117,9 @@ Page({
       .then(res => {
         if (!res) return
         const { myAgreed, partnerAgreed, bothAgreed, myPos, partnerPos, me, partner } = res
+        const myUpdatedTimeText = myPos && myPos.updatedAt ? formatLocTime(myPos.updatedAt) : ''
+        const partnerUpdatedTimeText = partnerPos && partnerPos.updatedAt ? formatLocTime(partnerPos.updatedAt) : ''
+
         this.setData({
           myAgreed,
           partnerAgreed,
@@ -97,6 +129,8 @@ Page({
           me: me || {},
           partner: partner || {},
           myAddress: (myPos && myPos.address) || '',
+          myUpdatedTimeText,
+          partnerUpdatedTimeText,
         })
 
         if (myAgreed) {
@@ -228,10 +262,12 @@ Page({
         const { latitude, longitude } = res
         const direction = this.data.myDirection || 0
 
+        const nowMs = Date.now()
         this.setData({
           mapCenterLat: latitude,
           mapCenterLng: longitude,
-          myPos: { latitude, longitude, direction }
+          myPos: { latitude, longitude, direction, updatedAt: nowMs },
+          myUpdatedTimeText: formatLocTime(nowMs),
         })
 
         // 调用云函数更新位置与朝向
@@ -283,6 +319,9 @@ Page({
     const bearingDesc = degToCompass(bearing)
 
     // 构建地图标注点
+    const myTimeSuffix = myPos.updatedAt ? ` (${formatLocTime(myPos.updatedAt)})` : ''
+    const partnerTimeSuffix = partnerPos.updatedAt ? ` (${formatLocTime(partnerPos.updatedAt)})` : ''
+
     const markers = [
       {
         id: 1,
@@ -290,7 +329,7 @@ Page({
         longitude: myPos.longitude,
         title: me.nickname || '我',
         callout: {
-          content: `📍 我 (${me.nickname || '我'})`,
+          content: `📍 我${myTimeSuffix}`,
           display: 'ALWAYS',
           padding: 8,
           borderRadius: 12,
@@ -305,7 +344,7 @@ Page({
         longitude: partnerPos.longitude,
         title: partner.nickname || 'TA',
         callout: {
-          content: `💕 ${partner.nickname || 'TA'}`,
+          content: `💕 ${partner.nickname || 'TA'}${partnerTimeSuffix}`,
           display: 'ALWAYS',
           padding: 8,
           borderRadius: 12,
