@@ -43,16 +43,14 @@
   </view>
 
   <!-- 往年今日卡片 -->
-  <view wx:if="{{memoryCard}}" class="memory-card {{memoryCard.bgImg ? 'has-img' : 'no-img'}}" bindtap="onMemoryTap">
+  <view wx:if="{{memoryCard}}" class="memory-card" bindtap="onMemoryTap">
     <view class="mc-bg" wx:if="{{memoryCard.bgImg}}">
       <image class="mc-bg-img" src="{{memoryCard.bgImg}}" mode="aspectFill" />
       <view class="mc-bg-mask"></view>
     </view>
     <view class="mc-content">
-      <view class="mc-head">
-        <text class="mc-title">往年今日</text>
-        <text class="mc-ago">{{memoryCard.agoText}}</text>
-      </view>
+      <text class="mc-title">往年今日</text>
+      <text class="mc-ago">{{memoryCard.agoText}}</text>
       <view class="mc-text">{{memoryCard.text}}</view>
     </view>
   </view>
