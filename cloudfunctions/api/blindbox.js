@@ -1,6 +1,7 @@
 // 碎片盲盒：每天随机一个互动小任务，双方都完成打卡后各得积分
 const { db, _, getUserByOpenid, getRoomUsers, cnDateStr, round } = require('./helpers')
 const { earn } = require('./economy')
+const { checkImages } = require('./secCheck')
 
 const TASKS = [
   '亲一下', '倒杯水', '夸我一句', '捶捶背', '抱抱30秒', '讲个笑话',
@@ -33,6 +34,10 @@ async function blindBoxUpload(event, ctx) {
   const { fileId } = event
   const me = await getUserByOpenid(OPENID)
   if (!me) throw new Error('请先创建档案')
+
+  if (fileId) {
+    await checkImages([fileId])
+  }
 
   const date = cnDateStr()
   const dailyRes = await db.collection('dailies').where({ roomId: me.roomId, date }).limit(1).get()

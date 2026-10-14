@@ -45,7 +45,7 @@
   <!-- 往年今日卡片 -->
   <view wx:if="{{memoryCard}}" class="memory-card" bindtap="onMemoryTap">
     <view class="mc-bg" wx:if="{{memoryCard.bgImg}}">
-      <image class="mc-bg-img" src="{{memoryCard.bgImg}}" mode="aspectFill" />
+      <image class="mc-bg-img" src="{{memoryCard.bgImg}}" mode="aspectFill" webp />
       <view class="mc-bg-mask"></view>
     </view>
     <view class="mc-content">
@@ -85,15 +85,19 @@
                 class="tl-card-img"
                 src="{{img}}"
                 mode="aspectFill"
+                webp
                 data-urls="{{item.imageUrls}}"
                 data-cur="{{img}}"
                 catchtap="previewImage"
               />
             </view>
           </view>
-          <!-- 时间与评论徽标 -->
+          <!-- 时间、举报与评论徽标 -->
           <view class="tl-card-footer">
-            <text class="tl-card-time">{{item.timeStr}}</text>
+            <view class="tl-footer-left">
+              <text class="tl-card-time">{{item.timeStr}}</text>
+              <text class="tl-card-report" data-id="{{item._id}}" catchtap="onReportTap">举报</text>
+            </view>
             <view class="tl-card-comment-badge" wx:if="{{item.commentCount > 0}}">
               <text class="c-badge-icon">💬</text>
               <text class="c-badge-count">{{item.commentCount}}</text>
@@ -158,12 +162,16 @@
             class="m-img full"
             src="{{img}}"
             mode="widthFix"
+            webp
             data-urls="{{detailItem.imageUrls}}"
             data-cur="{{img}}"
             catchtap="previewImage"
           />
         </view>
-        <text class="tl-card-time">{{detailItem.timeStr}}</text>
+        <view class="tl-detail-meta-row">
+          <text class="tl-card-time">{{detailItem.timeStr}}</text>
+          <text class="tl-card-report" data-id="{{detailItem._id}}" catchtap="onReportTap">投诉/举报</text>
+        </view>
 
         <!-- 评论互动区 -->
         <view class="detail-comments-section">

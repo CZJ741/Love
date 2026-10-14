@@ -202,45 +202,126 @@
 .crack-1 { height: 24rpx; top: 18rpx; right: 28rpx; transform: rotate(25deg); }
 .crack-2 { height: 32rpx; bottom: 22rpx; left: 24rpx; transform: rotate(-35deg); }
 
-/* ================= 阶段二至四差异化外观特征 ================= */
-/* 幼崽期：更小更萌，带可爱小围嘴 */
+/* ================= 阶段二至四差异化外观特征深度优化 ================= */
+/* 幼崽期 (baby)：奶萌娇小，大眼睛萌芽胎毛与可爱小奶嘴围兜 */
 .stage-baby {
-  transform: scale(0.85);
+  transform: scale(0.8);
+}
+.baby-sprout {
+  position: absolute;
+  top: -18rpx;
+  font-size: 24rpx;
+  z-index: 10;
+  animation: sproutSway 2s ease-in-out infinite alternate;
+}
+@keyframes sproutSway {
+  0% { transform: rotate(-10deg); }
+  100% { transform: rotate(10deg); }
 }
 .baby-bib {
   position: absolute;
   top: 4rpx;
-  width: 44rpx;
-  height: 24rpx;
-  background: #FFEB3B;
+  width: 48rpx;
+  height: 28rpx;
+  background: #FFF9C4;
   border: 2rpx solid #FBC02D;
-  border-radius: 0 0 20rpx 20rpx;
-  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 24rpx 24rpx;
+  box-shadow: 0 2rpx 6rpx rgba(251, 192, 45, 0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 8;
+}
+.bib-deco {
+  font-size: 16rpx;
+  line-height: 1;
 }
 
-/* 成长期：标准体型，带红项圈与金铃铛 */
+/* 成长期 (youth)：少年元气柯基柴犬，阳光红蓝项圈与可爱斜挎小书包 */
 .stage-youth {
   transform: scale(1);
 }
+.youth-adorn {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.youth-bag {
+  position: absolute;
+  right: 2rpx;
+  bottom: 8rpx;
+  z-index: 8;
+}
+.bag-icon {
+  font-size: 20rpx;
+}
 
-/* 完全体：威风霸气又甜美，带闪亮小披风 */
+/* 完全体 (adult)：尊贵荣耀又治愈，微风轻拂小羽翼与金黄王冠 */
 .stage-adult {
-  transform: scale(1.15);
+  transform: scale(1.18);
+}
+.adult-crown {
+  position: absolute;
+  top: -24rpx;
+  font-size: 28rpx;
+  z-index: 12;
+  filter: drop-shadow(0 2rpx 6rpx rgba(255, 179, 0, 0.4));
+  animation: crownFloat 2s ease-in-out infinite alternate;
+}
+@keyframes crownFloat {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-4rpx); }
+}
+.adult-adorn {
+  width: 100%;
+  height: 100%;
+  position: relative;
 }
 .adult-cape {
   position: absolute;
   top: -2rpx;
   width: 100%;
   height: 14rpx;
-  background: linear-gradient(90deg, #AB47BC, #7E57C2);
+  background: linear-gradient(90deg, #BA68C8, #7E57C2);
   border-radius: 6rpx;
   display: flex;
   justify-content: center;
   align-items: center;
+  box-shadow: 0 2rpx 8rpx rgba(126, 87, 194, 0.35);
+  z-index: 8;
 }
 .adult-star {
   font-size: 16rpx;
   line-height: 1;
+}
+.adult-wing {
+  position: absolute;
+  top: 6rpx;
+  width: 22rpx;
+  height: 30rpx;
+  background: radial-gradient(circle, #FFFFFF 60%, #E1F5FE 100%);
+  border: 1.5rpx solid #B3E5FC;
+  border-radius: 50% 50% 20% 20%;
+  box-shadow: 0 2rpx 6rpx rgba(179, 229, 252, 0.6);
+  z-index: 1;
+}
+.wing-left {
+  left: -12rpx;
+  transform: rotate(-30deg);
+  animation: wingFlapLeft 1.2s ease-in-out infinite alternate;
+}
+.wing-right {
+  right: -12rpx;
+  transform: rotate(30deg);
+  animation: wingFlapRight 1.2s ease-in-out infinite alternate;
+}
+@keyframes wingFlapLeft {
+  0% { transform: rotate(-25deg); }
+  100% { transform: rotate(-40deg) translateY(-2rpx); }
+}
+@keyframes wingFlapRight {
+  0% { transform: rotate(25deg); }
+  100% { transform: rotate(40deg) translateY(-2rpx); }
 }
 
 /* 病态/虚弱状态表现（健康度 < 60 时触发） */
@@ -289,6 +370,64 @@
   0% { transform: translateY(0) scale(0.6); opacity: 0; }
   50% { transform: translateY(-20rpx) scale(1.2); opacity: 1; }
   100% { transform: translateY(-40rpx) scale(0.8); opacity: 0; }
+}
+
+/* 泡泡微动效 (洗澡) */
+.fx-bubble-wrap {
+  position: absolute;
+  top: -10rpx;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+  z-index: 30;
+}
+.bubble-p {
+  position: absolute;
+  font-size: 28rpx;
+  animation: floatBubble 1.4s ease-out infinite;
+}
+.b-1 { left: 10rpx; top: -10rpx; }
+.b-2 { right: 10rpx; top: -25rpx; animation-delay: 0.4s; }
+@keyframes floatBubble {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  50% { transform: translateY(-16rpx) scale(1.1); opacity: 0.9; }
+  100% { transform: translateY(-35rpx) scale(0.8); opacity: 0; }
+}
+
+/* 食物微动效 (投喂) */
+.fx-food-crumb {
+  position: absolute;
+  top: 10rpx;
+  left: 20rpx;
+  font-size: 30rpx;
+  z-index: 30;
+  animation: foodHop 0.8s ease-out forwards;
+}
+@keyframes foodHop {
+  0% { transform: translateY(-20rpx) scale(1.2); opacity: 1; }
+  70% { transform: translateY(10rpx) scale(1); opacity: 0.9; }
+  100% { transform: translateY(15rpx) scale(0.4); opacity: 0; }
+}
+
+/* 睡觉时小被子 */
+.dog-quilt {
+  position: absolute;
+  bottom: 0;
+  left: 6rpx;
+  right: 6rpx;
+  height: 48rpx;
+  background: linear-gradient(135deg, #FFF9C4, #FFF59D);
+  border: 2rpx solid #FBC02D;
+  border-radius: 16rpx 16rpx 10rpx 10rpx;
+  z-index: 25;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4rpx 8rpx rgba(251, 192, 45, 0.2);
+}
+.quilt-pattern {
+  font-size: 20rpx;
+  opacity: 0.7;
 }
 
 .fx-sweat {
@@ -486,6 +625,43 @@
   background: #9E7449;
   border-radius: 2rpx;
   transition: all 0.2s ease;
+}
+
+/* ================= 阶段差异化微表情与细节 ================= */
+/* 幼崽期：眼睛更大更水汪汪，腮红更粉扑扑 */
+.stage-baby .eye {
+  width: 18rpx;
+  height: 20rpx;
+}
+.stage-baby .eye-shine {
+  width: 8rpx;
+  height: 8rpx;
+}
+.stage-baby .dog-blush {
+  width: 22rpx;
+  height: 12rpx;
+  background: #FF5252;
+  opacity: 0.7;
+}
+
+/* 成长期：阳光机灵，耳朵更挺拔，尾巴更欢快 */
+.stage-youth .dog-ear {
+  transform: rotate(-10deg);
+}
+.stage-youth .ear-right {
+  transform: rotate(10deg);
+}
+
+/* 完全体：眼神深邃灵动，披风与微光羽翼，体态华丽尊贵 */
+.stage-adult .dog-head {
+  border-color: #C28549;
+  box-shadow: 0 4rpx 14rpx rgba(186, 104, 200, 0.18), inset 0 -4rpx 10rpx rgba(214, 156, 101, 0.2);
+}
+.stage-adult .dog-eyes {
+  top: 28rpx;
+}
+.stage-adult .dog-body {
+  border-color: #C28549;
 }
 
 /* 眼睛与眼神系统 */

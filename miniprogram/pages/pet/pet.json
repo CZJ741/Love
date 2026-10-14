@@ -1,9 +1,7 @@
 {
-  "navigationBarTitleText": "萌宠爱心小窝",
-  "navigationBarBackgroundColor": "#F48FB1",
-  "navigationBarTextStyle": "white",
+  "navigationStyle": "custom",
   "backgroundColor": "#FFEBED",
-  "enablePullDownRefresh": true,
+  "enablePullDownRefresh": false,
   "usingComponents": {
     "live2d-pet": "/components/live2d-pet/index"
   }

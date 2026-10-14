@@ -18,6 +18,10 @@ Page({
     submitting: false,
 
     rain: false,
+    rainType: 'love',
+    bounceAvatar: false,
+    shakeCard: false,
+    pulseScore: false,
   },
 
   onLoad() {
@@ -108,7 +112,36 @@ Page({
         if (p) p.balance = data.partnerBalance
         this.setData({ submitting: false, amount: '' })
         wx.showToast({ title: data.msg, icon: 'none' })
-        if (mode === 'add') this.setData({ rain: true })
+
+        // 触发动效：加分爱心雨+头像欢快弹跳；扣分闪电惩罚雨+卡片微震
+        if (mode === 'add') {
+          this.setData({
+            rain: true,
+            rainType: 'love',
+            bounceAvatar: true,
+            pulseScore: true,
+            shakeCard: false,
+          })
+          try { wx.vibrateShort({ type: 'light' }) } catch (_) {}
+        } else {
+          this.setData({
+            rain: true,
+            rainType: 'punish',
+            shakeCard: true,
+            pulseScore: true,
+            bounceAvatar: false,
+          })
+          try { wx.vibrateShort({ type: 'medium' }) } catch (_) {}
+        }
+
+        setTimeout(() => {
+          this.setData({
+            bounceAvatar: false,
+            shakeCard: false,
+            pulseScore: false,
+          })
+        }, 900)
+
         this.refresh()
         realtime.fetchOnce()
       })

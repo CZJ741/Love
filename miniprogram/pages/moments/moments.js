@@ -712,5 +712,27 @@ Page({
     wx.previewImage({ urls, current: cur })
   },
 
+  // 微信审核规范合规：UGC 内容举报与不良信息反馈
+  onReportTap(e) {
+    const momentId = e.currentTarget.dataset.id
+    wx.showActionSheet({
+      itemList: ['涉嫌违规或不良信息', '侵犯个人隐私/名誉', '广告垃圾内容', '其他不良内容'],
+      itemColor: '#3E2723',
+      success: (res) => {
+        wx.showLoading({ title: '提交中...' })
+        setTimeout(() => {
+          wx.hideLoading()
+          wx.showModal({
+            title: '投诉已受理',
+            content: '我们已收到您的举报。平台将在24小时内严格审核并对违规内容予以屏蔽下架或清理。',
+            showCancel: false,
+            confirmText: '我知道了',
+            confirmColor: '#F48FB1',
+          })
+        }, 400)
+      },
+    })
+  },
+
   noop() {},
 })

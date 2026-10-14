@@ -1,27 +1,10 @@
 <!-- Live2D 唯美可爱双人桌宠多形态组件 -->
 <!-- 支持四大形态：蛋(egg) → 幼崽(baby) → 成长期(youth) → 完全体(adult) -->
 <view class="pet-wrapper {{compactMode ? 'compact' : ''}}" catchtap="onPetTap">
-  <!-- 顶部对话气泡 -->
+  <!-- 顶部对话气泡（仅点击宠物时短暂出现） -->
   <view wx:if="{{bubbleText}}" class="pet-bubble {{bubbleAnim ? 'bubble-pop' : ''}}">
     <text class="bubble-content">{{bubbleText}}</text>
     <view class="bubble-arrow"></view>
-  </view>
-
-  <!-- 心情/饱食度微型状态胶囊（大卡片模式显示） -->
-  <view wx:if="{{!compactMode}}" class="pet-stats-pill" catchtap="openPetModal">
-    <text class="pet-stage-tag">{{stageName}}</text>
-    <view class="pet-stat-item">
-      <text class="psi-icon">🍖</text>
-      <view class="psi-bar"><view class="psi-fill hunger" style="width: {{pet.hunger || 0}}%;"></view></view>
-    </view>
-    <view class="pet-stat-item">
-      <text class="psi-icon">💖</text>
-      <view class="psi-bar"><view class="psi-fill mood" style="width: {{pet.mood || 0}}%;"></view></view>
-    </view>
-    <view class="pet-stat-item">
-      <text class="psi-icon">🌿</text>
-      <view class="psi-bar"><view class="psi-fill health" style="width: {{pet.health || 0}}%;"></view></view>
-    </view>
   </view>
 
   <!-- ================= 阶段一：萌宠蛋 (egg) ================= -->
@@ -42,12 +25,22 @@
 
   <!-- ================= 阶段二至四：幼崽(baby)、成长期(youth)、完全体(adult) ================= -->
   <view wx:else class="live2d-dog stage-{{pet.stage || 'baby'}} action-{{actionState}} idle-{{idleIndex}} {{pet.health < 60 ? 'is-sick' : ''}} {{isBlinking ? 'blinking' : ''}} {{isTapped ? 'petted' : ''}}">
-    <!-- 情绪与病态特效 -->
+    <!-- 情绪与微动效粒子 -->
     <view wx:if="{{showHeartFx}}" class="fx-heart fx-1">💖</view>
     <view wx:if="{{showHeartFx}}" class="fx-heart fx-2">✨</view>
+    <view wx:if="{{showBubbleFx}}" class="fx-bubble-wrap">
+      <view class="bubble-p b-1">🫧</view>
+      <view class="bubble-p b-2">🫧</view>
+    </view>
+    <view wx:if="{{showFoodFx}}" class="fx-food-crumb">🍪</view>
     <view wx:if="{{pet.health < 60}}" class="fx-sick-headband">🩹</view>
     <view wx:if="{{showSweatFx || pet.health < 60}}" class="fx-sweat">💧</view>
     <view wx:if="{{showZzzFx}}" class="fx-zzz">zZ</view>
+
+    <!-- 睡眠时可爱小盖被 -->
+    <view wx:if="{{actionState === 'sleepy' || showZzzFx}}" class="dog-quilt">
+      <text class="quilt-pattern">⭐</text>
+    </view>
 
     <!-- 身体阴影 -->
     <view class="dog-shadow"></view>
@@ -60,10 +53,21 @@
     <!-- 身体层 -->
     <view class="dog-body">
       <view class="dog-belly"></view>
-      <!-- 幼崽带小围嘴，成长期带项圈铃铛，完全体带闪亮蝴蝶结披风 -->
-      <view wx:if="{{pet.stage === 'baby'}}" class="baby-bib"></view>
-      <view wx:elif="{{pet.stage === 'youth'}}" class="dog-collar"><view class="dog-bell"></view></view>
-      <view wx:elif="{{pet.stage === 'adult'}}" class="adult-cape"><view class="adult-star">⭐</view></view>
+      <!-- 幼崽带小围嘴，成长期带项圈铃铛与斜挎小包包，完全体带闪亮星芒披风与爱心小天使羽翼 -->
+      <view wx:if="{{pet.stage === 'baby'}}" class="baby-bib">
+        <view class="bib-tie"></view>
+        <text class="bib-deco">🍼</text>
+      </view>
+      <view wx:elif="{{pet.stage === 'youth'}}" class="youth-adorn">
+        <view class="dog-collar"><view class="dog-bell"></view></view>
+        <view class="youth-bag"><text class="bag-icon">🎒</text></view>
+      </view>
+      <view wx:elif="{{pet.stage === 'adult'}}" class="adult-adorn">
+        <view class="adult-cape"><text class="adult-star">⭐</text></view>
+        <!-- 灵动小羽翼 -->
+        <view class="adult-wing wing-left"></view>
+        <view class="adult-wing wing-right"></view>
+      </view>
     </view>
 
     <!-- 前爪爪 -->
@@ -74,6 +78,12 @@
 
     <!-- 头部层 -->
     <view class="dog-head-wrap">
+      <!-- 完全体尊贵头顶光环/小金冠 -->
+      <view wx:if="{{pet.stage === 'adult'}}" class="adult-crown">👑</view>
+
+      <!-- 幼崽期头顶可爱小萌芽胎毛 -->
+      <view wx:if="{{pet.stage === 'baby'}}" class="baby-sprout">🌱</view>
+
       <view class="dog-ear ear-left"></view>
       <view class="dog-ear ear-right"></view>
 

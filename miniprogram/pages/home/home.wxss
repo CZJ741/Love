@@ -705,7 +705,7 @@
 }
 .sector-content {
   position: absolute;
-  top: 18rpx;
+  top: 24rpx;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -714,15 +714,10 @@
   width: 140rpx;
   text-align: center;
 }
-.sector-emoji {
-  font-size: 32rpx;
-  line-height: 1.1;
-}
 .sector-name {
-  font-size: 20rpx;
+  font-size: 22rpx;
   font-weight: 700;
   color: #6D4C41;
-  margin-top: 4rpx;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -781,11 +776,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12rpx;
   margin: 6rpx 0;
-}
-.srb-emoji {
-  font-size: 40rpx;
 }
 .srb-name {
   font-size: 34rpx;
@@ -852,17 +843,6 @@
   padding: 10rpx 14rpx;
   border-radius: 20rpx;
 }
-.fmm-emoji-btn {
-  font-size: 36rpx;
-  width: 60rpx;
-  height: 60rpx;
-  background: #FFF;
-  border-radius: 14rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.06);
-}
 .fmm-input {
   flex: 1;
   font-size: 26rpx;
@@ -914,10 +894,6 @@
   background: #FFF9C4;
   border: 2rpx dashed #FBC02D;
 }
-.fmm-item-emoji {
-  font-size: 36rpx;
-  margin-right: 16rpx;
-}
 .fmm-item-name {
   flex: 1;
   font-size: 28rpx;
@@ -941,16 +917,11 @@
 .fmm-footer {
   display: flex;
   align-items: center;
-  gap: 16rpx;
   margin-top: 10rpx;
 }
-.fmm-reset-btn {
-  flex: 1;
-  font-size: 26rpx;
-}
 .fmm-done-btn {
-  flex: 1;
-  font-size: 26rpx;
+  width: 100%;
+  font-size: 28rpx;
 }
 
 /* ================= 在一起时间卡片与 Live2D 桌宠小狗 ================= */

@@ -3,6 +3,7 @@
 // 之后每次赚积分自动按比例划入小金库，攒满后可「领取」兑现。
 const { db, _, getUserByOpenid, getRoomUsers, round } = require('./helpers')
 const { record } = require('./transactions')
+const { checkText } = require('./secCheck')
 
 // 即刻兑换商城的预置商品（与小程序端 lib/constants.js 保持一致）
 const MALL = [
@@ -23,6 +24,9 @@ async function createWish(event, ctx) {
   if (!content) throw new Error('请填写心愿内容')
   if (!target || target <= 0) throw new Error('目标积分需为正数')
   if (isNaN(ratio) || ratio < 0 || ratio > 100) ratio = 50
+
+  // 内容安全审核 (UGC)
+  await checkText(content, { openid: OPENID, scene: 1 })
 
   const me = await getUserByOpenid(OPENID)
   if (!me) throw new Error('请先创建档案')

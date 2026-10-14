@@ -1,5 +1,6 @@
 // 点滴（二人社区）：发帖 / 列表 / 编辑
 const { db, _, cloud, getUserByOpenid } = require('./helpers')
+const { checkText, checkImages } = require('./secCheck')
 
 // 收集图片数组里所有 cloud:// fileID（去重）
 function collectImageFiles(list) {
@@ -44,6 +45,14 @@ async function createMoment(event, ctx) {
   const text = String(event.text || '').slice(0, 500)
   const images = event.images || []
   const customTime = String(event.customTime || '')
+
+  // 内容安全审核 (UGC)
+  if (text) {
+    await checkText(text, { openid: OPENID, scene: 4 })
+  }
+  if (images && images.length) {
+    await checkImages(images)
+  }
 
   let createdAt
   if (customTime) {
@@ -94,8 +103,23 @@ async function updateMoment(event, ctx) {
   if (doc.data.openid !== OPENID) throw new Error('只能修改自己的日记哦~')
 
   const updateData = {}
-  if (text !== undefined) updateData.text = String(text || '').slice(0, 500)
-  if (images !== undefined) updateData.images = images || []
+  if (text !== undefined) {
+    const textStr = String(text || '').slice(0, 500)
+    if (textStr) {
+      await checkText(textStr, { openid: OPENID, scene: 4 })
+    }
+    updateData.text = textStr
+  }
+  if (images !== undefined) {
+    const newImages = images || []
+    // 找出新增的图片进行检测
+    const oldImages = new Set(doc.data.images || [])
+    const addedImages = newImages.filter(img => !oldImages.has(img))
+    if (addedImages.length) {
+      await checkImages(addedImages)
+    }
+    updateData.images = newImages
+  }
 
   if (Object.keys(updateData).length === 0) throw new Error('没有要修改的内容')
 
@@ -158,6 +182,10 @@ async function addComment(event, ctx) {
   const me = await getUserByOpenid(OPENID)
   if (!me) throw new Error('请先创建档案')
 
+  const commentText = String(text).trim().slice(0, 200)
+  // 内容安全审核 (UGC)
+  await checkText(commentText, { openid: OPENID, scene: 2 })
+
   const doc = await db.collection('moments').doc(momentId).get()
   if (!doc || !doc.data) throw new Error('动态不存在')
   if (doc.data.roomId !== me.roomId) throw new Error('无权访问该动态')
@@ -167,7 +195,7 @@ async function addComment(event, ctx) {
     openid: me.openid,
     author: me.nickname || '神秘人',
     avatar: me.avatar || '🐰',
-    text: String(text).trim().slice(0, 200),
+    text: commentText,
     createdAt: new Date(),
   }
 

@@ -12,17 +12,15 @@ const PRAISE_REASONS = [
 
 // 食物转盘默认初始清单（可本地增删改）
 const DEFAULT_FOODS = [
-  { id: 'f1', name: '火锅', emoji: '🍲' },
-  { id: 'f2', name: '麻辣烫', emoji: '🌶️' },
-  { id: 'f3', name: '烧烤', emoji: '🍢' },
-  { id: 'f4', name: '奶茶甜品', emoji: '🧋' },
-  { id: 'f5', name: '日料寿司', emoji: '🍣' },
-  { id: 'f6', name: '汉堡披萨', emoji: '🍔' },
-  { id: 'f7', name: '家常小炒', emoji: '🍚' },
-  { id: 'f8', name: '牛肉面', emoji: '🍜' },
+  { id: 'f1', name: '火锅' },
+  { id: 'f2', name: '麻辣烫' },
+  { id: 'f3', name: '烧烤' },
+  { id: 'f4', name: '奶茶甜品' },
+  { id: 'f5', name: '日料寿司' },
+  { id: 'f6', name: '汉堡披萨' },
+  { id: 'f7', name: '家常小炒' },
+  { id: 'f8', name: '牛肉面' },
 ]
-
-const FOOD_EMOJI_POOL = ['🍲', '🌶️', '🍢', '🧋', '🍣', '🍔', '🍚', '🍜', '🥟', '🥪', '🥘', '🍗', '🥗', '🥞', '🍱']
 
 // 8个柔和可爱的扇区底色
 const SECTOR_COLORS = [
@@ -115,7 +113,6 @@ Page({
     wheelResult: null,
 
     // 食物清单编辑相关
-    currentFoodEmoji: '🍲',
     foodInputName: '',
     editingFoodId: '',
 
@@ -661,7 +658,6 @@ Page({
       showFoodManage: true,
       editingFoodId: '',
       foodInputName: '',
-      currentFoodEmoji: '🍲',
     })
   },
 
@@ -671,14 +667,6 @@ Page({
       editingFoodId: '',
       foodInputName: '',
     })
-  },
-
-  // 切换候选 emoji
-  cycleInputEmoji() {
-    const cur = this.data.currentFoodEmoji
-    const idx = FOOD_EMOJI_POOL.indexOf(cur)
-    const nextIdx = (idx + 1) % FOOD_EMOJI_POOL.length
-    this.setData({ currentFoodEmoji: FOOD_EMOJI_POOL[nextIdx] })
   },
 
   onFoodInputName(e) {
@@ -700,14 +688,12 @@ Page({
     const newItem = {
       id: 'f_' + Date.now(),
       name,
-      emoji: this.data.currentFoodEmoji,
     }
     list.push(newItem)
     wx.setStorageSync('custom_food_list', list)
     this.updateFoodWheelData(list)
     this.setData({
       foodInputName: '',
-      currentFoodEmoji: FOOD_EMOJI_POOL[(FOOD_EMOJI_POOL.indexOf(this.data.currentFoodEmoji) + 1) % FOOD_EMOJI_POOL.length],
     })
     wx.showToast({ title: '添加成功', icon: 'none' })
   },
@@ -720,7 +706,6 @@ Page({
     this.setData({
       editingFoodId: id,
       foodInputName: item.name,
-      currentFoodEmoji: item.emoji || '🍲',
     })
   },
 
@@ -733,7 +718,7 @@ Page({
     }
     const list = this.data.foodWheelList.map(item => {
       if (item.id === this.data.editingFoodId) {
-        return { ...item, name, emoji: this.data.currentFoodEmoji }
+        return { ...item, name }
       }
       return item
     })
@@ -771,23 +756,6 @@ Page({
     wx.showToast({ title: '已删除', icon: 'none' })
   },
 
-  // 恢复预设菜单
-  resetDefaultFoods() {
-    wx.showModal({
-      title: '恢复预设',
-      content: '确定要将食物列表重置为初始推荐菜单吗？',
-      success: res => {
-        if (res.confirm) {
-          const list = JSON.parse(JSON.stringify(DEFAULT_FOODS))
-          wx.setStorageSync('custom_food_list', list)
-          this.updateFoodWheelData(list)
-          this.cancelEditFood()
-          wx.showToast({ title: '已恢复预设', icon: 'none' })
-        }
-      },
-    })
-  },
-
   // ============ 虚拟桌宠养成与互动逻辑 ============
   fetchPetData() {
     api.call('petGet')
@@ -801,8 +769,8 @@ Page({
 
   // 接收 Live2D 桌宠触发的点击互动事件
   onPetInteract(e) {
-    const action = (e.detail && e.detail.action) || 'poke'
-    api.call('petInteract', { action })
+    const act = (e.detail && e.detail.action) || 'poke'
+    api.call('petInteract', { petAction: act, actionType: act, action: act })
       .then(res => {
         if (res && res.pet) {
           this.setData({ petData: res.pet })

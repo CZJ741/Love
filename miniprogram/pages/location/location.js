@@ -166,30 +166,46 @@ Page({
 
   // 请求微信系统定位授权并开启
   requestLocationPermissionAndEnable() {
-    wx.authorize({
-      scope: 'scope.userLocation',
-      success: () => {
-        this._setShareStatus(true)
-      },
-      fail: () => {
-        wx.showModal({
-          title: '需要定位权限',
-          content: '请在小程序设置中允许使用位置信息，以便与伴侣共享定位与罗盘朝向。',
-          confirmText: '去设置',
-          success: res => {
-            if (res.confirm) {
-              wx.openSetting({
-                success: (settingRes) => {
-                  if (settingRes.authSetting['scope.userLocation']) {
-                    this._setShareStatus(true)
+    const doAuthorize = () => {
+      wx.authorize({
+        scope: 'scope.userLocation',
+        success: () => {
+          this._setShareStatus(true)
+        },
+        fail: () => {
+          wx.showModal({
+            title: '需要定位权限',
+            content: '请在小程序设置中允许使用位置信息，以便与伴侣共享定位与罗盘朝向。',
+            confirmText: '去设置',
+            success: res => {
+              if (res.confirm) {
+                wx.openSetting({
+                  success: (settingRes) => {
+                    if (settingRes.authSetting['scope.userLocation']) {
+                      this._setShareStatus(true)
+                    }
                   }
-                }
-              })
+                })
+              }
             }
-          }
-        })
-      }
-    })
+          })
+        }
+      })
+    }
+
+    // 微信小程序隐私合规机制：优先触发隐私授权保护校验
+    if (wx.requirePrivacyAuthorize) {
+      wx.requirePrivacyAuthorize({
+        success: () => {
+          doAuthorize()
+        },
+        fail: () => {
+          wx.showToast({ title: '需要同意用户隐私保护指引', icon: 'none' })
+        },
+      })
+    } else {
+      doAuthorize()
+    }
   },
 
   _setShareStatus(agreed) {

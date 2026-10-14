@@ -110,13 +110,13 @@
   background: linear-gradient(135deg, #FFE082 0%, #FFB300 100%);
   box-shadow: 0 6rpx 16rpx rgba(255, 179, 0, 0.35);
 }
-.box-ludo {
-  background: linear-gradient(135deg, #E1BEE7 0%, #BA68C8 100%);
-  box-shadow: 0 6rpx 16rpx rgba(186, 104, 200, 0.35);
+.box-xiangqi {
+  background: linear-gradient(135deg, #FFCDD2 0%, #E57373 100%);
+  box-shadow: 0 6rpx 16rpx rgba(229, 115, 115, 0.35);
 }
-.box-seabattle {
-  background: linear-gradient(135deg, #80DEEA 0%, #00ACC1 100%);
-  box-shadow: 0 6rpx 16rpx rgba(0, 172, 193, 0.35);
+.box-chess {
+  background: linear-gradient(135deg, #CFD8DC 0%, #90A4AE 100%);
+  box-shadow: 0 6rpx 16rpx rgba(144, 164, 174, 0.35);
 }
 .game-card-emoji {
   font-size: 50rpx;
@@ -165,6 +165,21 @@
   color: #E65100;
   border: 1rpx solid #FFE0B2;
 }
+.badge-popular {
+  background: #E8F5E9;
+  color: #2E7D32;
+  border: 1rpx solid #C8E6C9;
+}
+.badge-intel {
+  background: #E3F2FD;
+  color: #1565C0;
+  border: 1rpx solid #BBDEFB;
+}
+.badge-strategy {
+  background: #EDE7F6;
+  color: #512DA8;
+  border: 1rpx solid #D1C4E9;
+}
 
 .btn-play {
   display: inline-flex;
@@ -196,19 +211,11 @@
   color: #F48FB1;
 }
 
-.game-intro {
-  font-size: 21rpx;
-  color: #A89282;
-  line-height: 1.35;
-  margin-bottom: 8rpx;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 .game-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: 10rpx;
 }
 .game-status-tag {
   font-size: 20rpx;
@@ -411,6 +418,10 @@
   color: #333333;
   border: 1rpx solid #BDBDBD;
 }
+.red-badge {
+  background: #D32F2F;
+  color: #FFFFFF;
+}
 .p1-badge {
   background: #E91E63;
   color: #FFFFFF;
@@ -515,9 +526,15 @@
 .status-banner {
   border-radius: 20rpx;
   padding: 16rpx 24rpx;
-  margin-bottom: 20rpx;
+  margin-bottom: 16rpx;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+}
+.banner-left {
+  display: flex;
+  align-items: center;
+  flex: 1;
 }
 .my-turn-bg {
   background: #E8F5E9;
@@ -535,6 +552,80 @@
   font-size: 24rpx;
   color: #5A4636;
   font-weight: 600;
+}
+.mode-switch-badge {
+  font-size: 20rpx;
+  padding: 4rpx 14rpx;
+  border-radius: 16rpx;
+  background: rgba(122, 96, 77, 0.1);
+  color: #7A604D;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+.badge-free-active {
+  background: #E1BEE7;
+  color: #6A1B9A;
+  box-shadow: 0 2rpx 8rpx rgba(106, 27, 154, 0.2);
+}
+
+/* 围棋路数与自由落子选色条 */
+.weiqi-size-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
+  padding: 8rpx 16rpx;
+}
+.size-label {
+  font-size: 22rpx;
+  color: #7A604D;
+  font-weight: 700;
+  margin-right: 12rpx;
+}
+.size-pill-group {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.size-pill {
+  padding: 6rpx 18rpx;
+  border-radius: 20rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #7A604D;
+  background: #FFFFFF;
+  border: 1rpx solid rgba(122, 96, 77, 0.2);
+  transition: all 0.2s ease;
+}
+.size-pill-active {
+  background: #795548;
+  color: #FFFFFF;
+  border-color: #795548;
+  box-shadow: 0 2rpx 6rpx rgba(121, 85, 72, 0.3);
+}
+.free-color-pill {
+  display: flex;
+  align-items: center;
+  padding: 6rpx 14rpx;
+  border-radius: 20rpx;
+  background: #FFFFFF;
+  border: 1rpx solid rgba(122, 96, 77, 0.2);
+  font-size: 20rpx;
+  color: #5A4636;
+  font-weight: 600;
+}
+.free-color-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  margin-right: 8rpx;
+}
+.free-dot-black {
+  background: #111111;
+}
+.free-dot-white {
+  background: #FFFFFF;
+  border: 1rpx solid #9E9E9E;
 }
 
 /* 棋盘木纹背景容器（五子棋 & 围棋） */
@@ -603,9 +694,24 @@
   border-radius: 50%;
   box-sizing: border-box;
 }
-.board-13 .piece {
-  width: 44rpx;
-  height: 44rpx;
+/* 9路棋盘：格子宽敞，棋子稍大 */
+.board-size-9 .piece {
+  width: 52rpx;
+  height: 52rpx;
+}
+/* 13路棋盘 */
+.board-size-13 .piece {
+  width: 42rpx;
+  height: 42rpx;
+}
+/* 19路棋盘：线条密集，棋子精巧 */
+.board-size-19 .piece {
+  width: 28rpx;
+  height: 28rpx;
+}
+.board-size-19 .star-dot {
+  width: 6rpx;
+  height: 6rpx;
 }
 .piece-black {
   background: radial-gradient(circle at 35% 35%, #4B4B4B 0%, #1A1A1A 60%, #000000 100%);
@@ -635,216 +741,382 @@
   box-shadow: 0 0 6rpx #F44336;
 }
 
-/* ================= 飞行棋专属样式 ================= */
-.ludo-container {
-  padding: 24rpx;
-}
-.ludo-header-bar {
+/* 准星十字与半透明候选落点 */
+.aim-cursor-wrap {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 48rpx;
+  height: 48rpx;
+  transform: translate(-50%, -50%);
   display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 5;
+}
+.aim-crosshair-h {
+  position: absolute;
+  left: -8rpx;
+  right: -8rpx;
+  height: 2rpx;
+  background: #E91E63;
+  box-shadow: 0 0 4rpx #E91E63;
+}
+.aim-crosshair-v {
+  position: absolute;
+  top: -8rpx;
+  bottom: -8rpx;
+  width: 2rpx;
+  background: #E91E63;
+  box-shadow: 0 0 4rpx #E91E63;
+}
+.aim-ghost-piece {
+  opacity: 0.65;
+  animation: ghostPulse 1s infinite alternate;
+}
+@keyframes ghostPulse {
+  0% { transform: scale(0.9); opacity: 0.5; }
+  100% { transform: scale(1.1); opacity: 0.85; }
+}
+
+/* 准星微调操作手柄 */
+.cursor-pad {
+  margin-top: 16rpx;
+  padding: 12rpx 20rpx;
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 20rpx;
+  background: #FFFFFF;
+  border-radius: 20rpx;
 }
-.ludo-tip-title {
-  font-size: 26rpx;
-  font-weight: 700;
-  color: #5A4636;
-}
-.ludo-tip-desc {
-  font-size: 20rpx;
-  color: #A89282;
-}
-.ludo-track-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
+.pad-nav-group {
+  display: flex;
+  align-items: center;
   gap: 12rpx;
-  margin-bottom: 30rpx;
 }
-.ludo-track-cell {
-  height: 90rpx;
-  background: #FFF5F7;
-  border-radius: 16rpx;
-  border: 2rpx solid #FFE0B2;
+.pad-btn {
+  width: 64rpx;
+  height: 64rpx;
+  background: #F5F0EB;
+  border-radius: 14rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  color: #7A604D;
+  font-weight: bold;
+  border: 1rpx solid rgba(122, 96, 77, 0.2);
+}
+.pad-btn:active {
+  background: #E6DDD5;
+}
+.pad-action-group {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+.pad-confirm-btn, .pad-cancel-btn {
+  margin: 0;
+  padding: 10rpx 24rpx;
+  font-size: 24rpx;
+  font-weight: 700;
+  border-radius: 28rpx;
+  line-height: 1.4;
+  border: none;
+}
+.pad-confirm-btn {
+  background: #4CAF50;
+  color: #FFFFFF;
+}
+.pad-confirm-btn:active {
+  background: #388E3C;
+}
+.pad-cancel-btn {
+  background: #ECEFF1;
+  color: #607D8B;
+}
+
+/* ================= 中国象棋专属样式 ================= */
+.xiangqi-container {
+  padding: 24rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle, #FBF4E6 0%, #EFE1C3 100%);
+  border: 4rpx solid #B89255;
+  box-shadow: inset 0 0 20rpx rgba(120, 80, 20, 0.2), 0 8rpx 24rpx rgba(191, 166, 154, 0.25);
+  border-radius: 28rpx;
+}
+.xiangqi-board {
+  position: relative;
+  width: 650rpx;
+  height: 730rpx;
+  box-sizing: border-box;
+  margin: 10rpx 0;
+}
+/* 横线 */
+.xq-grid-h-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2rpx;
+  background-color: #8D6E63;
+  transform: translateY(-50%);
+}
+/* 竖线（半截） */
+.xq-grid-v-line {
+  position: absolute;
+  width: 2rpx;
+  background-color: #8D6E63;
+  transform: translateX(-50%);
+}
+.xq-v-top {
+  top: 0;
+  height: calc(4 * 100% / 9);
+}
+.xq-v-bottom {
+  top: calc(5 * 100% / 9);
+  height: calc(4 * 100% / 9);
+}
+/* 左右贯通边线 */
+.xq-border-v-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3rpx;
+  background-color: #8D6E63;
+  transform: translateX(-50%);
+}
+/* 九宫格斜线 */
+.xq-palace-line {
+  position: absolute;
+  background-color: #8D6E63;
+}
+.palace-slash-1 {
+  left: calc(3 * 100% / 8);
+  top: 0;
+  width: calc(2 * 100% / 8 * 1.414);
+  height: 2rpx;
+  transform-origin: 0 0;
+  transform: rotate(45deg);
+}
+.palace-backslash-1 {
+  left: calc(5 * 100% / 8);
+  top: 0;
+  width: calc(2 * 100% / 8 * 1.414);
+  height: 2rpx;
+  transform-origin: 0 0;
+  transform: rotate(135deg);
+}
+.palace-slash-2 {
+  left: calc(3 * 100% / 8);
+  top: calc(7 * 100% / 9);
+  width: calc(2 * 100% / 8 * 1.414);
+  height: 2rpx;
+  transform-origin: 0 0;
+  transform: rotate(45deg);
+}
+.palace-backslash-2 {
+  left: calc(5 * 100% / 8);
+  top: calc(7 * 100% / 9);
+  width: calc(2 * 100% / 8 * 1.414);
+  height: 2rpx;
+  transform-origin: 0 0;
+  transform: rotate(135deg);
+}
+/* 楚河汉界 */
+.xq-river {
+  position: absolute;
+  top: calc(4 * 100% / 9);
+  height: calc(100% / 9);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  pointer-events: none;
+}
+.river-text {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #A1887F;
+  letter-spacing: 16rpx;
+  padding-left: 16rpx;
+}
+
+/* 交叉点与棋子 */
+.xq-intersections {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+}
+.xq-point {
+  position: absolute;
+  width: 72rpx;
+  height: 72rpx;
+  transform: translate(-50%, -50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+}
+.xq-piece {
+  width: 66rpx;
+  height: 66rpx;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFFDF9 0%, #F5E8D3 70%, #E6D0B3 100%);
+  box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.28), inset 0 2rpx 4rpx #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3rpx solid #B89255;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.xq-piece-char {
+  font-size: 34rpx;
+  font-weight: 900;
+  line-height: 1;
+}
+.xq-piece-red {
+  border-color: #D32F2F;
+}
+.xq-piece-red .xq-piece-char {
+  color: #D32F2F;
+}
+.xq-piece-black {
+  border-color: #212121;
+}
+.xq-piece-black .xq-piece-char {
+  color: #212121;
+}
+.xq-piece-selected {
+  transform: scale(1.15) translateY(-6rpx);
+  box-shadow: 0 8rpx 18rpx rgba(233, 30, 99, 0.45), 0 0 16rpx #E91E63;
+  border-color: #E91E63 !important;
+}
+.xq-piece-last {
+  box-shadow: 0 0 14rpx #FF9800, 0 4rpx 8rpx rgba(0, 0, 0, 0.28);
+}
+.xq-last-from-box {
+  position: absolute;
+  width: 40rpx;
+  height: 40rpx;
+  border: 3rpx dashed #FFA726;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* 合法落点标记 */
+.valid-marker {
+  position: absolute;
+  pointer-events: none;
+}
+.valid-move-dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  background: rgba(76, 175, 80, 0.75);
+  box-shadow: 0 0 8rpx #4CAF50;
+  animation: pulseDot 1.2s infinite ease-in-out alternate;
+}
+.valid-capture-ring {
+  width: 66rpx;
+  height: 66rpx;
+  border-radius: 50%;
+  border: 4rpx solid #E53935;
+  box-shadow: 0 0 10rpx #E53935;
+  animation: pulseRing 1.2s infinite ease-in-out alternate;
+}
+@keyframes pulseDot {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.2); opacity: 1; }
+}
+@keyframes pulseRing {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  100% { transform: scale(1.1); opacity: 1; }
+}
+
+/* ================= 国际象棋专属样式 ================= */
+.chess-container {
+  padding: 24rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #EFEBE9;
+  border: 4rpx solid #8D6E63;
+  box-shadow: inset 0 0 16rpx rgba(93, 64, 55, 0.2), 0 8rpx 24rpx rgba(191, 166, 154, 0.25);
+  border-radius: 28rpx;
+}
+.chess-board {
+  width: 650rpx;
+  height: 650rpx;
+  display: flex;
+  flex-direction: column;
+  border: 4rpx solid #5D4037;
+  border-radius: 12rpx;
+  overflow: hidden;
+  box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.15);
+}
+.chess-row {
+  flex: 1;
+  display: flex;
+}
+.chess-cell {
+  flex: 1;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.15s ease;
 }
-.ludo-start-cell {
-  background: #E8F5E9;
-  border-color: #A5D6A7;
+.cell-light {
+  background-color: #F0D9B5;
 }
-.ludo-end-cell {
-  background: #FFF3E0;
-  border-color: #FFB74D;
+.cell-dark {
+  background-color: #B58863;
 }
-.track-num {
-  font-size: 22rpx;
-  font-weight: 700;
-  color: #BDBDBD;
+.cell-selected {
+  background-color: rgba(233, 30, 99, 0.35) !important;
 }
-.plane-token {
-  position: absolute;
-  font-size: 36rpx;
-  animation: planeFloat 1.2s ease-in-out infinite alternate;
+.cell-last {
+  background-color: rgba(255, 193, 7, 0.4) !important;
 }
-.plane-p1 {
-  top: 4rpx;
-  left: 4rpx;
+.chess-piece {
+  font-size: 52rpx;
+  line-height: 1;
+  user-select: none;
 }
-.plane-p2 {
-  bottom: 4rpx;
-  right: 4rpx;
-}
-@keyframes planeFloat {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-4rpx); }
-}
-
-.dice-station {
-  display: flex;
-  align-items: center;
-  background: #FFF9FA;
-  padding: 24rpx;
-  border-radius: 20rpx;
-  border: 2rpx dashed #F48FB1;
-}
-.dice-box {
-  width: 110rpx;
-  height: 110rpx;
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFF0F3 100%);
-  border-radius: 24rpx;
-  border: 4rpx solid #F48FB1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 24rpx;
-  box-shadow: 0 6rpx 16rpx rgba(244, 143, 177, 0.3);
-  flex-shrink: 0;
-}
-.dice-num {
-  font-size: 54rpx;
-  font-weight: 900;
-  color: #E91E63;
-}
-.dice-spin {
-  animation: rollAnim 0.5s ease;
-}
-@keyframes rollAnim {
-  0% { transform: rotate(0deg) scale(0.9); }
-  50% { transform: rotate(180deg) scale(1.15); }
-  100% { transform: rotate(360deg) scale(1); }
-}
-.dice-prompt {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-.dice-log {
-  font-size: 22rpx;
-  color: #5A4636;
-  margin-bottom: 12rpx;
-  line-height: 1.4;
-}
-.btn-dice-action {
-  font-size: 24rpx;
-  font-weight: 700;
-  background: linear-gradient(135deg, #FF80AB 0%, #F48FB1 100%);
+.piece-white-chess {
   color: #FFFFFF;
-  border-radius: 30rpx;
-  padding: 10rpx 20rpx;
-  border: none;
-  line-height: 1.4;
-  margin: 0;
+  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.6), 0 0 2rpx #000000;
 }
-
-/* ================= 海战棋专属样式 ================= */
-.sea-container {
-  padding: 24rpx;
+.piece-black-chess {
+  color: #263238;
+  text-shadow: 0 1rpx 2rpx rgba(255, 255, 255, 0.35);
 }
-.sea-top-tip {
-  margin-bottom: 16rpx;
+.chess-last-from-marker {
+  position: absolute;
+  width: 24rpx;
+  height: 24rpx;
+  border: 3rpx dashed #FFA000;
+  border-radius: 50%;
+  pointer-events: none;
 }
-.sea-tip-title {
-  font-size: 26rpx;
-  font-weight: 700;
-  color: #00838F;
+.chess-move-dot {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 50%;
+  background: rgba(76, 175, 80, 0.8);
+  box-shadow: 0 0 8rpx #4CAF50;
+  animation: pulseDot 1.2s infinite ease-in-out alternate;
 }
-.sea-tip-sub {
-  font-size: 20rpx;
-  color: #78909C;
-  margin-top: 4rpx;
-}
-.sea-section-title {
-  font-size: 24rpx;
-  font-weight: 700;
-  color: #5A4636;
-  margin: 16rpx 0 10rpx;
-}
-.sea-grid {
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 8rpx;
-  background: #E0F7FA;
-  padding: 16rpx;
-  border-radius: 20rpx;
-  border: 3rpx solid #80DEEA;
-}
-.sea-cell {
-  aspect-ratio: 1;
-  background: #B2EBF2;
-  border-radius: 10rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 30rpx;
-  transition: transform 0.1s ease;
-}
-.sea-cell:active {
-  transform: scale(0.92);
-}
-.sea-cell-hit {
-  background: #FFCDD2;
-  border: 1rpx solid #EF5350;
-}
-.sea-cell-miss {
-  background: #ECEFF1;
-  border: 1rpx solid #CFD8DC;
-}
-.sea-fleet-summary {
-  margin-top: 20rpx;
-}
-.fleet-chips {
-  display: flex;
-  gap: 12rpx;
-}
-.fleet-chip {
-  flex: 1;
-  background: #F1F8E9;
-  border: 1rpx solid #C5E1A5;
-  border-radius: 16rpx;
-  padding: 12rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.chip-sunk {
-  background: #FFEBEE;
-  border-color: #FFCDD2;
-  opacity: 0.6;
-}
-.chip-name {
-  font-size: 22rpx;
-  font-weight: 700;
-  color: #33691E;
-}
-.chip-sunk .chip-name {
-  color: #C62828;
-}
-.chip-state {
-  font-size: 18rpx;
-  color: #689F38;
-  margin-top: 4rpx;
+.chess-capture-ring {
+  width: 58rpx;
+  height: 58rpx;
+  border-radius: 50%;
+  border: 4rpx solid #E53935;
+  box-shadow: 0 0 10rpx #E53935;
+  animation: pulseRing 1.2s infinite ease-in-out alternate;
 }
 
 /* 操作按钮区 */
@@ -873,6 +1145,13 @@
 }
 .btn-sub:active {
   background: #FFF5F7;
+}
+.btn-undo {
+  color: #1976D2;
+  border-color: rgba(25, 118, 210, 0.35);
+}
+.btn-undo:active {
+  background: #E3F2FD;
 }
 .btn-danger {
   color: #E53935;

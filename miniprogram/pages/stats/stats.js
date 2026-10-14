@@ -132,5 +132,23 @@ Page({
       })
   },
 
+  // 打开平台隐私保护协议指引
+  openPrivacyContract() {
+    if (wx.openPrivacyContract) {
+      wx.openPrivacyContract({
+        fail: () => {
+          wx.showToast({ title: '无法打开隐私协议', icon: 'none' })
+        },
+      })
+    } else {
+      wx.showModal({
+        title: '隐私说明',
+        content: '本项目为双人私密空间，所有数据（位置、照片、日志等）仅在您与伴侣两人之间加密共享，绝不会向任何第三方公开或出售。',
+        showCancel: false,
+        confirmColor: '#F48FB1',
+      })
+    }
+  },
+
   noop() {},
 })

@@ -278,10 +278,30 @@
   justify-content: space-between;
   margin-top: 8rpx;
 }
+.tl-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
 .tl-card-time {
   font-size: 22rpx;
   color: #B39B8A;
   display: block;
+}
+.tl-card-report {
+  font-size: 20rpx;
+  color: #C9B3A3;
+  padding: 2rpx 8rpx;
+  border-radius: 6rpx;
+}
+.tl-card-report:active {
+  color: #E57373;
+}
+.tl-detail-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
 }
 .tl-card-comment-badge {
   display: inline-flex;

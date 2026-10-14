@@ -2,6 +2,7 @@
 // 一个账号（openid）永久绑定一个房间，无创建/加入/切换/退出入口。
 const { db, _, getUserByOpenid, getRoomUsers, getRoomById } = require('./helpers')
 const { record } = require('./transactions')
+const { checkText, checkImages } = require('./secCheck')
 
 // 首次自动建档默认值（可在「我」页面修改昵称）
 const DEFAULT_HOST_NICKNAME = '宝宝'
@@ -126,6 +127,12 @@ async function joinViaInvite(event, ctx) {
   } else {
     // 首次建档：加入邀请的房间
     const nickname = String(event.nickname || '').trim() || DEFAULT_GUEST_NICKNAME
+    if (nickname && nickname !== DEFAULT_GUEST_NICKNAME) {
+      await checkText(nickname, { openid: OPENID, scene: 1 })
+    }
+    if (event.avatar && String(event.avatar).startsWith('cloud://')) {
+      await checkImages([String(event.avatar)])
+    }
     me = await createUserDoc(OPENID, nickname, event.avatar, roomId, false)
   }
 
@@ -143,9 +150,16 @@ async function updateProfile(event, ctx) {
   if (event.nickname !== undefined) {
     const nick = String(event.nickname).trim()
     if (!nick) throw new Error('昵称不能为空')
+    await checkText(nick, { openid: OPENID, scene: 1 })
     data.nickname = nick
   }
-  if (event.avatar !== undefined) data.avatar = String(event.avatar)
+  if (event.avatar !== undefined) {
+    const avatarStr = String(event.avatar)
+    if (avatarStr.startsWith('cloud://')) {
+      await checkImages([avatarStr])
+    }
+    data.avatar = avatarStr
+  }
   if (!Object.keys(data).length) throw new Error('没有需要修改的内容')
 
   await db.collection('users').doc(me._id).update({ data })

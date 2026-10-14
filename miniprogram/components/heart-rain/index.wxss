@@ -27,3 +27,27 @@
     opacity: 0.9;
   }
 }
+
+/* 惩罚闪电掉落与急坠特效 */
+.hr-bolt {
+  animation-name: boltFall;
+  animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  filter: drop-shadow(0 0 8rpx rgba(255, 193, 7, 0.6));
+}
+@keyframes boltFall {
+  0% {
+    transform: translateY(0) rotate(-15deg) scale(0.7);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(15vh) rotate(10deg) scale(1.1);
+  }
+  85% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(115vh) rotate(-20deg) scale(0.9);
+    opacity: 0;
+  }
+}

@@ -1,20 +1,22 @@
 <view class="page points">
-  <heart-rain show="{{rain}}" bind:done="onRainDone" />
+  <heart-rain show="{{rain}}" type="{{rainType}}" bind:done="onRainDone" />
 
   <!-- ====== 双人积分卡片 ====== -->
-  <view class="card dual-card">
-    <view class="dual-user">
+  <view class="card dual-card {{shakeCard ? 'card-shake' : ''}}">
+    <view class="dual-user me">
+      <view class="role-badge">我</view>
       <image wx:if="{{me.avatarImg}}" class="dual-ava" src="{{me.avatar}}" mode="aspectFill" />
       <text wx:else class="dual-ava emoji">{{me.avatar || '🐻'}}</text>
       <view class="dual-name">{{me.nickname}}</view>
       <view class="dual-bal"><text class="num">{{me.balance}}</text> 分</view>
     </view>
     <view class="dual-divider"></view>
-    <view class="dual-user">
-      <image wx:if="{{partner.avatarImg}}" class="dual-ava" src="{{partner.avatar}}" mode="aspectFill" />
-      <text wx:else class="dual-ava emoji">{{partner.avatar || '🐰'}}</text>
-      <view class="dual-name">{{partner.nickname || 'TA'}}</view>
-      <view class="dual-bal"><text class="num">{{partner.balance}}</text> 分</view>
+    <view class="dual-user partner">
+      <view class="role-badge partner-badge">TA</view>
+      <image wx:if="{{partner.avatarImg}}" class="dual-ava partner-ava {{bounceAvatar ? 'ava-bounce' : ''}}" src="{{partner.avatar}}" mode="aspectFill" />
+      <text wx:else class="dual-ava partner-ava emoji {{bounceAvatar ? 'ava-bounce' : ''}}">{{partner.avatar || '🐰'}}</text>
+      <view class="dual-name partner-name">{{partner.nickname || 'TA'}}</view>
+      <view class="dual-bal partner-bal"><text class="num partner-num {{pulseScore ? (mode==='add' ? 'score-pulse-up' : 'score-pulse-down') : ''}}">{{partner.balance}}</text> 分</view>
     </view>
   </view>
 
@@ -27,7 +29,7 @@
 
     <view class="tx-label-row">
       <text class="section-label">输入分数</text>
-      <input class="input-box sm amount-input" type="number" maxlength="2" placeholder="自定义分数" value="{{amount}}" bindinput="onAmountInput" />
+      <input class="input-box sm amount-input" type="number" maxlength="2" placeholder="输入分数" value="{{amount}}" bindinput="onAmountInput" />
     </view>
 
     <view class="section-label">{{mode==='add'?'加分':'扣分'}}理由</view>

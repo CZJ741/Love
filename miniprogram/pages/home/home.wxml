@@ -201,7 +201,7 @@
           <text class="gle-title">双人游戏大厅</text>
           <text class="gle-tag">经典对弈</text>
         </view>
-        <text class="gle-desc">五子棋 · 围棋 · 飞行棋 · 海战棋</text>
+        <text class="gle-desc">五子棋 · 围棋 · 中国象棋 · 国际象棋</text>
       </view>
     </view>
     <view class="gle-right">
@@ -295,9 +295,9 @@
   <view wx:if="{{showFoodWheel}}" class="mask" bindtap="closeFoodWheel">
     <view class="food-wheel-modal" catchtap="noop">
       <view class="fwm-header">
-        <view class="fwm-title">🍲 今天吃什么</view>
+        <view class="fwm-title">今天吃什么</view>
         <view class="fwm-actions">
-          <view class="fwm-btn-list" bindtap="openFoodManage">📝 食物清单</view>
+          <view class="fwm-btn-list" bindtap="openFoodManage">食物清单</view>
           <view class="fwm-close" bindtap="closeFoodWheel">✕</view>
         </view>
       </view>
@@ -320,7 +320,6 @@
             style="transform: rotate({{item.angle}}deg);"
           >
             <view class="sector-content">
-              <text class="sector-emoji">{{item.emoji}}</text>
               <text class="sector-name">{{item.name}}</text>
             </view>
           </view>
@@ -339,7 +338,6 @@
       <view class="spin-result-box" wx:if="{{wheelResult}}">
         <text class="srb-tag">🎯 本次决定吃：</text>
         <view class="srb-val">
-          <text class="srb-emoji">{{wheelResult.emoji}}</text>
           <text class="srb-name">{{wheelResult.name}}</text>
         </view>
         <view class="srb-again-tip">不满意？可点击中心按钮直接再抽一次哦~</view>
@@ -354,14 +352,12 @@
   <view wx:if="{{showFoodManage}}" class="mask" bindtap="closeFoodManage">
     <view class="food-manage-modal" catchtap="noop">
       <view class="fmm-header">
-        <view class="fmm-title">📝 自定义食物清单 ({{foodWheelList.length}}项)</view>
+        <view class="fmm-title">自定义食物清单 ({{foodWheelList.length}}项)</view>
         <view class="fmm-close" bindtap="closeFoodManage">✕</view>
       </view>
 
       <!-- 新增/编辑输入区 -->
       <view class="fmm-input-bar">
-        <!-- Emoji 快捷切换 -->
-        <view class="fmm-emoji-btn" bindtap="cycleInputEmoji">{{currentFoodEmoji}}</view>
         <input
           class="fmm-input"
           placeholder="输入食物名称，如：麻辣烫"
@@ -382,7 +378,6 @@
           wx:key="id"
           class="fmm-item {{editingFoodId === item.id ? 'editing' : ''}}"
         >
-          <text class="fmm-item-emoji">{{item.emoji}}</text>
           <text class="fmm-item-name">{{item.name}}</text>
           <view class="fmm-item-ops">
             <view class="fmm-op-btn edit" data-id="{{item.id}}" bindtap="startEditFood">✏️</view>
@@ -392,7 +387,6 @@
       </scroll-view>
 
       <view class="fmm-footer">
-        <button class="btn secondary fmm-reset-btn" bindtap="resetDefaultFoods">恢复预设菜单</button>
         <button class="btn submit-btn fmm-done-btn" bindtap="closeFoodManage">完成</button>
       </view>
     </view>

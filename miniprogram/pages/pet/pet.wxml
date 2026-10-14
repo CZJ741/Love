@@ -1,246 +1,330 @@
-<view class="page pet-page">
-  <!-- 顶部宠物大舞台卡片（Live2D 唯美多形态渲染展示） -->
-  <view class="card pet-stage-card">
-    <view class="pet-stage-header">
-      <view class="pet-name-box" bindtap="promptRename">
-        <text class="pnb-name">{{pet.name || '小糯米'}}</text>
-        <text class="pnb-edit">✏️</text>
+<view class="pet-room-page">
+  <!-- 1. 全屏沉浸式宠物屋背景与家具展示 -->
+  <view class="room-scene scene-{{currentScene}}">
+    <view class="scene-arrow scene-arrow-left" bindtap="previousScene">‹</view>
+    <view class="scene-title">{{currentSceneName}}</view>
+    <view class="scene-arrow scene-arrow-right" bindtap="nextScene">›</view>
+    <view wx:if="{{currentScene === 'living'}}" class="scene-backdrop living-backdrop"><view class="scene-decor couch">🛋️</view><view class="scene-decor plant">🪴</view></view>
+    <view wx:if="{{currentScene === 'bedroom'}}" class="scene-backdrop bedroom-backdrop"><view class="bedroom-headboard"></view><view class="scene-decor moon">🌙</view></view>
+    <view wx:if="{{currentScene === 'bathroom'}}" class="scene-backdrop bathroom-backdrop"><view class="bath-mirror">◯</view><view class="bath-tile"></view></view>
+    <view wx:if="{{currentScene === 'outdoor'}}" class="scene-backdrop outdoor-backdrop"><view class="scene-decor cloud-one">☁️</view><view class="scene-decor cloud-two">☁️</view><view class="scene-decor sun">☀️</view></view>
+    <view class="room-back-wall">
+      <view class="wall-panel panel-left"></view><view class="wall-panel panel-right"></view><view class="baseboard"></view>
+      <view class="room-window"><view class="window-glass"><view class="window-sun"></view><view class="window-cloud"></view><view class="window-mullion-v"></view><view class="window-mullion-h"></view></view><view class="window-sill"></view></view>
+      <view class="wall-art" wx:if="{{pet.slots.wall && visibleSlots.wall}}">
+        <view wx:if="{{pet.slots.wall === 'furn_wall_lights'}}" class="string-lights">✨ ✨ ✨ ✨</view>
+        <view wx:elif="{{pet.slots.wall === 'furn_wall_frame'}}" class="photo-frame"><view class="photo-art">💞</view></view>
+        <view wx:elif="{{pet.slots.wall === 'furn_wall_clock'}}" class="wall-clock"><view class="clock-face"><view class="clock-hand"></view></view></view>
       </view>
-      <!-- 当前进化阶段徽标 -->
-      <view class="pet-stage-badge">
-        <text wx:if="{{pet.stage === 'egg'}}">🥚 阶段一 · 萌宠蛋</text>
-        <text wx:elif="{{pet.stage === 'baby'}}">🐾 阶段二 · 幼崽期</text>
-        <text wx:elif="{{pet.stage === 'youth'}}">🐕 阶段三 · 成长期</text>
-        <text wx:elif="{{pet.stage === 'adult'}}">👑 阶段四 · 完全体</text>
-      </view>
-    </view>
-
-    <!-- 舞台精美独立对白条：独立位于小狗上方，绝不遮挡宠物头部 -->
-    <view class="stage-speech-bubble">
-      <view class="ssb-icon-tag">🐶 对白</view>
-      <text class="ssb-text">{{speechText}}</text>
-    </view>
-
-    <!-- 大舞台 Live2D 多形态桌宠 -->
-    <view class="stage-pet-center">
-      <live2d-pet
-        pet="{{pet}}"
-        compactMode="{{true}}"
-        bindinteract="onPetInteract"
-      />
-    </view>
-    <view class="stage-tip">
-      <text wx:if="{{pet.stage === 'egg'}}">轻触蛋壳抚摸对话，孵化经验由双方共同积累~</text>
-      <text wx:else>轻触小狗互动，伴侣也能看到它的即时心情与动作哦~</text>
-    </view>
-  </view>
-
-  <!-- 阶段进化卡片（当经验蓄满或进入确认状态时展示） -->
-  <view wx:if="{{stageConfig.nextStage}}" class="card evolve-card {{canEvolve ? 'evolve-ready' : ''}}">
-    <view class="evolve-header">
-      <view class="eh-title-row">
-        <text class="eh-icon">✨</text>
-        <text class="eh-title">阶段进化仪式</text>
-      </view>
-      <text class="eh-sub">{{stageConfig.name}} → {{nextStageName}}</text>
-    </view>
-
-    <!-- 进化条件指标对比 -->
-    <view class="evolve-requirements">
-      <view class="er-item {{pet.exp >= pet.maxExp ? 'ok' : 'wait'}}">
-        <text class="er-icon">{{pet.exp >= pet.maxExp ? '✓' : '⏳'}}</text>
-        <text class="er-text">阶段经验满格 ({{pet.exp}}/{{pet.maxExp}})</text>
-      </view>
-      <view class="er-item {{pet.health >= healthThreshold ? 'ok' : 'fail'}}">
-        <text class="er-icon">{{pet.health >= healthThreshold ? '✓' : '⚠️'}}</text>
-        <text class="er-text">健康度达标 (当前: {{pet.health}}% / 需 ≥{{healthThreshold}}%)</text>
+      <view class="window-item" wx:if="{{pet.slots.window && visibleSlots.window}}">
+        <view wx:if="{{pet.slots.window === 'furn_win_sunflower'}}" class="plant"><view class="sunflower-head">🌻</view><view class="plant-stem"></view><view class="plant-leaves">🌿</view><view class="plant-pot"></view></view>
+        <view wx:elif="{{pet.slots.window === 'furn_win_cherry'}}" class="wind-chime"><view class="chime-top">🎐</view><view class="chime-strings">│ │ │</view><view class="chime-bells">🔔 🔔 🔔</view></view>
+        <view wx:elif="{{pet.slots.window === 'furn_win_catgrass'}}" class="plant mint"><view class="mint-leaves">🌱</view><view class="plant-stem"></view><view class="plant-pot"></view></view>
       </view>
     </view>
-
-    <!-- 共同确认机制操作栏 -->
-    <view class="evolve-action-bar">
-      <!-- 1. 经验未满或健康未达标 -->
-      <button wx:if="{{!canEvolve && !pet.evolveRequested}}" class="btn-evolve disabled" disabled="true">
-        {{pet.health < healthThreshold && pet.exp >= pet.maxExp ? '健康度过低，需照料至80%方可进化' : '积攒经验与照料中...'}}
-      </button>
-      <!-- 2. 达到条件，尚未发起 -->
-      <button wx:elif="{{canEvolve && !pet.evolveRequested}}" class="btn-evolve ready" bindtap="requestEvolve">
-        🌟 发起进化仪式
-      </button>
-      <!-- 3. 我已发起，等待对方确认 -->
-      <button wx:elif="{{isMyRequested}}" class="btn-evolve waiting" disabled="true">
-        ⏳ 已发起仪式，等待 TA 共同见证确认...
-      </button>
-      <!-- 4. 对方已发起，轮到我确认进化！ -->
-      <button wx:elif="{{isWaitingPartnerConfirm}}" class="btn-evolve confirm" bindtap="confirmEvolve">
-        🎉 共同见证！点击确认完成进化！
-      </button>
+    <view class="room-floor"></view>
+    <view class="floor-rug {{pet.slots.rug}}" wx:if="{{pet.slots.rug && visibleSlots.rug}}"><view class="rug-pattern"></view></view>
+    <view class="room-bed {{pet.slots.bed}}" wx:if="{{pet.slots.bed && visibleSlots.bed}}"><view class="bed-headboard"></view><view class="bed-pillow">🤍</view><view class="bed-mattress"></view><view class="bed-blanket"></view><view class="bed-legs"></view><view wx:if="{{pet.slots.bed === 'furn_bed_castle'}}" class="bed-castle-detail">🏰</view><view wx:if="{{pet.slots.bed === 'furn_bed_moon'}}" class="bed-moon-detail">🌙</view></view>
+    <view class="room-facility {{pet.slots.facility}}" wx:if="{{pet.slots.facility && visibleSlots.facility}}">
+      <view wx:if="{{pet.slots.facility === 'furn_fac_feeder'}}" class="feeder"><view class="feeder-bowl"><view class="food-pile"></view></view><view class="feeder-base"></view></view>
+      <view wx:elif="{{pet.slots.facility === 'furn_fac_fountain'}}" class="fountain"><view class="water-stream"></view><view class="fountain-bowl"></view><view class="fountain-base"></view></view>
+      <view wx:elif="{{pet.slots.facility === 'furn_fac_robot'}}" class="robot"><view class="robot-antenna"></view><view class="robot-head"><view class="robot-eye"></view><view class="robot-eye"></view></view><view class="robot-body"></view></view>
+    </view>
+    <view wx:if="{{currentScene === 'living' && pet.slots.scene_living_sofa}}" class="scene-prop sofa">🛋️</view>
+    <view wx:if="{{currentScene === 'living' && pet.slots.scene_living_table}}" class="scene-prop table">🪵</view>
+    <view wx:if="{{currentScene === 'bedroom' && pet.slots.scene_bedroom_lamp}}" class="scene-prop lamp">🪔</view>
+    <view wx:if="{{currentScene === 'bathroom' && pet.slots.scene_bathroom_tub}}" class="scene-prop tub">🛁</view>
+    <view wx:if="{{currentScene === 'bathroom' && pet.slots.scene_bathroom_mat}}" class="scene-prop mat">🧼</view>
+    <view wx:if="{{currentScene === 'outdoor' && pet.slots.scene_outdoor_tent}}" class="scene-prop tent">⛺</view>
+    <view wx:if="{{currentScene === 'outdoor' && pet.slots.scene_outdoor_tree}}" class="scene-prop tree">🌳</view>
+    <!-- 核心角色：Live2D 宠物舞台 -->
+    <view class="center-pet-wrap" catchtap="onTapPet">
+      <live2d-pet id="live2d-stage-pet" pet="{{pet}}" bind:interact="onPetLive2DInteract" />
     </view>
   </view>
 
-  <!-- 属性状态卡片（健康度总指标 + 基础数值） -->
-  <view class="card stats-card">
-    <view class="card-title-row">
-      <view class="ctr-left">
-        <text class="ctr-title">🐾 成长状态指标</text>
-        <text class="ctr-health-tag {{pet.health >= healthThreshold ? 'health-good' : 'health-warning'}}">
-          健康度: {{pet.health || 0}}% {{pet.health < healthThreshold ? '(病态需照料)' : '(优良)'}}
-        </text>
+  <!-- 2. 悬浮交互界面 -->
+  <view class="floating-hud">
+    <!-- 顶部状态栏 -->
+    <view class="top-nav-row" style="padding-top: {{statusBarHeight}}px;">
+      <view class="back-pill" bindtap="navigateBack">
+        <text class="pill-icon">‹</text>
       </view>
-      <text class="ctr-exp">今日经验: {{pet.todayExp || 0}}/{{stageConfig.dailyExpLimit || 40}}</text>
-    </view>
-
-    <!-- 阶段经验条 -->
-    <view class="main-exp-section">
-      <view class="mes-info">
-        <text class="mes-name">{{stageConfig.name}}成长进度</text>
-        <text class="mes-val">{{pet.exp || 0}} / {{pet.maxExp || 100}} EXP</text>
+      <view class="name-pill" bindtap="promptRename" bindlongpress="toggleDevModal">
+        <text class="pet-name">{{pet.name || '小糯米'}}</text>
+        <text class="edit-icon">✏️</text>
       </view>
-      <view class="mes-bar-track">
-        <view class="mes-bar-fill" style="width: {{pet.exp * 100 / pet.maxExp}}%;"></view>
+      <view class="coin-pill">
+        <text class="coin-icon">🪙</text>
+        <text class="coin-num">{{pet.coins || 0}}</text>
       </view>
     </view>
 
-    <view class="stat-bars">
-      <!-- 1. 饱食度 -->
-      <view class="stat-bar-row">
-        <view class="sbr-label"><text class="sbr-icon">🍖</text><text>饱食度</text></view>
-        <view class="sbr-bar-track">
-          <view class="sbr-bar-fill hunger" style="width: {{pet.hunger || 0}}%;"></view>
-        </view>
-        <text class="sbr-val">{{pet.hunger || 0}}/100</text>
-      </view>
+    <!-- 伴侣互动动态提示 -->
+    <view class="partner-dynamic-toast {{showPartnerToast ? 'show' : ''}}">
+      <text class="pdt-heart">💞</text>
+      <text class="pdt-text">{{partnerToast}}</text>
+    </view>
 
-      <!-- 2. 心情值 -->
-      <view class="stat-bar-row">
-        <view class="sbr-label"><text class="sbr-icon">💖</text><text>心情值</text></view>
-        <view class="sbr-bar-track">
-          <view class="sbr-bar-fill mood" style="width: {{pet.mood || 0}}%;"></view>
-        </view>
-        <text class="sbr-val">{{pet.mood || 0}}/100</text>
+    <!-- 左侧宠物状态 -->
+    <view class="hud-left">
+      <view class="stat-bubble">
+        <text class="sb-icon">🍖</text>
+        <text class="sb-val">{{pet.hunger || 0}}</text>
       </view>
-
-      <!-- 3. 清洁度 -->
-      <view class="stat-bar-row">
-        <view class="sbr-label"><text class="sbr-icon">🧼</text><text>清洁度</text></view>
-        <view class="sbr-bar-track">
-          <view class="sbr-bar-fill clean" style="width: {{pet.cleanliness || 0}}%;"></view>
-        </view>
-        <text class="sbr-val">{{pet.cleanliness || 0}}/100</text>
+      <view class="stat-bubble">
+        <text class="sb-icon">😊</text>
+        <text class="sb-val">{{pet.mood || 0}}</text>
       </view>
-
-      <!-- 4. 体力值 -->
-      <view class="stat-bar-row">
-        <view class="sbr-label"><text class="sbr-icon">⚡</text><text>体力值</text></view>
-        <view class="sbr-bar-track">
-          <view class="sbr-bar-fill energy" style="width: {{pet.energy || 0}}%;"></view>
-        </view>
-        <text class="sbr-val">{{pet.energy || 0}}/100</text>
+      <view class="stat-bubble">
+        <text class="sb-icon">🫧</text>
+        <text class="sb-val">{{pet.cleanliness || 0}}</text>
+      </view>
+      <view class="stat-bubble">
+        <text class="sb-icon">⚡</text>
+        <text class="sb-val">{{pet.energy || 0}}</text>
+      </view>
+      <view class="stat-bubble {{pet.health < 60 ? 'warn' : ''}}">
+        <text class="sb-icon">❤️</text>
+        <text class="sb-val">{{pet.health || 0}}</text>
       </view>
     </view>
 
-    <!-- 最新动态足迹日记 -->
-    <view class="pet-diary-row">
-      <text class="pdr-tag">最新足迹</text>
-      <text class="pdr-text">{{pet.lastActionText || '小家伙正乖巧地待在你们身边'}}</text>
+    <!-- 右侧常用功能 -->
+    <view class="hud-right">
+      <view class="hud-btn-circle game-btn" data-type="game" bindtap="openModal">
+        <text class="hbc-icon">🎮</text>
+        <text class="hbc-label">赚金币</text>
+      </view>
+      <view class="hud-btn-circle shop-btn" data-type="shop" bindtap="openModal">
+        <text class="hbc-icon">🛍️</text>
+        <text class="hbc-label">商店</text>
+      </view>
+      <view class="hud-btn-circle bag-btn" data-type="backpack" bindtap="openModal">
+        <text class="hbc-icon">🎒</text>
+        <text class="hbc-label">储物箱</text>
+      </view>
+      <view class="hud-btn-circle decor-btn" data-type="decor" bindtap="openModal">
+        <text class="hbc-icon">🪑</text>
+        <text class="hbc-label">换装</text>
+      </view>
+      <view class="hud-btn-circle log-btn" data-type="footprints" bindtap="openModal">
+        <text class="hbc-icon">📔</text>
+        <text class="hbc-label">足迹</text>
+      </view>
+    </view>
+
+    <!-- 满足条件时显示进化提示 -->
+    <view wx:if="{{canEvolve && !pet.evolveRequested}}" class="evolve-dock-bar">
+      <button class="btn-dock-evolve" bindtap="requestEvolve">✨ 发起进化</button>
+    </view>
+    <view wx:elif="{{isWaitingPartnerConfirm}}" class="evolve-dock-bar">
+      <button class="btn-dock-evolve confirm" bindtap="confirmEvolve">🎉 确认共同见证进化</button>
     </view>
   </view>
 
-  <!-- 阶段专属互动照料面板 -->
-  <view class="card actions-card">
-    <view class="card-title-row">
-      <text class="ctr-title">🎮 互动照料大厅</text>
-      <text class="ctr-sub">双方共享经验池 · 共同照料</text>
-    </view>
+  <!-- 3. 功能弹窗 -->
 
-    <!-- 蛋阶段专属互动 -->
-    <block wx:if="{{pet.stage === 'egg'}}">
-      <view class="actions-grid egg-actions">
-        <view class="act-btn" data-act="touch" bindtap="doInteract">
-          <view class="act-icon-box box-pet">🤗</view>
-          <text class="act-name">抚摸暖蛋</text>
-          <text class="act-desc">心情+15 经验+12</text>
-        </view>
-        <view class="act-btn" data-act="talk" bindtap="doInteract">
-          <view class="act-icon-box box-talk">💬</view>
-          <text class="act-name">温柔对话</text>
-          <text class="act-desc">心情+20 经验+15</text>
-        </view>
-        <view class="act-btn" data-act="shake" bindtap="doInteract">
-          <view class="act-icon-box box-shake">🪺</view>
-          <text class="act-name">轻微摇晃</text>
-          <text class="act-desc">好奇翻身 经验+10</text>
-        </view>
+  <!-- 萌宠小游戏 -->
+  <view wx:if="{{activeModal === 'game'}}" class="modal-mask" catchtap="closeModal">
+    <view class="modal-card game-card" catchtap="noop">
+      <view class="modal-header">
+        <view class="mh-title">萌宠接金币大冒险</view>
+        <view class="mh-close" bindtap="closeModal">×</view>
       </view>
-    </block>
 
-    <!-- 破壳后通用日常照料 -->
-    <block wx:else>
-      <view class="actions-grid">
-        <view class="act-btn" data-act="touch" bindtap="doInteract">
-          <view class="act-icon-box box-pet">🤗</view>
-          <text class="act-name">温柔摸摸</text>
-          <text class="act-desc">心情+15 经验+10</text>
+      <view class="game-view-area" catchtouchmove="onGameTouchMove">
+        <view class="game-top-bar">
+          <text class="gtb-score">得分：{{gameScore}}</text>
+          <text class="gtb-coins">今日金币：{{pet.todayCoins || 0}}/{{dailyCoinLimit}}</text>
         </view>
-        <view class="act-btn" data-act="clean" bindtap="doInteract">
-          <view class="act-icon-box box-clean">🧼</view>
-          <text class="act-name">泡泡洗澡</text>
-          <text class="act-desc">清洁+35 健康+10</text>
-        </view>
-        <view class="act-btn" data-act="sleep" bindtap="doInteract">
-          <view class="act-icon-box box-sleep">💤</view>
-          <text class="act-name">抱去睡觉</text>
-          <text class="act-desc">体力+40 恢复活力</text>
-        </view>
-        <view class="act-btn" data-act="heal" bindtap="doInteract">
-          <view class="act-icon-box box-heal">🩹</view>
-          <text class="act-name">看病治疗</text>
-          <text class="act-desc">健康+30 去除病态</text>
-        </view>
-      </view>
-    </block>
-  </view>
 
-  <!-- ====== 宠物积分商城卡片（结合已有用户积分系统购买商品） ====== -->
-  <view class="card shop-card">
-    <view class="card-title-row">
-      <view class="shop-title-left">
-        <text class="ctr-title">🏪 萌宠积分商店</text>
-        <text class="ctr-sub">使用情侣积分购买专属养宠好物</text>
-      </view>
-      <view class="user-balance-pill">
-        <text class="ubp-icon">⭐</text>
-        <text class="ubp-val">我的积分: {{myBalance || 0}}</text>
-      </view>
-    </view>
+  <!-- 掉落物 -->
+        <block wx:for="{{gameItems}}" wx:key="id">
+          <view class="falling-item" style="left: {{item.x}}%; top: {{item.y}}%;">
+            <text class="item-emoji">{{item.emoji}}</text>
+          </view>
+        </block>
 
-    <view class="shop-items-grid">
-      <view
-        wx:for="{{shopList}}"
-        wx:key="id"
-        class="shop-item"
-        data-item="{{item}}"
-        bindtap="buyShopItem"
-      >
-        <view class="si-icon-box">{{item.emoji}}</view>
-        <text class="si-name">{{item.name}}</text>
-        <text class="si-desc">{{item.desc}}</text>
-        <view class="si-price-btn">
-          <text class="sip-star">⭐</text>
-          <text class="sip-num">{{item.price}} 积分</text>
+        <!-- 底部可移动接取托盘 -->
+        <view class="catcher-pet" style="left: {{catcherX}}%;">
+          <text class="catcher-avatar">🐶</text>
+        </view>
+
+        <!-- 游戏开始前或结束后的提示 -->
+        <view wx:if="{{!gameRunning}}" class="game-overlay">
+          <block wx:if="{{gameGameOver && earnedCoinsResult}}">
+            <view class="go-title">冒险完成！</view>
+            <view class="go-sub">获得金币：{{earnedCoinsResult.earnedCoins}} 🪙</view>
+            <view wx:if="{{earnedCoinsResult.isExhausted}}" class="go-warn">⚠️ 体力已耗尽，产生了疲劳惩罚</view>
+            <button class="btn-start-game" bindtap="startMiniGame">再玩一局</button>
+          </block>
+          <block wx:else>
+            <view class="go-title">左右滑动接住金币与食物！</view>
+            <view class="go-sub">注意躲开炸弹，每次游戏会消耗少量体力与清洁度</view>
+            <button class="btn-start-game" bindtap="startMiniGame">开始游戏</button>
+          </block>
         </view>
       </view>
     </view>
   </view>
 
-  <!-- 养成与成长指南卡片 -->
-  <view class="card tips-card">
-    <view class="tips-title">💡 纯成长体系规则</view>
-    <view class="tips-content">
-      <view>• 四大形态进化：蛋(egg) → 幼崽(baby) → 成长期(youth) → 完全体(adult)。</view>
-      <view>• 双方共享同一经验池，达到当日经验上限后不再获取，不设个人排行榜。</view>
-      <view>• 健康度为核心总指标，长期饱食/心情/清洁不佳会下降并呈现虚弱病态（贴创口贴）。</view>
-      <view>• 进化必须满足【阶段经验满 + 健康度 ≥ 80% + 双方共同确认】，进化后全状态满值奖励！</view>
+  <!-- 萌宠商店弹窗 -->
+  <view wx:if="{{activeModal === 'shop'}}" class="modal-mask" catchtap="closeModal">
+    <view class="modal-card sheet-card" catchtap="noop">
+      <view class="modal-header">
+        <view class="mh-title">萌宠百货</view>
+        <view class="mh-coins"><text class="coin-icon">🪙</text>{{pet.coins || 0}}</view>
+        <view class="mh-close" bindtap="closeModal">×</view>
+      </view>
+
+      <view class="sheet-tabs">
+        <view class="st-item {{shopTab === 'consumable' ? 'active' : ''}}" data-tab="consumable" bindtap="switchShopTab">食品用品</view>
+        <view class="st-item {{shopTab === 'furniture' ? 'active' : ''}}" data-tab="furniture" bindtap="switchShopTab">场景家具</view>
+      </view>
+
+      <view wx:if="{{shopTab === 'furniture'}}" class="scene-filter">
+        <view wx:for="{{scenes}}" wx:key="id" class="scene-filter-chip {{furnitureSceneTab === item.id ? 'active' : ''}}" data-scene="{{item.id}}" bindtap="switchFurnitureScene">{{item.name}}</view>
+      </view>
+
+      <scroll-view scroll-y class="sheet-scroll">
+        <view class="shop-grid">
+          <block wx:for="{{displayShopList}}" wx:key="id">
+            <view wx:if="{{shopTab === 'consumable' && item.type === 'consumable' || shopTab === 'furniture' && item.type === 'furniture' && item.scene === furnitureSceneTab}}" class="shop-card-box {{item.available === false ? 'unavailable' : ''}}">
+              <view class="sc-emoji">{{item.emoji}}</view>
+              <view class="sc-name">{{item.name}}</view>
+              <view class="sc-desc">{{item.desc}}</view>
+              <button class="btn-buy" data-id="{{item.id}}" data-available="{{item.available !== false}}" bindtap="buyShopItem">
+                <text wx:if="{{item.available !== false}}"><text class="btn-coin">🪙</text>{{item.price}}</text>
+                <text wx:else>即将上架</text>
+              </button>
+            </view>
+          </block>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 宠物背包弹窗 -->
+  <view wx:if="{{activeModal === 'backpack'}}" class="modal-mask" catchtap="closeModal">
+    <view class="modal-card sheet-card" catchtap="noop">
+      <view class="modal-header">
+        <view class="mh-title">宠物背包</view>
+        <view class="mh-close" bindtap="closeModal">×</view>
+      </view>
+
+      <scroll-view scroll-y class="sheet-scroll">
+        <view class="bag-grid" wx:if="{{pet.inventory && pet.inventory.length}}">
+          <block wx:for="{{pet.inventory}}" wx:key="id">
+            <view wx:if="{{item.type === 'consumable'}}" class="bag-item-card">
+              <view class="bic-badge">{{item.count}}</view>
+              <view class="bic-info">
+                <text class="bic-emoji">{{item.emoji || '🍽️'}}</text>
+                <text class="bic-name">{{item.name || item.id}}</text>
+              </view>
+              <button class="btn-use" data-id="{{item.id}}" bindtap="useBackpackItem">取出使用</button>
+            </view>
+          </block>
+        </view>
+        <view wx:else class="empty-tip">背包空空如也，去商店逛逛吧~</view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 宠物屋装饰弹窗 -->
+  <view wx:if="{{activeModal === 'decor'}}" class="modal-mask" catchtap="closeModal">
+    <view class="modal-card sheet-card" catchtap="noop">
+      <view class="modal-header">
+        <view class="mh-title">宠物小窝装饰</view>
+        <view class="mh-close" bindtap="closeModal">×</view>
+      </view>
+
+      <view class="sheet-tabs decor-tabs">
+        <view class="st-item {{decorSlotTab === 'scene' ? 'active' : ''}}" data-tab="scene" bindtap="switchDecorTab">场景</view>
+        <view class="st-item {{decorSlotTab === 'rug' ? 'active' : ''}}" data-tab="rug" bindtap="switchDecorTab">地毯</view>
+        <view class="st-item {{decorSlotTab === 'bed' ? 'active' : ''}}" data-tab="bed" bindtap="switchDecorTab">睡窝</view>
+        <view class="st-item {{decorSlotTab === 'wall' ? 'active' : ''}}" data-tab="wall" bindtap="switchDecorTab">墙饰</view>
+        <view class="st-item {{decorSlotTab === 'window' ? 'active' : ''}}" data-tab="window" bindtap="switchDecorTab">窗台</view>
+        <view class="st-item {{decorSlotTab === 'facility' ? 'active' : ''}}" data-tab="facility" bindtap="switchDecorTab">设施</view>
+      </view>
+
+      <scroll-view scroll-y class="sheet-scroll">
+        <view wx:if="{{decorSlotTab === 'scene'}}" class="scene-filter decor-scene-filter">
+          <view wx:for="{{scenes}}" wx:key="id" class="scene-filter-chip {{currentScene === item.id ? 'active' : ''}}" data-scene="{{item.id}}" bindtap="switchScene">{{item.name}}</view>
+        </view>
+        <view class="decor-actions-row" wx:if="{{decorSlotTab !== 'scene'}}">
+          <button class="btn-unequip" data-slot="{{decorSlotTab}}" data-id="" bindtap="equipFurniture">卸下当前装饰</button>
+        </view>
+        <view class="shop-grid">
+          <block wx:for="{{pet.inventory}}" wx:key="id">
+            <view wx:if="{{decorSlotTab !== 'scene' && item.type === 'furniture' && item.slot === decorSlotTab && item.scene === currentScene}}" class="shop-card-box {{pet.slots[decorSlotTab] === item.id ? 'equipped' : ''}}">
+              <view class="sc-emoji">{{item.emoji || '🪑'}}</view>
+              <view class="sc-name">{{item.name || item.id}}</view>
+              <button class="btn-buy" data-slot="{{decorSlotTab}}" data-id="{{item.id}}" bindtap="equipFurniture">
+                {{pet.slots[decorSlotTab] === item.id ? '已穿戴' : '穿戴'}}
+              </button>
+            </view>
+            <view wx:if="{{decorSlotTab === 'scene' && item.type === 'furniture' && item.scene === currentScene}}" class="shop-card-box {{item.equipped ? 'equipped' : ''}}">
+              <view class="sc-emoji">{{item.emoji}}</view>
+              <view class="sc-name">{{item.name}}</view>
+              <button class="btn-buy" data-id="{{item.id}}" data-scene="{{item.scene}}" data-slot="{{item.slot}}" bindtap="equipSceneFurniture">
+                {{item.equipped ? '已摆放' : '摆放'}}
+              </button>
+            </view>
+          </block>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 双人养育足迹 -->
+  <view wx:if="{{activeModal === 'footprints'}}" class="modal-mask" catchtap="closeModal">
+    <view class="modal-card sheet-card" catchtap="noop">
+      <view class="modal-header">
+        <view class="mh-title">双人养育足迹</view>
+        <view class="mh-close" bindtap="closeModal">×</view>
+      </view>
+
+      <scroll-view scroll-y class="sheet-scroll">
+        <view class="footprints-list" wx:if="{{pet.footprints && pet.footprints.length}}">
+          <view wx:for="{{pet.footprints}}" wx:key="id" class="fp-item">
+            <view class="fp-dot"></view>
+            <view class="fp-content">
+              <text class="fp-text">{{item.text}}</text>
+              <text class="fp-time">{{item.timeStr || '刚刚'}}</text>
+            </view>
+          </view>
+        </view>
+        <view wx:else class="empty-tip">还没有足迹记录哦</view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 开发者测试面板：长按顶部宠物名字打开 -->
+  <view wx:if="{{showDevModal}}" class="modal-mask" catchtap="toggleDevModal">
+    <view class="modal-card dev-modal-sheet" catchtap="noop">
+      <view class="modal-header">
+        <view class="mh-title">萌宠开发者测试面板</view>
+        <view class="mh-close" bindtap="toggleDevModal">×</view>
+      </view>
+      <scroll-view scroll-y class="sheet-scroll">
+        <view class="dev-section-title">快速切换成长阶段</view>
+        <view class="dev-btn-group">
+          <button class="dev-btn" data-stage="egg" bindtap="devSwitchStage">🥚 阶段一 · 萌宠蛋</button>
+          <button class="dev-btn" data-stage="baby" bindtap="devSwitchStage">🐾 阶段二 · 幼崽期</button>
+          <button class="dev-btn" data-stage="youth" bindtap="devSwitchStage">🐕 阶段三 · 成长期</button>
+          <button class="dev-btn" data-stage="adult" bindtap="devSwitchStage">👑 阶段四 · 完全体</button>
+        </view>
+
+        <view class="dev-section-title">快速注入资产与状态</view>
+        <view class="dev-btn-group">
+          <button class="dev-btn ok" bindtap="devAddCoins">🪙 充值 +500 金币</button>
+          <button class="dev-btn ok" bindtap="devFullRecovery">💖 全部状态恢复</button>
+          <button class="dev-btn ok" bindtap="devMaxExp">✨ 经验拉满（可进化）</button>
+          <button class="dev-btn warn" bindtap="devMakeSick">🤒 设为虚弱生病</button>
+          <button class="dev-btn warn" bindtap="devMakeHungry">🍖 设为极度饥饿</button>
+        </view>
+      </scroll-view>
     </view>
   </view>
 </view>

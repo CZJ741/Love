@@ -7,6 +7,7 @@
 //   4. 数据永久保留，不再按周清理。
 const { cloud, db, _, getUserByOpenid, getRoomUsers, cnDateStr } = require('./helpers')
 const { earn } = require('./economy')
+const { checkImages } = require('./secCheck')
 
 // 趣味/奇怪视角的拍摄主题池（80+ 个丰富日常创意，每日随机轮换）
 const THEMES = [
@@ -244,6 +245,9 @@ async function puzzleUpload(event, ctx) {
   const me = await getUserByOpenid(OPENID)
   if (!me) throw new Error('请先创建档案')
   if (!me.roomId) throw new Error('请先加入小窝')
+
+  // 内容安全审核 (UGC 图片)
+  await checkImages([fileId])
 
   const date = cnDateStr()
 

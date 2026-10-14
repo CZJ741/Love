@@ -46,6 +46,8 @@ Component({
     showHeartFx: false,
     showSweatFx: false,
     showZzzFx: false,
+    showBubbleFx: false,
+    showFoodFx: false,
   },
 
   pageLifetimes: {
@@ -64,7 +66,6 @@ Component({
     attached() {
       this._startIdleActionLoop()
       this._startBlinkLoop()
-      this._greetOnLoad()
     },
     detached() {
       this._clearAllTimers()
@@ -157,10 +158,10 @@ Component({
         '歪头看着你：今天你们有想对方吗？'
       ]
       const pick = quotes[Math.floor(Math.random() * quotes.length)]
-      this.showBubble(pick, 2500)
+      this.showBubble(pick, 1800)
 
       // 通知父组件触发即时互动保存
-      this.triggerEvent('interact', { action: 'poke' })
+      this.triggerEvent('interact', { action: 'touch' })
     },
 
     // 6. 状态特效切换
@@ -169,7 +170,30 @@ Component({
         showHeartFx: state === 'happy' || state === 'surprise',
         showSweatFx: state === 'sad',
         showZzzFx: state === 'sleepy',
+        showBubbleFx: state === 'clean',
+        showFoodFx: state === 'feed',
       })
+    },
+
+    // 播放指定瞬时交互动作特效 (供外部调用)
+    triggerActionFx(action) {
+      try { wx.vibrateShort({ type: 'light' }) } catch (e) {}
+      if (action === 'feed') {
+        this.setData({ showFoodFx: true, isTapped: true, actionState: 'happy' })
+        setTimeout(() => this.setData({ showFoodFx: false, isTapped: false }), 1000)
+      } else if (action === 'clean') {
+        this.setData({ showBubbleFx: true, isTapped: true, actionState: 'happy' })
+        setTimeout(() => this.setData({ showBubbleFx: false, isTapped: false }), 1200)
+      } else if (action === 'sleep') {
+        this.setData({ showZzzFx: true, actionState: 'sleepy' })
+        setTimeout(() => this.setData({ showZzzFx: false }), 2000)
+      } else if (action === 'touch') {
+        this.setData({ showHeartFx: true, isTapped: true, actionState: 'expectant' })
+        setTimeout(() => this.setData({ showHeartFx: false, isTapped: false }), 1000)
+      } else if (action === 'heal') {
+        this.setData({ showHeartFx: true, actionState: 'happy' })
+        setTimeout(() => this.setData({ showHeartFx: false }), 1000)
+      }
     },
 
     // 7. 点击状态胶囊打开养成互动弹窗

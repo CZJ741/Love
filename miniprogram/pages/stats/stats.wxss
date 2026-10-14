@@ -79,3 +79,24 @@
 .avatar-option.active {
   border-color: #F48FB1; background: #FFEBED;
 }
+
+/* 隐私指引入口 */
+.privacy-entrance {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  margin-top: 32rpx;
+  padding: 12rpx 0;
+}
+.privacy-icon {
+  font-size: 24rpx;
+}
+.privacy-text {
+  font-size: 24rpx;
+  color: #B39B8A;
+  text-decoration: underline;
+}
+.privacy-text:active {
+  color: #F48FB1;
+}

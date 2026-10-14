@@ -2,6 +2,7 @@
 const { db, _, getUserByOpenid, getRoomUsers, todayStartServerDate, cnDateStr } = require('./helpers')
 const { earn } = require('./economy')
 const { record, deductUser } = require('./transactions')
+const { checkText } = require('./secCheck')
 
 const SIGN_BASE = 10 // 每日签到基础分
 
@@ -21,6 +22,9 @@ function extractBalances(roomUsers, myOpenid) {
   }
 }
 
+// 每日每人加分与扣分上限均为 50 分
+const DAILY_LIMIT = 50
+
 // 给「对方」加分
 async function addPoints(event, ctx) {
   const { OPENID } = ctx
@@ -28,12 +32,37 @@ async function addPoints(event, ctx) {
   const amountInt = parseInt(amount, 10)
   if (!toOpenid || !amountInt || amountInt <= 0) throw new Error('加分必须大于0')
   const reasonStr = String(reason || '无理由').slice(0, 100)
+  if (reasonStr && reasonStr !== '无理由') {
+    await checkText(reasonStr, { openid: OPENID, scene: 2 })
+  }
 
   const me = await getUserByOpenid(OPENID)
   if (!me) throw new Error('请先创建档案')
   const target = await getUserByOpenid(toOpenid)
   if (!target || target.roomId !== me.roomId) throw new Error('TA不在小窝中')
   if (target.openid === me.openid) throw new Error('不能给自己加分哦~')
+
+  // 检查今日给对方累计加分是否达到上限（50分）
+  const today = todayStartServerDate()
+  const todayAdds = await db.collection('transactions')
+    .where({
+      roomId: me.roomId,
+      toOpenid: target.openid,
+      type: 'reward',
+      createdAt: _.gte(today),
+    })
+    .get()
+
+  const todayAddedTotal = todayAdds.data.reduce((sum, tx) => sum + Math.abs(tx.amount || 0), 0)
+  const remainingLimit = DAILY_LIMIT - todayAddedTotal
+
+  if (remainingLimit <= 0) {
+    throw new Error(`今日加分已达上限（${DAILY_LIMIT}分）`)
+  }
+
+  if (amountInt > remainingLimit) {
+    throw new Error(`今日最多还可加 ${remainingLimit} 分`)
+  }
 
   const receiverGets = amountInt
 
@@ -59,6 +88,9 @@ async function quickPraise(event, ctx) {
   const amountInt = parseInt(amount, 10)
   if (!toOpenid || !amountInt || amountInt < 1 || amountInt > 5) throw new Error('赞美分值需为1-5')
   const reasonStr = String(reason || '赞美').slice(0, 30)
+  if (reasonStr && !PRAISE_REASONS.includes(reasonStr)) {
+    await checkText(reasonStr, { openid: OPENID, scene: 2 })
+  }
 
   const me = await getUserByOpenid(OPENID)
   if (!me) throw new Error('请先创建档案')
@@ -86,7 +118,7 @@ async function quickPraise(event, ctx) {
   return { code: 0, msg: '赞美已送达 💕', data: { amount: amountInt, reason: reasonStr, ...balances } }
 }
 
-// 扣分（惩罚）—— 对方积分不足则最多扣到 0
+// 扣分（惩罚）—— 对方积分不足则最多扣到 0，每日每人最多被扣 50 分
 async function punish(event, ctx) {
   const { OPENID } = ctx
   const { toOpenid, amount, reason } = event
@@ -99,9 +131,36 @@ async function punish(event, ctx) {
   if (!target || target.roomId !== me.roomId) throw new Error('TA不在小窝中')
   if (target.openid === me.openid) throw new Error('不能惩罚自己哦~')
 
+  // 检查今日针对对方的累计扣分是否达到上限（50分）
+  const today = todayStartServerDate()
+  const todayDeducts = await db.collection('transactions')
+    .where({
+      roomId: me.roomId,
+      toOpenid: target.openid,
+      type: 'punish',
+      createdAt: _.gte(today),
+    })
+    .get()
+
+  const todayDeductedTotal = todayDeducts.data.reduce((sum, tx) => sum + Math.abs(tx.amount || 0), 0)
+  const remainingLimit = DAILY_LIMIT - todayDeductedTotal
+
+  if (remainingLimit <= 0) {
+    throw new Error(`今日扣分已达上限（${DAILY_LIMIT}分）`)
+  }
+
+  if (amountInt > remainingLimit) {
+    throw new Error(`今日最多还可扣 ${remainingLimit} 分`)
+  }
+
+  const reasonStr = String(reason || '惩罚').slice(0, 30)
+  if (reasonStr && reasonStr !== '惩罚') {
+    await checkText(reasonStr, { openid: OPENID, scene: 2 })
+  }
+
   const actual = await deductUser(
     target, amountInt, 'punish',
-    String(reason || '惩罚').slice(0, 30),
+    reasonStr,
     me.nickname, me.openid,
   )
 

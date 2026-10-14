@@ -62,15 +62,15 @@ const HANDLERS = {
   puzzleUpload: puzzle.puzzleUpload,
   puzzleGetStreak: puzzle.puzzleGetStreak,
   puzzleGetPosterData: puzzle.puzzleGetPosterData,
-  // 游戏大厅（五子棋、围棋、飞行棋、海战棋）
+  // 游戏大厅（五子棋、围棋、中国象棋、国际象棋）
   gameLobbyGet: game.gameLobbyGet,
   gameGet: game.gameGet,
   gameMove: game.gameMove,
-  gameRollDice: game.gameRollDice,
-  gameSeaAttack: game.gameSeaAttack,
   gamePass: game.gamePass,
   gameResign: game.gameResign,
   gameReset: game.gameReset,
+  gameUndo: game.gameUndo,
+  gameToggleFreeMode: game.gameToggleFreeMode,
   // 查找（情侣共享定位与朝向）
   locationGet: location.locationGet,
   locationToggleShare: location.locationToggleShare,
@@ -79,9 +79,13 @@ const HANDLERS = {
   petGet: pet.petGet,
   petInteract: pet.petInteract,
   petBuyItem: pet.petBuyItem,
+  petUseItem: pet.petUseItem,
+  petEquipSlot: pet.petEquipSlot,
+  petGameFinish: pet.petGameFinish,
   petRequestEvolve: pet.petRequestEvolve,
   petConfirmEvolve: pet.petConfirmEvolve,
   petRename: pet.petRename,
+  petDevSet: pet.petDevSet,
   // 余额实时同步
   getBalances,
 }
@@ -93,13 +97,19 @@ exports.main = async (event) => {
   const { OPENID } = cloud.getWXContext()
   const action = event.action
   const handler = HANDLERS[action]
-  if (!handler) return { code: -1, msg: '未知操作: ' + action }
+  if (!handler) {
+    console.error(`[api.main unknown action] action=${action}, available:`, Object.keys(HANDLERS))
+    return { code: -1, msg: '未知操作: ' + action }
+  }
 
   try {
     const result = await handler(event, { OPENID })
     return result || { code: 0, msg: 'ok' }
   } catch (err) {
     console.error(`[${action}]`, err)
+    if (err.code === 87014 || err.name === 'SecCheckError' || (err.message && err.message.includes('违规'))) {
+      return { code: 87014, msg: err.message || '内容包含违规或敏感信息，请修改后重试' }
+    }
     return { code: -1, msg: err.message || '服务器繁忙，请稍后再试' }
   }
 }

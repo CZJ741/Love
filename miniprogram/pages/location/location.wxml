@@ -113,14 +113,12 @@
   <block wx:else>
     <view class="card privacy-card">
       <view class="privacy-icon">🔐</view>
-      <view class="privacy-title">情侣隐私安全保护</view>
+      <view class="privacy-title">双人位置已上锁</view>
       <view class="privacy-text">
-        <view>• 位置与罗盘朝向属于情侣双方的核心私密数据。</view>
-        <view>• 只有当双方均在本页面将【共享我的实时位置】开关打开后，地图与对方的位置信息才会对彼此解锁。</view>
-        <view>• 任何一方随时关闭开关，地图将立即对双方重新上锁，并从云端彻底清空您的坐标数据。</view>
+        <view>双方均开启共享后解锁距离与罗盘朝向</view>
       </view>
       <button wx:if="{{!myAgreed}}" class="btn-agree-main" bindtap="agreeAndEnable">
-        🤝 我同意并开启共享
+        开启我的共享
       </button>
     </view>
   </block>
