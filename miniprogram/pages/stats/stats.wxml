@@ -27,16 +27,25 @@
     <!-- 头像 -->
     <view class="settings-row">
       <view class="s-label">头像</view>
-      <view class="avatar-pick" bindtap="openAvatarPicker">
-        <text class="avatar-emoji">{{selectedAvatar || me.avatar || '👤'}}</text>
+      <view class="avatar-wrap" bindtap="openAvatarPicker">
+        <image wx:if="{{displayAvatarImg}}" class="avatar-img" src="{{displayAvatar}}" mode="aspectFill" />
+        <text wx:else class="avatar-emoji">{{displayAvatar || '👤'}}</text>
       </view>
-      <text class="s-tip">点击挑选头像</text>
     </view>
 
     <!-- 头像选择弹窗 -->
     <view wx:if="{{showAvatarPicker}}" class="mask" bindtap="closeAvatarPicker">
-      <view class="modal" catchtap="noop">
+      <view class="modal avatar-modal" catchtap="noop">
         <view class="modal-title">🎨 选择头像</view>
+
+        <!-- 微信头像快捷导入按钮 -->
+        <button class="btn choose-wx-avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
+          <text class="emoji">✨</text>使用微信头像
+        </button>
+
+        <view class="avatar-modal-divider">或挑选 Emoji</view>
+
+        <!-- Emoji 列表 -->
         <view class="avatar-grid">
           <view
             wx:for="{{avatarOptions}}"
@@ -60,10 +69,36 @@
       {{saving ? '保存中...' : '保存设置'}}
     </button>
 
-    <!-- 平台合规：隐私保护协议入口 -->
-    <view class="privacy-entrance" bindtap="openPrivacyContract">
+    <!-- 隐私说明入口（应用内直接弹出，不跳转外部网页） -->
+    <view class="privacy-entrance" bindtap="openPrivacyModal">
       <text class="privacy-icon">🔒</text>
-      <text class="privacy-text">《小程序用户隐私保护指引》</text>
+      <text class="privacy-text">隐私说明</text>
+    </view>
+  </view>
+
+  <!-- 隐私说明弹窗 -->
+  <view wx:if="{{showPrivacyModal}}" class="mask" bindtap="closePrivacyModal">
+    <view class="modal privacy-modal" catchtap="noop">
+      <view class="modal-title">🔒 隐私说明</view>
+      <view class="privacy-content">
+        <view class="p-sec">
+          <view class="p-sec-title">专属私密空间</view>
+          <view class="p-sec-desc">本小程序仅限您与伴侣两人共同使用，数据仅在双方之间私密同步，绝不向任何第三方公开、转让或商业出售。</view>
+        </view>
+
+        <view class="p-sec">
+          <view class="p-sec-title">权限与数据使用</view>
+          <view class="p-sec-item"><text class="p-dot">•</text><text>相册与头像：用于设置微信个人头像、时光轴打卡及恋爱清单回忆照片存储。</text></view>
+          <view class="p-sec-item"><text class="p-dot">•</text><text>位置与罗盘：仅在双方均授权并开启位置共享时，实时展示双方间距离与朝向。</text></view>
+          <view class="p-sec-item"><text class="p-dot">•</text><text>记录与关怀：心愿待办、日记互动及女生经期健康记录仅在伴侣双方端内展示。</text></view>
+        </view>
+
+        <view class="p-sec">
+          <view class="p-sec-title">安全保障</view>
+          <view class="p-sec-desc">所有数据均由微信云开发（CloudBase）企业级安全环境加密存储，严格保障情侣隐私安全。</view>
+        </view>
+      </view>
+      <button class="btn submit-btn" bindtap="closePrivacyModal">我知道了</button>
     </view>
   </view>
 </view>

@@ -18,10 +18,11 @@ App({
     if (wx.onNeedPrivacyAuthorization) {
       wx.onNeedPrivacyAuthorization(resolve => {
         wx.showModal({
-          title: '隐私授权说明',
-          content: '子&然 小窝 需要访问你的相册，用于在日记中上传照片。我们不会收集或分享你的个人隐私信息。',
-          confirmText: '同意',
-          cancelText: '拒绝',
+          title: '隐私保护授权',
+          content: '子&然 小窝为双人私密空间。为了向您提供伴侣头像选择、时光轴与愿望打卡相册上传、以及双人情侣实时位置共享服务，需要向您申请相册与地理位置等必要权限。您的所有私密数据仅在您与伴侣两人之间共享，绝不向任何第三方公开或出售。',
+          confirmText: '同意并授权',
+          cancelText: '暂不授权',
+          confirmColor: '#F48FB1',
           success: res => {
             if (res.confirm) {
               resolve({ event: 'agree', buttonIndex: 0 })

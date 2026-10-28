@@ -1,56 +1,46 @@
 <view class="page puzzle-page">
-  <!-- 顶部状态栏：九宫格累计进度 & 规则说明 -->
-  <view class="streak-header card">
-    <view class="streak-left">
-      <text class="streak-fire">🧩</text>
-      <view class="streak-info">
-        <view class="streak-title">已累计拼图 <text class="streak-count">{{completedGroups}}</text> / {{gridSize}} 组</view>
-        <view class="streak-sub">每天双方各拍一张合成一组，累计集满 9 组即可生成九宫格大拼图</view>
+  <!-- 顶部状态栏：九宫格累计进度与生成按钮 -->
+  <view class="puzzle-header-card card">
+    <view class="header-main-row">
+      <view class="header-left">
+        <text class="header-icon">🧩</text>
+        <view class="header-title">合影挑战 <text class="header-count">{{completedGroups}}</text>/{{gridSize}}</view>
       </view>
+      <button wx:if="{{canGeneratePoster}}" class="poster-unlock-btn" bindtap="openPosterModal">
+        🎨 生成九宫格
+      </button>
     </view>
-    <button wx:if="{{canGeneratePoster}}" class="poster-unlock-btn" bindtap="openPosterModal">
-      🎨 生成九宫格
-    </button>
-  </view>
-
-  <!-- 九宫格累计进度 -->
-  <view class="progress-bar-card card">
-    <view class="grid-progress">
+    <view class="grid-pill-row">
       <view
         wx:for="{{gridCells}}"
         wx:key="index"
-        class="grid-cell {{item.filled ? 'filled' : ''}}"
+        class="grid-pill {{item.filled ? 'filled' : ''}}"
       >
         <text wx:if="{{item.filled}}">✓</text>
         <text wx:else>{{item.index + 1}}</text>
       </view>
-    </view>
-    <view class="grid-progress-tip">
-      <block wx:if="{{canGeneratePoster}}">🎉 已集满 9 组，可生成九宫格大拼图啦！</block>
-      <block wx:else>再完成 <text class="tip-strong">{{remainGroups}}</text> 组，就能解锁九宫格大拼图</block>
     </view>
   </view>
 
   <!-- 今日挑战主题卡片 -->
   <view class="card theme-card">
     <view class="theme-tag-row">
-      <text class="theme-tag">📷 今日奇怪视角</text>
+      <text class="theme-tag">📷 今日合影主题</text>
       <text class="theme-date">{{date}}</text>
     </view>
     <view class="theme-content">“{{theme || '加载中...'}}”</view>
-    <view class="theme-desc">双方各拍一张身边的对应视角，合成一组属于你们的拼图</view>
   </view>
 
   <!-- 双人反向对比视窗 -->
   <view class="card duel-card">
     <view class="duel-viewport">
       <!-- 左侧：我的视角 -->
-      <view class="photo-half left-half" bindtap="{{myUploaded ? 'previewMyPhoto' : 'chooseAndUpload'}}">
+      <view class="photo-half left-half" bindtap="handleMyPhotoTap">
         <block wx:if="{{myUploaded && myPhotoUrl}}">
           <image class="photo-img" src="{{myPhotoUrl}}" mode="aspectFill" />
           <view class="photo-overlay">
             <text class="photo-author">{{myNickname}}的视角</text>
-            <text class="reupload-tip">点击可重拍</text>
+            <text class="reupload-tip">点击查看 / 更换</text>
           </view>
         </block>
         <block wx:else>

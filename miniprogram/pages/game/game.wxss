@@ -282,18 +282,8 @@
   font-weight: 800;
   color: #5A4636;
 }
-.refresh-pill {
-  width: 56rpx;
-  height: 56rpx;
-  border-radius: 50%;
-  background: #FFF0F3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1rpx solid #FFDCE5;
-}
-.rp-icon {
-  font-size: 26rpx;
+.nav-placeholder {
+  width: 120rpx;
 }
 
 /* 玩家卡片 */

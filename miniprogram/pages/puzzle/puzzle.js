@@ -162,6 +162,25 @@ Page({
     }
   },
 
+  // 点击我的视角区域：未上传则选择上传；已上传则提供预览或更换
+  handleMyPhotoTap() {
+    if (!this.data.myUploaded) {
+      this.chooseAndUpload()
+      return
+    }
+
+    wx.showActionSheet({
+      itemList: ['查看大图', '重新拍摄更换'],
+      success: (res) => {
+        if (res.tapIndex === 0) {
+          this.previewMyPhoto()
+        } else if (res.tapIndex === 1) {
+          this.chooseAndUpload()
+        }
+      },
+    })
+  },
+
   // 预览我的视角大图
   previewMyPhoto() {
     if (this.data.myPhotoUrl) {

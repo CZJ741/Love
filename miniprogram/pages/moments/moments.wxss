@@ -121,46 +121,56 @@
 .memory-card {
   position: relative;
   margin: 0 28rpx 24rpx;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   overflow: hidden;
   min-height: 160rpx;
 }
-.mc-bg {
+
+/* 有图片模式：沉浸式电影胶片暗蒙层质感 */
+.memory-card.has-img {
+  box-shadow: 0 6rpx 24rpx rgba(0, 0, 0, 0.15);
+}
+.memory-card.has-img .mc-bg {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
 }
-.mc-bg-img {
+.memory-card.has-img .mc-bg-img {
   width: 100%;
   height: 100%;
 }
-.mc-bg-mask {
+.memory-card.has-img .mc-bg-mask {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,.45);
+  background: rgba(0, 0, 0, 0.45);
 }
-.mc-content {
+.memory-card.has-img .mc-content {
   position: relative;
   z-index: 1;
   padding: 24rpx 28rpx;
   display: flex;
   flex-direction: column;
 }
-.mc-title {
-  font-size: 36rpx;
+.memory-card.has-img .mc-header-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+.memory-card.has-img .mc-title {
+  font-size: 34rpx;
   font-weight: 700;
   color: #FFF;
   text-align: center;
   margin-bottom: 4rpx;
 }
-.mc-ago {
-  font-size: 29rpx;
-  color: rgba(255,255,255,.7);
+.memory-card.has-img .mc-ago {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.75);
   text-align: center;
-  margin-bottom: 8rpx;
 }
-.mc-text {
-  font-size: 31rpx;
-  color: rgba(255,255,255,.9);
+.memory-card.has-img .mc-text {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.95);
   line-height: 1.5;
   text-align: left;
   display: -webkit-box;
@@ -168,7 +178,62 @@
   -webkit-line-clamp: 2;
   overflow: hidden;
   word-break: break-all;
-  padding: 0 16rpx;
+  padding: 0 12rpx;
+}
+
+/* 无图片纯文字模式：温馨手账信纸风、高对比度与精致层次感 */
+.memory-card.no-img {
+  background: linear-gradient(135deg, #FFFDFC 0%, #FFF5F7 100%);
+  border: 2rpx solid rgba(244, 143, 177, 0.35);
+  box-shadow: 0 8rpx 28rpx rgba(244, 143, 177, 0.12);
+}
+.memory-card.no-img .mc-content {
+  position: relative;
+  z-index: 1;
+  padding: 26rpx 28rpx;
+  display: flex;
+  flex-direction: column;
+}
+.memory-card.no-img .mc-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14rpx;
+  padding-bottom: 12rpx;
+  border-bottom: 1rpx dashed rgba(244, 143, 177, 0.25);
+}
+.memory-card.no-img .mc-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #5A4636;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+.memory-card.no-img .mc-title::before {
+  content: '✨';
+  font-size: 24rpx;
+}
+.memory-card.no-img .mc-ago {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #E91E63;
+  background: #FFF0F3;
+  padding: 4rpx 16rpx;
+  border-radius: 999rpx;
+}
+.memory-card.no-img .mc-text {
+  font-size: 28rpx;
+  color: #4A3B2F;
+  line-height: 1.6;
+  text-align: left;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  word-break: break-all;
+  padding: 0 4rpx;
+  position: relative;
 }
 
 /* ====== 时间轴容器 ====== */

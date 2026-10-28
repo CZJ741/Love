@@ -4,7 +4,7 @@ const { earn } = require('./economy')
 const { record, deductUser } = require('./transactions')
 const { checkText } = require('./secCheck')
 
-const SIGN_BASE = 10 // 每日签到基础分
+const SIGN_BASE = 5 // 每日签到基础分
 
 // 快捷赞美预设理由
 const PRAISE_REASONS = [

@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "恋爱清单",
+  "navigationBarBackgroundColor": "#F48FB1",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#FFEBED",
+  "enablePullDownRefresh": false
+}

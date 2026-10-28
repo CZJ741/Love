@@ -57,6 +57,9 @@ page {
 .scene-bedroom .room-floor { background:repeating-linear-gradient(90deg,transparent 0 150rpx,rgba(78,54,86,.1) 151rpx 154rpx),repeating-linear-gradient(0deg,#b79abb 0 94rpx,#a285a9 96rpx 100rpx); }
 .scene-bathroom .room-floor { background:repeating-linear-gradient(90deg,transparent 0 150rpx,rgba(57,110,117,.12) 151rpx 154rpx),repeating-linear-gradient(0deg,#b4dfe0 0 94rpx,#9ccdd0 96rpx 100rpx); }
 .scene-outdoor .room-floor { background:linear-gradient(180deg,#91bb68,#729d50); }
+.scene-bedroom .floor-rug { background:#b39ddb; border-color:#9575cd; }
+.scene-bathroom .floor-rug { background:#80deea; border-color:#4dd0e1; }
+.scene-outdoor .floor-rug { background:#aed581; border-color:#8bc34a; }
 .scene-outdoor .room-window { display:none; }
 .scene-bedroom .room-window { display:none; }
 .scene-bathroom .room-window { display:none; }
@@ -74,17 +77,196 @@ page {
 .bedroom-backdrop .moon { right:12%; top:22%; opacity:.3; }
 .bathroom-backdrop .bath-mirror { right:16%; top:22%; width:150rpx; height:190rpx; border:12rpx solid rgba(84,145,153,.3); border-radius:70rpx; color:rgba(84,145,153,.35); font-size:130rpx; line-height:160rpx; text-align:center; }
 .bathroom-backdrop .bath-tile { inset:15% 0 42%; opacity:.18; background:repeating-linear-gradient(90deg,transparent 0 110rpx,#4c9aa3 112rpx 114rpx),repeating-linear-gradient(0deg,transparent 0 90rpx,#4c9aa3 92rpx 94rpx); }
-.outdoor-backdrop .cloud-one { left:10%; top:23%; opacity:.45; }
-.outdoor-backdrop .cloud-two { left:62%; top:28%; opacity:.34; }
-.outdoor-backdrop .sun { right:17%; top:18%; opacity:.55; font-size:90rpx; }
-.scene-prop { position:absolute; z-index:4; font-size:112rpx; filter:drop-shadow(0 12rpx 10rpx rgba(65,53,41,.2)); }
-.scene-prop.sofa { left:8%; bottom:20%; }
-.scene-prop.table { right:25%; bottom:18%; font-size:80rpx; }
-.scene-prop.lamp { right:17%; bottom:22%; }
-.scene-prop.tub { right:7%; bottom:17%; font-size:132rpx; }
-.scene-prop.mat { left:17%; bottom:14%; font-size:72rpx; }
-.scene-prop.tent { left:5%; bottom:17%; }
-.scene-prop.tree { right:6%; bottom:25%; font-size:150rpx; }
+.outdoor-backdrop .cloud-one { left:8%; top:15%; opacity:.45; }
+.outdoor-backdrop .cloud-two { left:48%; top:18%; opacity:.34; }
+.outdoor-backdrop .sun { right:14%; top:12%; opacity:.55; font-size:80rpx; }
+/* 固定场景陈设：统一底部锚点，家具不可拖拽，点击只触发状态收益。 */
+.fixed-item {
+  position: absolute;
+  z-index: 4;
+  transform-origin: bottom center;
+  transition: filter .18s ease, transform .18s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+.fixed-item-art {
+  font-size: 168rpx;
+  line-height: 1;
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 12rpx 10rpx rgba(55,43,35,.22));
+}
+
+/* 逼真地面投影：透视压扁的椭圆阴影，贴合地面 */
+.furniture-floor-shadow {
+  position: absolute;
+  bottom: -6rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 82%;
+  height: 24rpx;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(38, 22, 14, 0.32) 0%, rgba(38, 22, 14, 0.12) 48%, transparent 75%);
+  pointer-events: none;
+  z-index: 1;
+  filter: blur(2rpx);
+}
+
+.fixed-furniture {
+  min-width: 160rpx;
+  min-height: 150rpx;
+}
+.fixed-furniture.selected {
+  filter: drop-shadow(0 0 8rpx #fff) drop-shadow(0 0 16rpx #ff7aa8);
+  transform: scale(1.05);
+}
+.fixed-furniture.locked { filter: grayscale(.65) opacity(.72); }
+.fixed-furniture.cooling { filter: saturate(.7) opacity(.78); }
+.fixed-item-label {
+  position: absolute;
+  left: 50%;
+  bottom: -44rpx;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  padding: 5rpx 14rpx;
+  border-radius: 16rpx;
+  color: #6f5060;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 4rpx 12rpx rgba(55,43,35,.15);
+  font-size: 18rpx;
+  font-weight: 700;
+  z-index: 3;
+}
+.cooling-tag { color: #E64A19; font-weight: 800; }
+.cd-base-tag { color: #8D6E63; font-weight: 500; font-size: 16rpx; }
+.fixed-decor { pointer-events: none; z-index: 2; }
+.fixed-decor .fixed-item-art { font-size: 110rpx; opacity: .92; }
+.fixed-decor .furniture-floor-shadow { width: 65%; height: 16rpx; opacity: .5; }
+
+/* 靠墙与纵深透视坐标及大小分层 (后墙踢脚线位于 bottom: 42%) */
+
+/* 1. 远景靠墙大件家具 (left-back / right-back)：
+   底脚严丝合缝贴在踢脚线交界处 (bottom: 39%~41%)，背板向上立在后墙上，真实展现背靠墙体 */
+.pos-left-back {
+  left: 6%;
+  bottom: 40%;
+  z-index: 3;
+}
+.pos-left-back .fixed-item-art {
+  font-size: 180rpx;
+}
+.pos-left-back .furniture-floor-shadow {
+  width: 90%;
+  height: 20rpx;
+  bottom: -4rpx;
+}
+
+.pos-right-back {
+  right: 6%;
+  bottom: 40%;
+  z-index: 3;
+}
+.pos-right-back .fixed-item-art {
+  font-size: 180rpx;
+}
+.pos-right-back .furniture-floor-shadow {
+  width: 90%;
+  height: 20rpx;
+  bottom: -4rpx;
+}
+
+/* 2. 墙面壁挂装饰 (wall-left / wall-right)：
+   挂在墙体中部 (top: 18%~24%)，真正挂在后墙垂直立面上 */
+.pos-wall-left {
+  left: 14%;
+  top: 20%;
+  z-index: 2;
+}
+.pos-wall-left .fixed-item-art { font-size: 100rpx; }
+.pos-wall-left .furniture-floor-shadow { display: none; }
+
+.pos-wall-right {
+  right: 14%;
+  top: 20%;
+  z-index: 2;
+}
+.pos-wall-right .fixed-item-art { font-size: 105rpx; }
+.pos-wall-right .furniture-floor-shadow { display: none; }
+
+/* 3. 前景近处两角家具 (left-front / right-front)：
+   位于近处地板角落 (bottom: 6%~9%)，基础基准尺寸调优，各物件再根据实际比例差异化微调 */
+.pos-left-front {
+  left: 6%;
+  bottom: 7%;
+  z-index: 6;
+}
+.pos-left-front .fixed-item-art {
+  font-size: 120rpx;
+}
+.pos-left-front .furniture-floor-shadow {
+  width: 90%;
+  height: 18rpx;
+  background: radial-gradient(ellipse at center, rgba(38, 22, 14, 0.30) 0%, rgba(38, 22, 14, 0.12) 50%, transparent 78%);
+}
+
+.pos-right-front {
+  right: 6%;
+  bottom: 7%;
+  z-index: 6;
+}
+.pos-right-front .fixed-item-art {
+  font-size: 120rpx;
+}
+.pos-right-front .furniture-floor-shadow {
+  width: 90%;
+  height: 18rpx;
+  background: radial-gradient(ellipse at center, rgba(38, 22, 14, 0.30) 0%, rgba(38, 22, 14, 0.12) 50%, transparent 78%);
+}
+
+.pos-floor-center {
+  left: 50%;
+  bottom: 12%;
+  transform: translateX(-50%) scaleX(3.0);
+  opacity: .72;
+  z-index: 2;
+}
+.pos-floor-left {
+  left: 6%;
+  bottom: 5%;
+  z-index: 6;
+}
+.pos-floor-left .fixed-item-art { font-size: 105rpx; }
+
+/* 各场景家具之间真实生活比例精细化分层 */
+
+/* ① 第一梯队：大型主角级靠墙设施（200rpx ~ 225rpx） */
+.item-furn_bedroom_bed .fixed-item-art { font-size: 225rpx; }
+.item-furn_living_sofa .fixed-item-art { font-size: 215rpx; }
+.item-furn_outdoor_house .fixed-item-art { font-size: 215rpx; }
+.item-furn_bedroom_wardrobe .fixed-item-art { font-size: 210rpx; }
+.item-furn_bathroom_tub .fixed-item-art { font-size: 205rpx; }
+
+/* ② 第二梯队：中型功能性靠墙/场景设施（145rpx ~ 175rpx） */
+.item-decor_outdoor_tree .fixed-item-art { font-size: 175rpx; }
+.item-furn_living_tv .fixed-item-art { font-size: 170rpx; }
+.item-furn_outdoor_ramp .fixed-item-art { font-size: 155rpx; }
+.item-furn_bathroom_sink .fixed-item-art { font-size: 145rpx; }
+
+/* ③ 第三梯队：小型近景与辅助物件（85rpx ~ 125rpx，绝不喧宾夺主） */
+.item-furn_bathroom_toilet .fixed-item-art { font-size: 125rpx; }
+.item-furn_living_table .fixed-item-art { font-size: 115rpx; }
+.item-furn_bedroom_nightstand .fixed-item-art { font-size: 110rpx; }
+.item-decor_outdoor_flowers .fixed-item-art { font-size: 100rpx; }
+.item-furn_outdoor_feeder .fixed-item-art { font-size: 90rpx; }
+.item-furn_outdoor_feeder .furniture-floor-shadow { width: 70%; height: 14rpx; }
+
+/* ④ 第四梯队：小巧精致墙面装饰（75rpx ~ 115rpx） */
+.item-decor_living_window .fixed-item-art { font-size: 115rpx; }
+.item-decor_bedroom_art .fixed-item-art { font-size: 90rpx; }
+.item-decor_bedroom_lamp .fixed-item-art { font-size: 80rpx; }
+.item-decor_bathroom_towel .fixed-item-art { font-size: 78rpx; }
 
 /* 插槽家具层叠绝对定位 */
 .slot-layer {
@@ -93,10 +275,10 @@ page {
   z-index: 2;
 }
 
-.room-back-wall { position:absolute; inset:0 0 32% 0; overflow:hidden; background:linear-gradient(180deg,#f6dfd0,#fbeade 82%,#e4bda0 82%,#d7aa8c 100%); }
+.room-back-wall { position:absolute; inset:0 0 42% 0; overflow:hidden; background:linear-gradient(180deg,#f6dfd0,#fbeade 82%,#e4bda0 82%,#d7aa8c 100%); }
 .wall-panel { position:absolute; top:0; bottom:0; width:1px; background:rgba(188,135,103,.11); }
 .panel-left { left:16%; } .panel-right { right:16%; }
-.baseboard { position:absolute; bottom:0; left:0; width:100%; height:14rpx; background:#c88f6d; box-shadow:0 5rpx 8rpx rgba(91,54,34,.12); }
+.baseboard { position:absolute; bottom:0; left:0; width:100%; height:18rpx; background:#c88f6d; box-shadow:0 6rpx 10rpx rgba(91,54,34,.16); z-index: 2; }
 .room-window { position:absolute; width:300rpx; height:310rpx; top:16%; right:10%; padding:12rpx; box-sizing:border-box; background:#fff5e9; border:8rpx solid #bd8060; border-radius:12rpx; box-shadow:0 10rpx 24rpx rgba(107,63,41,.18); }
 .window-glass { position:relative; width:100%; height:100%; overflow:hidden; background:linear-gradient(160deg,#a8d9e7,#d7f0e7 70%,#a6c887); }
 .window-sun { position:absolute; width:52rpx; height:52rpx; border-radius:50%; top:18%; right:18%; background:#ffe18a; box-shadow:0 0 28rpx #ffe18a; }
@@ -140,65 +322,14 @@ page {
 .robot-eye { width:14rpx; height:18rpx; border-radius:50%; background:#5b88a0; } .robot-antenna { position:absolute; top:0; left:62rpx; width:6rpx; height:18rpx; background:#7ba8b4; }
 .robot-antenna:after { content:''; position:absolute; top:-8rpx; left:-7rpx; width:20rpx; height:20rpx; border-radius:50%; background:#f1a5ad; } .robot-body { position:absolute; bottom:4rpx; left:8rpx; width:114rpx; height:74rpx; border-radius:28rpx 28rpx 18rpx 18rpx; background:linear-gradient(135deg,#b9dce1,#83b5c0); border:6rpx solid #6e9da9; }
 
-/* 墙饰插槽 (中上方) */
-.slot-wall {
-  top: 15%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 48rpx;
-  filter: drop-shadow(0 4rpx 10rpx rgba(255, 128, 171, 0.4));
-}
-
-/* 窗台植物插槽 (右上方) */
-.slot-window {
-  top: 22%;
-  right: 8%;
-  font-size: 52rpx;
-  filter: drop-shadow(0 4rpx 8rpx rgba(0, 0, 0, 0.1));
-}
-
-/* 地毯插槽 (底座正中央) */
-.slot-rug {
-  bottom: 22%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 440rpx;
-  height: 140rpx;
-  background: radial-gradient(ellipse at center, rgba(255, 128, 171, 0.35) 0%, rgba(255, 128, 171, 0) 70%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48rpx;
-  z-index: 1;
-}
-
-/* 睡窝插槽 (左下角) */
-.slot-bed {
-  bottom: 24%;
-  left: 8%;
-  font-size: 56rpx;
-  filter: drop-shadow(0 6rpx 12rpx rgba(0, 0, 0, 0.12));
-  z-index: 2;
-}
-
-/* 生活保障机插槽 (右下角) */
-.slot-facility {
-  bottom: 24%;
-  right: 8%;
-  font-size: 56rpx;
-  filter: drop-shadow(0 6rpx 12rpx rgba(0, 0, 0, 0.12));
-  z-index: 2;
-}
-
 /* 核心主角 Live2D 宠物舞台 */
 .center-pet-wrap {
   position: absolute;
-  top: 61%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 900rpx;
+  bottom: 13%;
+  transform: translateX(-50%);
+  width: 300rpx;
+  height: 300rpx;
   /* place the pet on the floor rug and give the Live2D stage room to breathe */
   pointer-events: auto;
   display: flex;
@@ -209,6 +340,9 @@ page {
 .center-pet-wrap live2d-pet {
   width: 100%;
   height: 100%;
+  transform: scale(1.6);
+  /* Anchor at the feet of the shared 130rpx compact pet stage. */
+  transform-origin: 50% 130rpx;
 }
 
 /* 2. 悬浮品目边缘交互层 (HUD) */
@@ -230,8 +364,9 @@ page {
   pointer-events: auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16rpx 28rpx;
+  justify-content: flex-start;
+  padding: 12rpx 24rpx;
+  gap: 16rpx;
 }
 .back-pill {
   width: 68rpx;
@@ -328,7 +463,7 @@ page {
   top: 260rpx;
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 10rpx;
   pointer-events: auto;
 }
 .stat-bubble {
@@ -366,9 +501,9 @@ page {
   pointer-events: auto;
 }
 .hud-btn-circle {
-  width: 82rpx;
-  height: 82rpx;
-  border-radius: 50%;
+  width: 88rpx;
+  height: 76rpx;
+  border-radius: 26rpx;
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(10rpx);
   box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.1);
@@ -377,10 +512,14 @@ page {
   align-items: center;
   justify-content: center;
   transition: transform 0.15s ease;
-  border: 2rpx solid rgba(255, 255, 255, 0.6);
+  border: 2rpx solid rgba(255, 255, 255, 0.78);
 }
 .hud-btn-circle:active {
   transform: scale(0.9);
+}
+.quick-btn {
+  background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+  border-color: #FFCC80;
 }
 .game-btn {
   background: linear-gradient(135deg, #FFF9C4 0%, #FFF176 100%);
@@ -592,6 +731,28 @@ page {
   font-size: 24rpx;
   font-weight: 700;
   color: #4A3B2F;
+}
+.bic-texts {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+.bic-scene-tag {
+  font-size: 18rpx;
+  color: #8D6E63;
+  background: #EFEBE9;
+  padding: 2rpx 10rpx;
+  border-radius: 8rpx;
+  display: inline-block;
+  align-self: flex-start;
+}
+.btn-locate {
+  background: linear-gradient(135deg, #42A5F5 0%, #1E88E5 100%) !important;
+  color: #FFFFFF !important;
+  font-size: 22rpx !important;
+  font-weight: 700 !important;
+  border-radius: 24rpx !important;
+  padding: 8rpx 24rpx !important;
 }
 .btn-use {
   background: #FF80AB !important;

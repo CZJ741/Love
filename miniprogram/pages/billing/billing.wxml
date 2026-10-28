@@ -1,0 +1,200 @@
+<view class="page billing-page">
+  <!-- 顶部「谁欠谁」对账差额卡片 -->
+  <view class="debt-card {{summary.debtStatus}}">
+    <view class="debt-card-left">
+      <view class="debt-status-badge">
+        <text wx:if="{{summary.debtStatus === 'even'}}">两清 ✨</text>
+        <text wx:elif="{{summary.debtStatus === 'partner_owes_me'}}">待收款 💰</text>
+        <text wx:else>待付款 💸</text>
+      </view>
+      <view class="debt-main-text">
+        <block wx:if="{{summary.debtStatus === 'even'}}">
+          <text class="debt-highlight">双方已两清</text>
+        </block>
+        <block wx:elif="{{summary.debtStatus === 'partner_owes_me'}}">
+          <text class="debt-label">{{summary.partnerName}} 应补您</text>
+          <text class="debt-amount">¥{{summary.netDueToMeYuan}}</text>
+        </block>
+        <block wx:else>
+          <text class="debt-label">您应补给 {{summary.partnerName}}</text>
+          <text class="debt-amount">¥{{summary.netDueToMeYuan}}</text>
+        </block>
+      </view>
+    </view>
+    <view class="debt-card-right" wx:if="{{summary.debtStatus !== 'even'}}">
+      <button class="settle-btn" bindtap="onSettleTap" hover-class="btn-hover">对齐结清</button>
+    </view>
+  </view>
+
+  <!-- 月度收支指标卡片 -->
+  <view class="kpi-panel">
+    <view class="kpi-header">
+      <picker mode="date" fields="month" value="{{currentMonth}}" bindchange="onMonthChange">
+        <view class="month-picker">
+          <text class="month-text">{{currentMonth}}</text>
+          <text class="picker-arrow">▼</text>
+        </view>
+      </picker>
+      <text class="kpi-total-label">总支出 ¥{{summary.monthTotalExpenseYuan}}</text>
+    </view>
+    <view class="kpi-row">
+      <view class="kpi-item">
+        <text class="kpi-val">¥{{summary.myMonthPaidYuan}}</text>
+        <text class="kpi-name">我垫付</text>
+      </view>
+      <view class="kpi-divider"></view>
+      <view class="kpi-item">
+        <text class="kpi-val">¥{{summary.partnerMonthPaidYuan}}</text>
+        <text class="kpi-name">{{summary.partnerName}}垫付</text>
+      </view>
+      <view class="kpi-divider"></view>
+      <view class="kpi-item">
+        <text class="kpi-val">¥{{summary.commonMonthExpenseYuan}}</text>
+        <text class="kpi-name">共同钱包</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 记一笔快捷按钮 -->
+  <view class="quick-add-bar" bindtap="openAddModal">
+    <view class="qab-icon">✏️</view>
+    <text class="qab-text">记一笔账单</text>
+  </view>
+
+  <!-- 账单明细列表 -->
+  <view class="bills-section">
+    <view class="section-title">本月明细</view>
+    <view wx:if="{{loading}}" class="empty-hint">加载中...</view>
+    <view wx:elif="{{bills.length === 0}}" class="empty-hint">
+      <text class="empty-icon">☕</text>
+      <text class="empty-text">本月还没有记账哦</text>
+    </view>
+    <view wx:else class="bill-list">
+      <view class="bill-card {{item.settleStatus === 'settled' ? 'is-settled' : ''}}" wx:for="{{bills}}" wx:key="_id">
+        <view class="bill-left">
+          <view class="bill-category-icon cat-{{item.category}}">
+            <text wx:if="{{item.category === 'dining'}}">🍜</text>
+            <text wx:elif="{{item.category === 'dating'}}">🎡</text>
+            <text wx:elif="{{item.category === 'movie'}}">🎬</text>
+            <text wx:elif="{{item.category === 'gift'}}">🎁</text>
+            <text wx:elif="{{item.category === 'daily'}}">🛒</text>
+            <text wx:else>💡</text>
+          </view>
+          <view class="bill-info">
+            <view class="bill-title-row">
+              <text class="bill-cat-name" wx:if="{{item.category === 'dining'}}">餐饮/奶茶</text>
+              <text class="bill-cat-name" wx:elif="{{item.category === 'dating'}}">浪漫约会</text>
+              <text class="bill-cat-name" wx:elif="{{item.category === 'movie'}}">电影娱乐</text>
+              <text class="bill-cat-name" wx:elif="{{item.category === 'gift'}}">礼物心意</text>
+              <text class="bill-cat-name" wx:elif="{{item.category === 'daily'}}">居家超市</text>
+              <text class="bill-cat-name" wx:else>日常其他</text>
+              <text class="bill-remark" wx:if="{{item.remark}}">{{item.remark}}</text>
+            </view>
+            <view class="bill-meta-row">
+              <text class="bill-date">{{item.billDate}}</text>
+              <view class="bill-tag tag-payer">
+                <text wx:if="{{item.payerType === 'common'}}">共同钱包</text>
+                <text wx:elif="{{item.isPayerMe}}">我付</text>
+                <text wx:else>{{summary.partnerName}}付</text>
+              </view>
+              <view class="bill-tag tag-rule" wx:if="{{item.payerType === 'user'}}">
+                <text wx:if="{{item.splitRule === 'aa'}}">AA平摊</text>
+                <text wx:elif="{{item.splitRule === 'payer_all'}}">请客</text>
+                <text wx:elif="{{item.splitRule === 'other_all'}}">代付全额</text>
+              </view>
+              <!-- 人性化结算标签状态 -->
+              <view class="bill-tag tag-settled" wx:if="{{item.settleStatus === 'settled'}}">
+                <text class="settled-dot">●</text>
+                <text>已对齐结清</text>
+              </view>
+              <view class="bill-tag tag-pending" wx:elif="{{item.settleStatus === 'pending'}}">
+                <text>待对齐</text>
+              </view>
+            </view>
+          </view>
+        </view>
+        <view class="bill-right">
+          <text class="bill-amount">¥{{item.amountYuan}}</text>
+          <view class="bill-del-btn" bindtap="onDeleteBill" data-id="{{item._id}}">删除</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 记账弹窗 Modal -->
+  <view class="modal-mask {{showAddModal ? 'show' : ''}}" bindtap="closeAddModal">
+    <view class="modal-content" catchtap="preventBubble">
+      <view class="modal-header">
+        <text class="modal-title">记一笔</text>
+        <view class="modal-close" bindtap="closeAddModal">✕</view>
+      </view>
+
+      <!-- 金额输入 -->
+      <view class="input-amount-wrap">
+        <text class="currency-symbol">¥</text>
+        <input class="input-amount" type="digit" placeholder="0.00" value="{{form.amount}}" bindinput="onAmountInput" focus="{{showAddModal}}" />
+      </view>
+
+      <!-- 分类选择 -->
+      <view class="form-section-title">消费分类</view>
+      <view class="category-grid">
+        <view class="cat-chip {{form.category === 'dining' ? 'active' : ''}}" bindtap="selectCategory" data-cat="dining">
+          <text class="chip-emoji">🍜</text>
+          <text class="chip-text">餐饮奶茶</text>
+        </view>
+        <view class="cat-chip {{form.category === 'dating' ? 'active' : ''}}" bindtap="selectCategory" data-cat="dating">
+          <text class="chip-emoji">🎡</text>
+          <text class="chip-text">浪漫约会</text>
+        </view>
+        <view class="cat-chip {{form.category === 'movie' ? 'active' : ''}}" bindtap="selectCategory" data-cat="movie">
+          <text class="chip-emoji">🎬</text>
+          <text class="chip-text">电影娱乐</text>
+        </view>
+        <view class="cat-chip {{form.category === 'gift' ? 'active' : ''}}" bindtap="selectCategory" data-cat="gift">
+          <text class="chip-emoji">🎁</text>
+          <text class="chip-text">礼物心意</text>
+        </view>
+        <view class="cat-chip {{form.category === 'daily' ? 'active' : ''}}" bindtap="selectCategory" data-cat="daily">
+          <text class="chip-emoji">🛒</text>
+          <text class="chip-text">居家超市</text>
+        </view>
+        <view class="cat-chip {{form.category === 'other' ? 'active' : ''}}" bindtap="selectCategory" data-cat="other">
+          <text class="chip-emoji">💡</text>
+          <text class="chip-text">其他支出</text>
+        </view>
+      </view>
+
+      <!-- 谁付的 -->
+      <view class="form-section-title">支付方</view>
+      <view class="segment-wrap">
+        <view class="segment-btn {{form.whoPaid === 'me' && form.payerType === 'user' ? 'active' : ''}}" bindtap="selectPayer" data-type="user" data-who="me">我付的</view>
+        <view class="segment-btn {{form.whoPaid === 'partner' && form.payerType === 'user' ? 'active' : ''}}" bindtap="selectPayer" data-type="user" data-who="partner">{{summary.partnerName}}付的</view>
+        <view class="segment-btn {{form.payerType === 'common' ? 'active' : ''}}" bindtap="selectPayer" data-type="common" data-who="common">共同钱包</view>
+      </view>
+
+      <!-- 分摊方式 (仅个人垫付时可选) -->
+      <block wx:if="{{form.payerType === 'user'}}">
+        <view class="form-section-title">分摊方式</view>
+        <view class="segment-wrap">
+          <view class="segment-btn {{form.splitRule === 'aa' ? 'active' : ''}}" bindtap="selectSplit" data-rule="aa">AA平摊 (50/50)</view>
+          <view class="segment-btn {{form.splitRule === 'payer_all' ? 'active' : ''}}" bindtap="selectSplit" data-rule="payer_all">请客全包</view>
+          <view class="segment-btn {{form.splitRule === 'other_all' ? 'active' : ''}}" bindtap="selectSplit" data-rule="other_all">全归对方代付</view>
+        </view>
+      </block>
+
+      <!-- 日期与备注 -->
+      <view class="form-inline-row">
+        <picker mode="date" value="{{form.billDate}}" bindchange="onDateChange">
+          <view class="date-picker-btn">
+            <text class="dp-icon">📅</text>
+            <text class="dp-val">{{form.billDate}}</text>
+          </view>
+        </picker>
+        <input class="remark-input" placeholder="添加备注（选填）" maxlength="30" value="{{form.remark}}" bindinput="onRemarkInput" />
+      </view>
+
+      <!-- 保存按钮 -->
+      <button class="submit-btn" bindtap="submitBill" loading="{{submitting}}">保存账单</button>
+    </view>
+  </view>
+</view>

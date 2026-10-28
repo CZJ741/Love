@@ -7,7 +7,7 @@ const db = cloud.database()
 const _ = db.command
 
 // 业务所需的全部集合（首次调用云函数时自动创建，无需在控制台手动建集合）
-const COLLECTIONS = ['users', 'transactions', 'wishes', 'dailies', 'moments', 'rooms', 'dateboxs', 'reverse_photos', 'board_games', 'locations', 'pets']
+const COLLECTIONS = ['users', 'transactions', 'wishes', 'dailies', 'moments', 'rooms', 'dateboxs', 'reverse_photos', 'board_games', 'locations', 'pets', 'bills', 'love_lists', 'periods']
 
 let _collectionsReady = false
 

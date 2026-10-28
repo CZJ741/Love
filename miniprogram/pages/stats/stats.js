@@ -1,7 +1,8 @@
 // 我：积分明细 · 互动热力图 · 冷暴力预警 · 个人设置
 const api = require('../../lib/api')
 const realtime = require('../../lib/realtime')
-const { formatTxTime, typeMeta, dateStr, addDays } = require('../../utils/format')
+const { formatTxTime, typeMeta, dateStr, addDays, isCloudFile } = require('../../utils/format')
+const { uploadImageWithCompress } = require('../../lib/image')
 
 const DAY_OFFSET = 84
 
@@ -19,7 +20,10 @@ Page({
     editNickname: '',
     nicknameDirty: false,
     showAvatarPicker: false,
+    showPrivacyModal: false,
     selectedAvatar: '',
+    displayAvatar: '',
+    displayAvatarImg: false,
     avatarOptions: AVATAR_OPTIONS,
     saving: false,
     me: { nickname: '', avatar: '' },
@@ -59,9 +63,12 @@ Page({
   },
   refresh() {
     const me = realtime.getMe()
+    const curAvatar = this.data.selectedAvatar || (me ? me.avatar || '' : '')
     this.setData({
       coldWarning: realtime.checkColdWarning(),
       me: me ? { ...me } : { nickname: '', avatar: '' },
+      displayAvatar: curAvatar,
+      displayAvatarImg: isCloudFile(curAvatar),
       editNickname: this.data.nicknameDirty ? this.data.editNickname : (me ? me.nickname || '' : ''),
       // selectedAvatar 由 picker/save 独立管理，refresh 不覆盖，避免用户选择被重置
     })
@@ -99,7 +106,35 @@ Page({
   },
   selectAvatar(e) {
     const avatar = e.currentTarget.dataset.avatar
-    this.setData({ selectedAvatar: avatar, showAvatarPicker: false })
+    this.setData({
+      selectedAvatar: avatar,
+      displayAvatar: avatar,
+      displayAvatarImg: false,
+      showAvatarPicker: false
+    })
+  },
+
+  // 微信原生头像授权选择回调 (open-type="chooseAvatar")
+  async onChooseAvatar(e) {
+    const tempUrl = e.detail && e.detail.avatarUrl
+    if (!tempUrl) return
+
+    wx.showLoading({ title: '处理头像中...' })
+    try {
+      // 智能阶梯压缩并上传至云存储 avatars 目录
+      const fileID = await uploadImageWithCompress(tempUrl, 'avatars')
+      wx.hideLoading()
+      this.setData({
+        selectedAvatar: fileID,
+        displayAvatar: fileID,
+        displayAvatarImg: true,
+        showAvatarPicker: false
+      })
+      wx.showToast({ title: '已选中微信头像', icon: 'none' })
+    } catch (err) {
+      wx.hideLoading()
+      wx.showToast({ title: err.message || '上传头像失败', icon: 'none' })
+    }
   },
 
   onInput(e) {
@@ -132,22 +167,12 @@ Page({
       })
   },
 
-  // 打开平台隐私保护协议指引
-  openPrivacyContract() {
-    if (wx.openPrivacyContract) {
-      wx.openPrivacyContract({
-        fail: () => {
-          wx.showToast({ title: '无法打开隐私协议', icon: 'none' })
-        },
-      })
-    } else {
-      wx.showModal({
-        title: '隐私说明',
-        content: '本项目为双人私密空间，所有数据（位置、照片、日志等）仅在您与伴侣两人之间加密共享，绝不会向任何第三方公开或出售。',
-        showCancel: false,
-        confirmColor: '#F48FB1',
-      })
-    }
+  // 打开/关闭隐私说明弹窗（原生应用内呈现，不跳转外部网页）
+  openPrivacyModal() {
+    this.setData({ showPrivacyModal: true })
+  },
+  closePrivacyModal() {
+    this.setData({ showPrivacyModal: false })
   },
 
   noop() {},

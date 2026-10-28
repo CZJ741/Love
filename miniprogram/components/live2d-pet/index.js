@@ -19,15 +19,22 @@ Component({
         actionState: 'normal',
       },
       observer(newVal) {
-        if (newVal) {
-          if (newVal.actionState) {
-            this.setData({ actionState: newVal.actionState })
-            this._updateEmotionEffects(newVal.actionState)
+        if (!newVal || !this._isReady) return
+        const toSet = {}
+        const state = newVal.actionState || 'normal'
+        if (state !== this.data.actionState) {
+          toSet.actionState = state
+          this._updateEmotionEffects(state)
+        }
+        if (newVal.stage) {
+          const names = { egg: '萌宠蛋', baby: '幼崽期', youth: '成长期', adult: '完全体' }
+          const sName = names[newVal.stage] || '幼崽期'
+          if (sName !== this.data.stageName) {
+            toSet.stageName = sName
           }
-          if (newVal.stage) {
-            const names = { egg: '萌宠蛋', baby: '幼崽期', youth: '成长期', adult: '完全体' }
-            this.setData({ stageName: names[newVal.stage] || '幼崽期' })
-          }
+        }
+        if (Object.keys(toSet).length > 0) {
+          this.setData(toSet)
         }
       }
     }
@@ -36,7 +43,7 @@ Component({
   data: {
     stageName: '萌宠蛋',
     actionState: 'normal', // happy | sad | surprise | normal | expectant | sleepy | sick
-    idleIndex: 0, // 0: 呼吸, 1: 晃脑摇尾, 2: 歪头杀, 3: 踏步
+    idleIndex: 0, // 0: 安静呼吸, 1: 好奇歪头, 2: 开心摇尾
     isBlinking: false,
     isTapped: false,
 
@@ -52,34 +59,66 @@ Component({
 
   pageLifetimes: {
     show() {
-      // 页面显示或切回前台时，恢复待机动画与眨眼动画循环
+      if (!this._isReady) return
+      this._resetAnimationState()
       this._startIdleActionLoop()
       this._startBlinkLoop()
     },
     hide() {
-      // 页面隐藏或进入后台时，清理定时器防止空转与无效 setData
       this._clearAllTimers()
     },
   },
 
   lifetimes: {
-    attached() {
+    ready() {
+      // 在 DOM 树与首屏渲染完全确立后，再开启 observer 与动效循环，杜绝 FLOW_INITIAL_CREATION 报错
+      this._isReady = true
+      if (this.data.pet) {
+        const pet = this.data.pet
+        const names = { egg: '萌宠蛋', baby: '幼崽期', youth: '成长期', adult: '完全体' }
+        this.setData({
+          actionState: pet.actionState || 'normal',
+          stageName: names[pet.stage] || '萌宠蛋'
+        })
+        this._updateEmotionEffects(pet.actionState || 'normal')
+      }
       this._startIdleActionLoop()
       this._startBlinkLoop()
     },
     detached() {
+      this._isReady = false
       this._clearAllTimers()
     }
   },
 
   methods: {
-    // 1. 自然循环待机动作切换（3~4个循环自然动作）
+    _scheduleFx(callback, delay) {
+      if (!this._fxTimers) this._fxTimers = new Set()
+      const timer = setTimeout(() => {
+        this._fxTimers.delete(timer)
+        if (this._isReady) callback()
+      }, delay)
+      this._fxTimers.add(timer)
+      return timer
+    },
+
+    _resetAnimationState() {
+      const state = (this.data.pet && this.data.pet.actionState) || 'normal'
+      this._lastTapTime = 0
+      this.setData({ idleIndex: 0, isBlinking: false, isTapped: false,
+        bubbleText: '', bubbleAnim: false, actionState: state })
+      this._updateEmotionEffects(state)
+    },
+
+    // 1. 三套自然循环待机动作：呼吸 → 歪头 → 摇尾
     _startIdleActionLoop() {
       if (this._idleTimer) clearInterval(this._idleTimer)
       this._idleTimer = setInterval(() => {
-        // 如果当前没有被互动强制改变表情，则随机轮换待机小动作
-        if (this.data.actionState === 'normal' || this.data.actionState === 'expectant') {
-          const nextIdle = (this.data.idleIndex + 1) % 4
+        // 互动或照料中的情绪由 actionState 接管，避免待机动作抢占表情。
+        const pet = this.data.pet || {}
+        if ((this.data.actionState === 'normal' || this.data.actionState === 'expectant') &&
+          pet.stage !== 'egg' && pet.health >= 60 && !this.data.isTapped) {
+          const nextIdle = (this.data.idleIndex + 1) % 3
           this.setData({ idleIndex: nextIdle })
         }
       }, 4000)
@@ -91,9 +130,9 @@ Component({
       this._blinkTimer = setInterval(() => {
         if (this.data.actionState !== 'happy' && this.data.actionState !== 'sleepy') {
           this.setData({ isBlinking: true })
-          setTimeout(() => this.setData({ isBlinking: false }), 150)
+          this._blinkResetTimer = this._scheduleFx(() => this.setData({ isBlinking: false }), 150)
         }
-      }, 3500 + Math.random() * 2000)
+      }, 4500)
     },
 
     // 3. 进入页面时的初次打招呼
@@ -147,8 +186,8 @@ Component({
         actionState: 'expectant'
       })
 
-      setTimeout(() => this.setData({ isTapped: false }), 400)
-      setTimeout(() => this.setData({ showHeartFx: false }), 1200)
+      this._scheduleFx(() => this.setData({ isTapped: false }), 400)
+      this._scheduleFx(() => this.setData({ showHeartFx: false }), 1200)
 
       const quotes = [
         '嗷呜~ 被摸得舒服极啦，呼噜呼噜！',
@@ -180,19 +219,19 @@ Component({
       try { wx.vibrateShort({ type: 'light' }) } catch (e) {}
       if (action === 'feed') {
         this.setData({ showFoodFx: true, isTapped: true, actionState: 'happy' })
-        setTimeout(() => this.setData({ showFoodFx: false, isTapped: false }), 1000)
+        this._scheduleFx(() => this.setData({ showFoodFx: false, isTapped: false }), 1000)
       } else if (action === 'clean') {
         this.setData({ showBubbleFx: true, isTapped: true, actionState: 'happy' })
-        setTimeout(() => this.setData({ showBubbleFx: false, isTapped: false }), 1200)
+        this._scheduleFx(() => this.setData({ showBubbleFx: false, isTapped: false }), 1200)
       } else if (action === 'sleep') {
         this.setData({ showZzzFx: true, actionState: 'sleepy' })
-        setTimeout(() => this.setData({ showZzzFx: false }), 2000)
+        this._scheduleFx(() => this.setData({ showZzzFx: false }), 2000)
       } else if (action === 'touch') {
         this.setData({ showHeartFx: true, isTapped: true, actionState: 'expectant' })
-        setTimeout(() => this.setData({ showHeartFx: false, isTapped: false }), 1000)
+        this._scheduleFx(() => this.setData({ showHeartFx: false, isTapped: false }), 1000)
       } else if (action === 'heal') {
         this.setData({ showHeartFx: true, actionState: 'happy' })
-        setTimeout(() => this.setData({ showHeartFx: false }), 1000)
+        this._scheduleFx(() => this.setData({ showHeartFx: false }), 1000)
       }
     },
 
@@ -202,8 +241,13 @@ Component({
     },
 
     _clearAllTimers() {
+      if (this._fxTimers) {
+        this._fxTimers.forEach(timer => clearTimeout(timer))
+        this._fxTimers.clear()
+      }
       if (this._idleTimer) clearInterval(this._idleTimer)
       if (this._blinkTimer) clearInterval(this._blinkTimer)
+      if (this._blinkResetTimer) clearTimeout(this._blinkResetTimer)
       if (this._bubbleTimer) clearTimeout(this._bubbleTimer)
     }
   }

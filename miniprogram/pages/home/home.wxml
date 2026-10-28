@@ -13,6 +13,22 @@
     </view>
   </view>
 
+  <!-- 经期健康暖心关怀胶囊 (经期中或临近时显示) -->
+  <view wx:if="{{periodCareInfo && (periodCareInfo.status === 'during' || periodCareInfo.status === 'approaching')}}" class="period-home-banner {{periodCareInfo.status}}" bindtap="goPeriod">
+    <text class="phb-icon">🌸</text>
+    <view class="phb-content">
+      <view class="phb-title" wx:if="{{!periodCareInfo.isFemale}}">
+        <text wx:if="{{periodCareInfo.status === 'during'}}">这几天请多照顾宝宝 💕</text>
+        <text wx:else>宝宝经期临近，备好温水红糖哦 🍵</text>
+      </view>
+      <view class="phb-title" wx:else>
+        <text wx:if="{{periodCareInfo.status === 'during'}}">姨妈第 {{periodCareInfo.dayInPeriod}} 天，好好照顾自己哦 🌸</text>
+        <text wx:else>预计 {{periodCareInfo.daysToNext}} 天后经期来临，提前做好准备 ✨</text>
+      </view>
+      <view class="phb-sub">点击进入健康关怀 ›</view>
+    </view>
+  </view>
+
   <!-- 双人拼图头像 + 积分余额 -->
   <view class="card puzzle-card">
     <view class="hello-row">
@@ -65,7 +81,7 @@
   </view>
 
   <!-- ====== 陪伴时长卡片（上面叠加 Live2D 桌宠小狗，浮现在卡片之上且紧贴下边缘，完全不影响卡片原有布局） ====== -->
-  <view class="card together-card with-pet {{!startDateLocked ? 'unlocked' : ''}}" style="background: {{togetherBg}};" bindtap="onTogetherCardTap" bindlongpress="showBgPicker">
+  <view class="card together-card with-pet {{!startDateLocked ? 'unlocked' : ''}}" bindtap="onTogetherCardTap">
     <view class="together-inner">
       <view class="together-line1">跟宝宝在一起的时间已经</view>
       <view class="together-line2">
@@ -91,7 +107,6 @@
         </block>
       </view>
     </view>
-    <view class="together-bg-hint">长按更换背景</view>
 
     <!-- 纯浮动桌宠层：紧贴卡片下边缘、完全不遮挡文字内容、支持单击互动/双击进宠物页 -->
     <view class="together-pet-float" catchtap="noop">
@@ -152,7 +167,6 @@
 
     <!-- 合影挑战 -->
     <view class="feature-item" bindtap="goPuzzle">
-      <view wx:if="{{puzzleStatus !== 'completed' && !puzzleMyUploaded}}" class="fi-dot"></view>
       <view class="fi-icon-wrap fi-puzzle">
         <text class="fi-emoji">📷</text>
       </view>
@@ -187,6 +201,33 @@
       </view>
       <text class="fi-title">萌宠宝贝</text>
       <text class="fi-desc">双人爱心共养</text>
+    </view>
+
+    <!-- 小金库记账 / AA -->
+    <view class="feature-item" bindtap="goBilling">
+      <view class="fi-icon-wrap fi-billing">
+        <text class="fi-emoji">💰</text>
+      </view>
+      <text class="fi-title">小金库AA</text>
+      <text class="fi-desc">记账零糊涂</text>
+    </view>
+
+    <!-- 恋爱清单（心愿待办） -->
+    <view class="feature-item" bindtap="goLoveList">
+      <view class="fi-icon-wrap fi-lovelist">
+        <text class="fi-emoji">🎈</text>
+      </view>
+      <text class="fi-title">恋爱清单</text>
+      <text class="fi-desc">心愿小事</text>
+    </view>
+
+    <!-- 经期健康关怀 -->
+    <view class="feature-item" bindtap="goPeriod">
+      <view class="fi-icon-wrap fi-period">
+        <text class="fi-emoji">🌸</text>
+      </view>
+      <text class="fi-title">经期关怀</text>
+      <text class="fi-desc">暖心呵护TA</text>
     </view>
   </view>
 
@@ -251,26 +292,6 @@
         <view class="d-row"><text class="d-label">数额</text><text class="d-val num {{txDetail.amount > 0 ? 'pos' : 'neg'}}">{{txDetail.amount > 0 ? '+' + txDetail.amount : txDetail.amount}}</text></view>
       </view>
       <button class="btn secondary submit-btn" bindtap="closeTxDetail">关闭</button>
-    </view>
-  </view>
-
-  <!-- ====== 背景选择弹窗 ====== -->
-  <view wx:if="{{showBgPicker}}" class="mask" bindtap="closeBgPicker">
-    <view class="modal" catchtap="noop">
-      <view class="modal-title">🎨 选择卡片背景</view>
-      <view class="bg-grid">
-        <view
-          wx:for="{{bgOptions}}"
-          wx:key="key"
-          class="bg-cell {{togetherBg === item.value ? 'selected' : ''}}"
-          style="background: {{item.value}};"
-          data-val="{{item.value}}"
-          bindtap="selectBg"
-        >
-          <text wx:if="{{togetherBg === item.value}}" class="bg-check">✓</text>
-        </view>
-      </view>
-      <button class="btn secondary submit-btn" bindtap="closeBgPicker" style="margin-top:12rpx">关闭</button>
     </view>
   </view>
 

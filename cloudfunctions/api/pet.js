@@ -98,8 +98,32 @@ const PET_SHOP = [
   { id: 'furn_bath_tub', name: '泡泡浴缸', price: 200, emoji: '🛁', desc: '装满泡泡的宠物浴缸', type: 'furniture', slot: 'tub', scene: 'bathroom' },
   { id: 'furn_bath_mat', name: '浴室防滑垫', price: 65, emoji: '🧼', desc: '柔软吸水的防滑脚垫', type: 'furniture', slot: 'mat', scene: 'bathroom' },
   { id: 'furn_outdoor_tent', name: '星空露营帐篷', price: 190, emoji: '⛺', desc: '周末户外露营小帐篷', type: 'furniture', slot: 'tent', scene: 'outdoor' },
-  { id: 'furn_outdoor_tree', name: '花园大树', price: 130, emoji: '🌳', desc: '为花园添一片清凉树荫', type: 'furniture', slot: 'tree', scene: 'outdoor' }
+  { id: 'furn_living_tv', name: '原木电视柜', price: 135, emoji: '📺', desc: '互动提升心情，冷却30分钟', type: 'furniture', slot: 'tv', scene: 'living' },
+  { id: 'furn_bedroom_bed', name: '奶油软床', price: 180, emoji: '🛏️', desc: '恢复体力与舒适度，冷却60分钟', type: 'furniture', slot: 'bed', scene: 'bedroom' },
+  { id: 'furn_bedroom_nightstand', name: '星光床头柜', price: 95, emoji: '🗄️', desc: '互动提升心情，冷却30分钟', type: 'furniture', slot: 'nightstand', scene: 'bedroom' },
+  { id: 'furn_bedroom_wardrobe', name: '云朵衣柜', price: 220, emoji: '🚪', desc: '解锁宠物换装入口', type: 'furniture', slot: 'wardrobe', scene: 'bedroom' },
+  { id: 'furn_bathroom_tub', name: '奶白泡泡浴缸', price: 200, emoji: '🛁', desc: '恢复清洁与心情，冷却45分钟', type: 'furniture', slot: 'tub', scene: 'bathroom' },
+  { id: 'furn_bathroom_sink', name: '贝壳洗手台', price: 120, emoji: '🚰', desc: '恢复清洁度，冷却25分钟', type: 'furniture', slot: 'sink', scene: 'bathroom' },
+  { id: 'furn_bathroom_toilet', name: '智能宠物马桶', price: 150, emoji: '🚽', desc: '恢复生理值，冷却40分钟', type: 'furniture', slot: 'toilet', scene: 'bathroom' },
+  { id: 'furn_outdoor_house', name: '庭院宠物屋', price: 190, emoji: '🏠', desc: '恢复舒适与体力，冷却60分钟', type: 'furniture', slot: 'house', scene: 'outdoor' },
+  { id: 'furn_outdoor_feeder', name: '户外食盆架', price: 105, emoji: '🥣', desc: '恢复饱食度，冷却30分钟', type: 'furniture', slot: 'feeder', scene: 'outdoor' },
+  { id: 'furn_outdoor_ramp', name: '草地敏捷坡道', price: 165, emoji: '🛝', desc: '提升心情与体力，冷却45分钟', type: 'furniture', slot: 'ramp', scene: 'outdoor' }
 ]
+
+const FURNITURE_ACTIONS = {
+  furn_living_sofa: { name: '沙发', cooldown: 45, comfort: 18, energy: 12 },
+  furn_living_table: { name: '茶几', cooldown: 30, hunger: 15 },
+  furn_living_tv: { name: '电视柜', cooldown: 30, mood: 16 },
+  furn_bedroom_bed: { name: '床', cooldown: 60, energy: 20, comfort: 15 },
+  furn_bedroom_nightstand: { name: '床头柜', cooldown: 30, mood: 14 },
+  furn_bedroom_wardrobe: { name: '衣柜', cooldown: 20, mood: 10 },
+  furn_bathroom_tub: { name: '浴缸', cooldown: 45, cleanliness: 20, mood: 10 },
+  furn_bathroom_sink: { name: '洗手台', cooldown: 25, cleanliness: 15 },
+  furn_bathroom_toilet: { name: '马桶', cooldown: 40, physiology: 20 },
+  furn_outdoor_house: { name: '宠物屋', cooldown: 60, comfort: 16, energy: 10 },
+  furn_outdoor_feeder: { name: '食盆架', cooldown: 30, hunger: 15 },
+  furn_outdoor_ramp: { name: '敏捷坡道', cooldown: 45, mood: 12, energy: 8 }
+}
 
 const DEFAULT_PET = {
   name: '小糯米',
@@ -109,6 +133,8 @@ const DEFAULT_PET = {
   mood: 90,         // 心情值
   cleanliness: 90,  // 清洁度
   energy: 90,       // 体力值
+  comfort: 90,      // 舒适度
+  physiology: 90,   // 生理值
   health: 95,       // 健康度（核心总指标）
   exp: 0,           // 当前阶段经验
   maxExp: STAGES.egg.maxExp,
@@ -139,7 +165,8 @@ const DEFAULT_PET = {
     scene: 'living'
   },
   // 保障托管状态
-  freezeUntil: 0 // 托管截止时间戳
+  freezeUntil: 0, // 托管截止时间戳
+  furnitureCooldowns: {}
 }
 
 // 综合健康度计算、自动喂食器保底与自然属性衰减
@@ -167,6 +194,8 @@ function calcDecayedStats(pet) {
   let mood = pet.mood ?? 90
   let cleanliness = pet.cleanliness ?? 90
   let energy = pet.energy ?? 90
+  let comfort = pet.comfort ?? 90
+  let physiology = pet.physiology ?? 90
   let health = pet.health ?? 95
 
   if (!isProtected) {
@@ -174,10 +203,14 @@ function calcDecayedStats(pet) {
     const hungerDecay = Math.floor(elapsedHours * 2.5)
     const moodDecay = Math.floor(elapsedHours * 2)
     const cleanDecay = Math.floor(elapsedHours * 1.5)
+    const comfortDecay = Math.floor(elapsedHours)
+    const physiologyDecay = Math.floor(elapsedHours * 1.8)
 
     hunger = Math.max(0, Math.min(MAX_STAT, hunger - hungerDecay))
     mood = Math.max(0, Math.min(MAX_STAT, mood - moodDecay))
     cleanliness = Math.max(0, Math.min(MAX_STAT, cleanliness - cleanDecay))
+    comfort = Math.max(0, Math.min(MAX_STAT, comfort - comfortDecay))
+    physiology = Math.max(0, Math.min(MAX_STAT, physiology - physiologyDecay))
   }
 
   // 自然恢复体力
@@ -200,7 +233,7 @@ function calcDecayedStats(pet) {
 
   // 饱食、心情或清洁任一状态过低时，健康度逐渐下降
   if (!isProtected) {
-    if (hunger < 40 || mood < 40 || cleanliness < 40) {
+    if (hunger < 40 || mood < 40 || cleanliness < 40 || comfort < 35 || physiology < 35) {
       const healthPenalty = Math.floor(elapsedHours * 2)
       health = Math.max(0, health - healthPenalty)
     } else if (hunger >= 70 && mood >= 70 && cleanliness >= 70 && elapsedHours >= 1) {
@@ -231,6 +264,8 @@ function calcDecayedStats(pet) {
     mood,
     cleanliness,
     energy,
+    comfort,
+    physiology,
     health,
     todayExp,
     todayExpDate: today,
@@ -241,6 +276,124 @@ function calcDecayedStats(pet) {
     slots: pet.slots || DEFAULT_PET.slots,
     inventory: pet.inventory || DEFAULT_PET.inventory
   }
+}
+
+// 一键使用可用家具：自动查找已解锁且冷却完毕的所有家具，按批次统一使用并获得全部收益
+async function petBatchUseFurniture(event, ctx) {
+  const { OPENID } = ctx
+  const me = await getUserByOpenid(OPENID)
+  if (!me || !me.roomId) throw new Error('未加入小窝')
+
+  const res = await db.collection('pets').where({ roomId: me.roomId }).limit(1).get()
+  const petDoc = res.data[0]
+  if (!petDoc) throw new Error('宠物不存在')
+
+  const current = calcDecayedStats(petDoc)
+  const ownedSet = new Set((current.inventory || []).filter(item => item.type === 'furniture').map(i => i.id))
+  const now = Date.now()
+  const cooldowns = { ...(current.furnitureCooldowns || {}) }
+
+  // 筛选出所有已解锁且当前冷却就绪的家具
+  const usableActions = []
+  for (const [fId, action] of Object.entries(FURNITURE_ACTIONS)) {
+    if (!ownedSet.has(fId)) continue
+    const readyAt = Number(cooldowns[fId] || 0)
+    if (readyAt <= now) {
+      usableActions.push({ fId, action })
+    }
+  }
+
+  if (usableActions.length === 0) {
+    if (ownedSet.size === 0) {
+      throw new Error('小窝还没有可用的家具，先去商店逛逛吧')
+    }
+    throw new Error('所有家具都在冷却休息中，稍后再来吧')
+  }
+
+  const gainsSum = { hunger: 0, mood: 0, cleanliness: 0, energy: 0, comfort: 0, physiology: 0 }
+  const newCooldowns = { ...cooldowns }
+  const usedNames = []
+
+  for (const { fId, action } of usableActions) {
+    newCooldowns[fId] = now + action.cooldown * 60000
+    usedNames.push(action.name)
+    ;['hunger', 'mood', 'cleanliness', 'energy', 'comfort', 'physiology'].forEach(key => {
+      if (action[key]) gainsSum[key] += Number(action[key] || 0)
+    })
+  }
+
+  const updateData = {
+    furnitureCooldowns: newCooldowns,
+    lastInteractedAt: now,
+    actionState: 'happy',
+    updatedAt: db.serverDate()
+  }
+
+  ;['hunger', 'mood', 'cleanliness', 'energy', 'comfort', 'physiology'].forEach(key => {
+    updateData[key] = Math.min(MAX_STAT, Number(current[key] ?? 90) + gainsSum[key])
+  })
+
+  const myName = me.nickname || '宝宝'
+  const gainsLabels = { hunger: '饱食', mood: '心情', cleanliness: '清洁', energy: '体力', comfort: '舒适', physiology: '生理' }
+  const gainSummary = Object.keys(gainsLabels).filter(key => gainsSum[key] > 0).map(key => `${gainsLabels[key]}+${gainsSum[key]}`).join('、')
+
+  const logText = `${myName} 一键整理并使用了小窝家具（${usedNames.join('、')}），${gainSummary || '舒适满满'}`
+  updateData.lastActionUser = myName
+  updateData.lastActionText = logText
+
+  // 追加双人抚育足迹（保留最近 15 条）
+  const footprints = (current.footprints || []).slice(0, 14)
+  footprints.unshift({
+    id: 'fp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    user: myName,
+    action: 'batch_furniture',
+    text: logText,
+    time: Date.now()
+  })
+  updateData.footprints = footprints
+
+  await db.collection('pets').doc(petDoc._id).update({ data: updateData })
+
+  return {
+    code: 0,
+    data: {
+      pet: { ...current, ...updateData },
+      usedCount: usableActions.length,
+      replyText: gainSummary ? `已提升：${gainSummary}` : '家具休息完毕，状态满满~'
+    }
+  }
+}
+
+// 固定家具互动：服务端校验拥有状态并保存冷却，避免重复点击刷属性。
+async function petUseFurniture(event, ctx) {
+  const { OPENID } = ctx
+  const furnitureId = String(event.furnitureId || '')
+  const action = FURNITURE_ACTIONS[furnitureId]
+  if (!action) throw new Error('该物品是视觉装饰，不能互动')
+  const me = await getUserByOpenid(OPENID)
+  if (!me || !me.roomId) throw new Error('未加入小窝')
+  const res = await db.collection('pets').where({ roomId: me.roomId }).limit(1).get()
+  const petDoc = res.data[0]
+  if (!petDoc) throw new Error('宠物不存在')
+  const current = calcDecayedStats(petDoc)
+  if (!(current.inventory || []).some(item => item.id === furnitureId && item.type === 'furniture')) {
+    throw new Error('请先在商店解锁这件家具')
+  }
+  const now = Date.now()
+  const cooldowns = { ...(current.furnitureCooldowns || {}) }
+  const readyAt = Number(cooldowns[furnitureId] || 0)
+  if (readyAt > now) throw new Error(`还需 ${Math.ceil((readyAt - now) / 60000)} 分钟恢复`)
+  const updateData = { furnitureCooldowns: { ...cooldowns, [furnitureId]: now + action.cooldown * 60000 }, lastInteractedAt: now, actionState: action.wardrobe ? 'surprise' : 'happy', updatedAt: db.serverDate() }
+  ;['hunger', 'mood', 'cleanliness', 'energy', 'comfort', 'physiology'].forEach(key => {
+    updateData[key] = Math.min(MAX_STAT, Number(current[key] ?? 90) + Number(action[key] || 0))
+  })
+  const myName = me.nickname || '宝宝'
+  const gains = { hunger: '饱食', mood: '心情', cleanliness: '清洁', energy: '体力', comfort: '舒适', physiology: '生理' }
+  const gainText = Object.keys(gains).filter(key => action[key]).map(key => `${gains[key]}+${action[key]}`).join('、')
+  updateData.lastActionUser = myName
+  updateData.lastActionText = action.wardrobe ? `${myName} 打开衣柜为萌宠挑选新装扮` : `${myName} 陪萌宠使用了${action.name}，${gainText}`
+  await db.collection('pets').doc(petDoc._id).update({ data: updateData })
+  return { code: 0, data: { pet: { ...current, ...updateData }, replyText: action.wardrobe ? '换装功能已解锁' : gainText } }
 }
 
 // 1. 获取宠物状态
@@ -540,7 +693,7 @@ async function petUseItem(event, ctx) {
   const inventory = (current.inventory || []).slice()
   const itemIdx = inventory.findIndex(i => i.id === itemId)
   if (itemIdx === -1 || (inventory[itemIdx].count || 0) <= 0) {
-    throw new Error('储物箱中暂无此道具，可前往商店采购~')
+    throw new Error('背包中暂无此道具，可前往商店采购~')
   }
 
   // 扣除背包数量
@@ -575,7 +728,7 @@ async function petUseItem(event, ctx) {
     if (itemConfig.health) health = Math.min(MAX_STAT, health + itemConfig.health)
     if (itemConfig.exp) exp += calcAddExp(itemConfig.exp)
     actionState = 'happy'
-    logText = `${myName} 从储物箱拿出【${itemConfig.name}】投喂/照料了小萌宠`
+    logText = `${myName} 从背包拿出【${itemConfig.name}】投喂/照料了小萌宠`
   }
 
   const footprints = (current.footprints || []).slice(0, 14)
@@ -622,7 +775,7 @@ async function petEquipSlot(event, ctx) {
   const { OPENID } = ctx
   const { slot, itemId } = event // 传统插槽、场景选择或 scene_<scene>_<slot>
   const validSlots = ['rug', 'bed', 'wall', 'window', 'facility']
-  const sceneSlotMatch = /^scene_(living|bedroom|bathroom|outdoor)_(sofa|table|lamp|tub|mat|tent|tree)$/.exec(slot || '')
+  const sceneSlotMatch = /^scene_(living|bedroom|bathroom|outdoor)_([a-zA-Z0-9_]+)$/.exec(slot || '')
   const isSceneFurnitureSlot = Boolean(sceneSlotMatch)
   const isSceneSelection = slot === 'scene'
   if (!validSlots.includes(slot) && !isSceneFurnitureSlot && !isSceneSelection) throw new Error('无效的家具插槽')
@@ -657,27 +810,28 @@ async function petEquipSlot(event, ctx) {
   }
   const myName = me.nickname || '宝宝'
   const itemConfig = itemId ? PET_SHOP.find(i => i.id === itemId) : null
-  const logText = isSceneSelection
-    ? `切换到了${['living', 'bedroom', 'bathroom', 'outdoor'].find(scene => scene === itemId) === 'living' ? '客厅' : itemId === 'bedroom' ? '卧室' : itemId === 'bathroom' ? '卫生间' : '室外'}`
-    : itemId
-      ? `${myName} 为${itemConfig && itemConfig.scene === 'bathroom' ? '卫生间' : itemConfig && itemConfig.scene === 'outdoor' ? '室外' : itemConfig && itemConfig.scene === 'bedroom' ? '卧室' : '客厅'}摆放了【${itemConfig ? itemConfig.name : '新装饰'}】`
-      : `${myName} 卸下了装饰`
-
-  const footprints = (current.footprints || []).slice(0, 14)
-  footprints.unshift({
-    id: 'fp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
-    user: myName,
-    action: 'equip',
-    text: logText,
-    time: Date.now()
-  })
+  const logText = itemId
+    ? `${myName} 为${itemConfig && itemConfig.scene === 'bathroom' ? '卫生间' : itemConfig && itemConfig.scene === 'outdoor' ? '室外' : itemConfig && itemConfig.scene === 'bedroom' ? '卧室' : '客厅'}摆放了【${itemConfig ? itemConfig.name : '新装饰'}】`
+    : `${myName} 卸下了装饰`
 
   const updateData = {
     slots,
-    footprints,
-    lastActionUser: myName,
-    lastActionText: logText,
     updatedAt: db.serverDate()
+  }
+
+  // 纯场景切换不计入伴侣动态提示与足迹历史
+  if (!isSceneSelection) {
+    const footprints = (current.footprints || []).slice(0, 14)
+    footprints.unshift({
+      id: 'fp_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      user: myName,
+      action: 'equip',
+      text: logText,
+      time: Date.now()
+    })
+    updateData.footprints = footprints
+    updateData.lastActionUser = myName
+    updateData.lastActionText = logText
   }
 
   await db.collection('pets').doc(petDoc._id).update({ data: updateData })
@@ -686,7 +840,7 @@ async function petEquipSlot(event, ctx) {
     code: 0,
     data: {
       pet: { ...current, ...updateData },
-      logText
+      logText: isSceneSelection ? '' : logText
     }
   }
 }
@@ -902,8 +1056,28 @@ async function petDevSet(event, ctx) {
   const me = await getUserByOpenid(OPENID)
   if (!me) throw new Error('用户不存在')
 
-  const { stage, health, hunger, mood, cleanliness, energy, exp, actionState, coins, coinsDelta } = event
+  const { stage, health, hunger, mood, cleanliness, energy, exp, actionState, coins, coinsDelta, reset } = event
   const updateData = { updatedAt: db.serverDate() }
+
+  // 清空/彻底删除数据库中的宠物记录并重新初始化
+  if (reset) {
+    // 物理彻底删除该房间在 pets 集合中的所有数据
+    await db.collection('pets').where({ roomId: me.roomId }).remove()
+    // 重新写入崭新的初始记录
+    const initPet = {
+      roomId: me.roomId,
+      ...DEFAULT_PET,
+      createdAt: db.serverDate(),
+      updatedAt: db.serverDate()
+    }
+    const addRes = await db.collection('pets').add({ data: initPet })
+    const freshPet = { _id: addRes._id, ...initPet }
+    return {
+      code: 0,
+      msg: '数据库中宠物数据已彻底清空并重新初始化',
+      data: calcDecayedStats(freshPet)
+    }
+  }
 
   if (stage && STAGES[stage]) {
     const stageCfg = STAGES[stage]
@@ -945,6 +1119,8 @@ async function petDevSet(event, ctx) {
 module.exports = {
   petGet,
   petInteract,
+  petUseFurniture,
+  petBatchUseFurniture,
   petBuyItem,
   petUseItem,
   petEquipSlot,

@@ -81,26 +81,18 @@ Page({
     togetherDays: 0,
     togetherStart: '',
     startDateLocked: false,
-    togetherBg: '',
-    showBgPicker: false,
     showDateModal: false,
     tempStartDate: '',
     todayStr: '',
-    bgOptions: [
-      { key: 'sunset', value: 'linear-gradient(135deg, #FFDEE9 0%, #B5FFFC 100%)' },
-      { key: 'warm', value: 'linear-gradient(135deg, #FFE0C0 0%, #FFD1A9 100%)' },
-      { key: 'pink', value: 'linear-gradient(135deg, #FCE4EC 0%, #F8BBD0 100%)' },
-      { key: 'sky', value: 'linear-gradient(135deg, #E0F7FA 0%, #B3E5FC 100%)' },
-      { key: 'green', value: 'linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%)' },
-      { key: 'lavender', value: 'linear-gradient(135deg, #F3E5F5 0%, #E1BEE7 100%)' },
-      { key: 'none', value: '' },
-    ],
 
     // 反向合影打卡简要状态
     puzzleStreak: 0,
     puzzleTheme: '',
     puzzleStatus: 'pending',
     puzzleMyUploaded: false,
+
+    // 生理期关怀首页胶囊状态
+    periodCareInfo: null,
 
     // 食物转盘功能状态
     showFoodWheel: false,
@@ -145,6 +137,7 @@ Page({
     this._startOnlineTimer()
     this.fetchPuzzleStatus()
     this.fetchPetData()
+    this.fetchPeriodCareInfo()
   },
 
   onHide() {
@@ -417,7 +410,6 @@ Page({
         this.setData({
           togetherStart: startDate,
           startDateLocked,
-          togetherBg: d.cardBg || '',
           tempStartDate: startDate || todayStr,
         })
 
@@ -494,17 +486,6 @@ Page({
         wx.hideLoading()
         wx.showToast({ title: e.message || '设置失败', icon: 'none' })
       })
-  },
-
-  showBgPicker() {
-    this.setData({ showBgPicker: true })
-  },
-  closeBgPicker() { this.setData({ showBgPicker: false }) },
-
-  selectBg(e) {
-    const val = e.currentTarget.dataset.val
-    this.setData({ togetherBg: val, showBgPicker: false })
-    api.call('setRelationshipInfo', { cardBg: val }).catch(() => {})
   },
 
   // -------- 冷暴力预警 --------
@@ -782,6 +763,32 @@ Page({
   // 跳转到专属双人宠物页面
   goPetPage() {
     wx.navigateTo({ url: '/pages/pet/pet' })
+  },
+
+  // 跳转到情侣记账/AA对账页面
+  goBilling() {
+    wx.navigateTo({ url: '/pages/billing/billing' })
+  },
+
+  // 跳转到恋爱清单（100件事）
+  goLoveList() {
+    wx.navigateTo({ url: '/pages/lovelist/lovelist' })
+  },
+
+  // 跳转到经期关怀页面
+  goPeriod() {
+    wx.navigateTo({ url: '/pages/period/period' })
+  },
+
+  // 获取生理期关怀概要（用于主页动态胶囊）
+  fetchPeriodCareInfo() {
+    api.call('period_get', {})
+      .then(res => {
+        if (res && res.status) {
+          this.setData({ periodCareInfo: res })
+        }
+      })
+      .catch(() => {})
   },
 
   openPetModal() {

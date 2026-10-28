@@ -15,6 +15,9 @@ const decay = require('./decay')
 const game = require('./game')
 const location = require('./location')
 const pet = require('./pet')
+const billing = require('./billing')
+const lovelist = require('./lovelist')
+const period = require('./period')
 
 const HANDLERS = {
   // 档案与房间
@@ -78,6 +81,8 @@ const HANDLERS = {
   // 双人共养虚拟桌宠
   petGet: pet.petGet,
   petInteract: pet.petInteract,
+  petUseFurniture: pet.petUseFurniture,
+  petBatchUseFurniture: pet.petBatchUseFurniture,
   petBuyItem: pet.petBuyItem,
   petUseItem: pet.petUseItem,
   petEquipSlot: pet.petEquipSlot,
@@ -86,6 +91,22 @@ const HANDLERS = {
   petConfirmEvolve: pet.petConfirmEvolve,
   petRename: pet.petRename,
   petDevSet: pet.petDevSet,
+  // 情侣记账与AA对账
+  billing_get: billing.billing_get,
+  billing_add: billing.billing_add,
+  billing_delete: billing.billing_delete,
+  billing_settle: billing.billing_settle,
+  // 恋爱清单
+  loveList_get: lovelist.loveList_get,
+  loveList_check: lovelist.loveList_check,
+  loveList_add: lovelist.loveList_add,
+  loveList_delete: lovelist.loveList_delete,
+  loveList_reset_all_done: lovelist.loveList_reset_all_done,
+  // 生理期 / 健康关怀
+  period_get: period.period_get,
+  period_record: period.period_record,
+  period_remind: period.period_remind,
+  period_set_female: period.period_set_female,
   // 余额实时同步
   getBalances,
 }

@@ -140,9 +140,7 @@
         <text class="cg-emoji">{{gameMeta.emoji}}</text>
         <text class="cg-text">{{gameMeta.title}}</text>
       </view>
-      <view class="refresh-pill" bindtap="onRefresh">
-        <text class="rp-icon">🔄</text>
-      </view>
+      <view class="nav-placeholder"></view>
     </view>
 
     <!-- 双方对弈玩家状态 -->

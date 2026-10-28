@@ -757,79 +757,138 @@
   100% { transform: scaleY(1.15); }
 }
 
-/* ================= 4套自然循环待机骨骼动作 ================= */
-/* 循环动作0：平缓温馨呼吸 */
+/* ================= 三套自然循环待机骨骼动作与表情 ================= */
+/* 动作一：安静呼吸。眼神放松，身体随呼吸轻轻起伏。 */
 .live2d-dog.idle-0 .dog-head-wrap {
-  animation: breatheMotion 2.4s ease-in-out infinite alternate;
+  animation: idleBreathHead 2.8s ease-in-out infinite;
+}
+.live2d-dog.idle-0 .dog-body {
+  animation: idleBreathBody 2.8s ease-in-out infinite;
 }
 .live2d-dog.idle-0 .dog-tail {
-  animation: wagSoft 1.8s ease-in-out infinite alternate;
+  animation: idleBreathTail 2.4s ease-in-out infinite alternate;
 }
-@keyframes breatheMotion {
-  0% { transform: translateY(0) rotate(0deg); }
-  100% { transform: translateY(-4rpx) rotate(1deg); }
+.live2d-dog.idle-0 .dog-eyes {
+  opacity: 0.82;
 }
-@keyframes wagSoft {
-  0% { transform: rotate(-25deg); }
-  100% { transform: rotate(-45deg); }
+.live2d-dog.idle-0 .mouth-lip {
+  width: 14rpx;
+  height: 5rpx;
+  background: transparent;
+  border: 0;
+  border-bottom: 2rpx solid #695057;
+  border-radius: 0 0 50% 50%;
+}
+.live2d-dog.idle-0 .dog-tongue {
+  display: none;
+}
+@keyframes idleBreathHead {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3rpx) rotate(1deg); }
+}
+@keyframes idleBreathBody {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-2rpx) scale(1.015, 0.99); }
+}
+@keyframes idleBreathTail {
+  0% { transform: rotate(-28deg); }
+  100% { transform: rotate(-40deg); }
 }
 
-/* 循环动作1：欢快摇尾晃脑 */
+/* 动作二：好奇歪头。眼睛放大、眉毛抬起，单耳随着倾听轻抖。 */
 .live2d-dog.idle-1 .dog-head-wrap {
-  animation: headBob 1.6s ease-in-out infinite alternate;
+  animation: idleCuriousTilt 3.2s ease-in-out infinite;
+}
+.live2d-dog.idle-1 .dog-eyes {
+  animation: idleCuriousEyes 3.2s ease-in-out infinite;
+}
+.live2d-dog.idle-1 .eye {
+  transform: scale(1.12);
+}
+.live2d-dog.idle-1 .face-brow {
+  transform: translateY(-2rpx) rotate(0deg);
+}
+.live2d-dog.idle-1 .mouth-lip {
+  width: 7rpx;
+  height: 8rpx;
+  border: 0;
+  border-radius: 50%;
+  background: #695057;
+}
+.live2d-dog.idle-1 .dog-tongue {
+  display: none;
+}
+.live2d-dog.idle-1 .ear-left {
+  animation: idleCuriousEar 3.2s ease-in-out infinite;
 }
 .live2d-dog.idle-1 .dog-tail {
-  animation: wagFast 0.5s ease-in-out infinite alternate;
+  animation: idleCuriousTail 3.2s ease-in-out infinite;
 }
-@keyframes headBob {
-  0% { transform: translateY(0) rotate(-3deg); }
-  100% { transform: translateY(-6rpx) rotate(3deg); }
+@keyframes idleCuriousTilt {
+  0%, 20%, 100% { transform: rotate(0deg); }
+  42%, 63% { transform: rotate(-9deg); }
+  82% { transform: rotate(2deg); }
 }
-@keyframes wagFast {
-  0% { transform: rotate(-15deg); }
-  100% { transform: rotate(-55deg); }
+@keyframes idleCuriousEyes {
+  0%, 20%, 100% { transform: translateX(0); }
+  42%, 63% { transform: translateX(-2rpx); }
+  82% { transform: translateX(1rpx); }
+}
+@keyframes idleCuriousEar {
+  0%, 32%, 100% { transform: rotate(-17deg); }
+  45% { transform: rotate(-5deg); }
+  55% { transform: rotate(-21deg); }
+}
+@keyframes idleCuriousTail {
+  0%, 30%, 100% { transform: rotate(-28deg); }
+  48% { transform: rotate(-18deg); }
+  65% { transform: rotate(-30deg); }
 }
 
-/* 循环动作2：好奇歪头杀 */
+/* 动作三：开心摇尾。月牙眼、微笑与左右摆尾形成一组完整表情。 */
 .live2d-dog.idle-2 .dog-head-wrap {
-  animation: headTilt 2.8s ease-in-out infinite alternate;
+  animation: idleHappyBob 1.8s ease-in-out infinite;
+}
+.live2d-dog.idle-2 .dog-tail {
+  animation: idleHappyTail 0.48s ease-in-out infinite alternate;
 }
 .live2d-dog.idle-2 .ear-left {
-  animation: earTwitch 2.8s ease-in-out infinite alternate;
+  animation: idleHappyEarLeft 1.8s ease-in-out infinite;
 }
-@keyframes headTilt {
-  0% { transform: rotate(-8deg); }
-  50% { transform: rotate(0deg); }
-  100% { transform: rotate(8deg); }
+.live2d-dog.idle-2 .ear-right {
+  animation: idleHappyEarRight 1.8s ease-in-out infinite;
 }
-@keyframes earTwitch {
-  0%, 80% { transform: rotate(-15deg); }
-  90% { transform: rotate(-5deg); }
-  100% { transform: rotate(-20deg); }
+.live2d-dog.idle-2 .eye {
+  display: none;
+}
+.live2d-dog.idle-2 .eye-happy-crescent {
+  display: block;
+  animation: idleHappyEyes 1.8s ease-in-out infinite alternate;
+}
+.live2d-dog.idle-2 .dog-tongue {
+  display: block;
+}
+@keyframes idleHappyBob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-5rpx) rotate(2deg); }
+}
+@keyframes idleHappyTail {
+  0% { transform: rotate(-14deg); }
+  100% { transform: rotate(-52deg); }
+}
+@keyframes idleHappyEarLeft {
+  0%, 100% { transform: rotate(-24deg); }
+  50% { transform: rotate(-14deg); }
+}
+@keyframes idleHappyEarRight {
+  0%, 100% { transform: rotate(24deg); }
+  50% { transform: rotate(14deg); }
+}
+@keyframes idleHappyEyes {
+  0% { transform: scale(0.9); }
+  100% { transform: scale(1.08); }
 }
 
-/* 循环动作3：坐立小踏步 */
-.live2d-dog.idle-3 .dog-body {
-  animation: bodyStep 1.4s ease-in-out infinite alternate;
-}
-.live2d-dog.idle-3 .paw-left {
-  animation: pawStepL 0.7s infinite alternate;
-}
-.live2d-dog.idle-3 .paw-right {
-  animation: pawStepR 0.7s infinite alternate 0.35s;
-}
-@keyframes bodyStep {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-3rpx); }
-}
-@keyframes pawStepL {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-4rpx); }
-}
-@keyframes pawStepR {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-4rpx); }
-}
 
 /* 眨眼表现 */
 .live2d-dog.blinking .eye {
@@ -887,3 +946,123 @@
 .action-sleepy .ear-left { transform: rotate(0deg); }
 .action-sleepy .ear-right { transform: rotate(0deg); }
 .action-sleepy .dog-tail { animation: wagSoft 3s infinite alternate !important; }
+/* Reference redesign: a grey-and-white, folded-ear chibi puppy. */
+.live2d-dog { width: 168rpx; height: 150rpx; flex-shrink: 0; }
+.live2d-egg { flex-shrink: 0; }
+.live2d-dog.stage-baby { transform: scale(0.94); }
+.live2d-dog.stage-youth { transform: scale(1); }
+.live2d-dog.stage-adult { transform: scale(1.06); }
+.dog-head-wrap { top: 17rpx; width: 162rpx; height: 100rpx; }
+.live2d-dog .dog-head {
+  width: 144rpx; height: 100rpx; box-sizing: border-box;
+  border: 0; border-radius: 43% 43% 46% 46%;
+  /* Blend all white markings on one surface to avoid overlapping patch edges. */
+  background:
+    radial-gradient(ellipse 46rpx 34rpx at 46rpx 81rpx, #f8f7f3 0%, #f8f7f3 42%, rgba(248,247,243,0.78) 65%, rgba(248,247,243,0) 100%),
+    radial-gradient(ellipse 46rpx 34rpx at 98rpx 81rpx, #f8f7f3 0%, #f8f7f3 42%, rgba(248,247,243,0.78) 65%, rgba(248,247,243,0) 100%),
+    radial-gradient(ellipse 37rpx 83rpx at 72rpx 11rpx, #f8f7f3 0%, #f8f7f3 36%, rgba(248,247,243,0.72) 62%, rgba(248,247,243,0) 100%),
+    #b7b5b5;
+  box-shadow: none;
+}
+.face-blaze {
+  position: absolute; top: -9rpx; left: 43rpx; width: 55rpx; height: 83rpx;
+  background: #f8f7f3; border-radius: 45% 45% 36% 36%; transform: rotate(-3deg); z-index: 1;
+}
+.face-cheek { position: absolute; bottom: -6rpx; width: 88rpx; height: 52rpx; background: #f8f7f3; border-radius: 50%; z-index: 1; }
+.cheek-left { left: 4rpx; transform: rotate(-10deg); }
+.cheek-right { right: 4rpx; transform: rotate(10deg); }
+/* The head background now owns the markings and their soft transitions. */
+.face-blaze, .face-cheek { display: none; }
+.face-brow { position: absolute; top: 40rpx; width: 11rpx; height: 4rpx; background: #969395; border-radius: 50%; z-index: 2; }
+.brow-left { left: 43rpx; transform: rotate(-8deg); }
+.brow-right { right: 43rpx; transform: rotate(8deg); }
+.head-tuft { position: absolute; top: -5rpx; left: 69rpx; width: 22rpx; height: 17rpx; background: #f8f7f3; border-radius: 85% 15% 0 0; transform: rotate(-16deg); z-index: 3; }
+.live2d-dog .dog-ear {
+  top: -12rpx; width: 43rpx; height: 44rpx; box-sizing: border-box;
+  border: 0; border-radius: 24% 60% 35% 35%;
+  background: #b7b5b5; box-shadow: none; z-index: 1; overflow: hidden;
+}
+.live2d-dog .ear-left { left: 8rpx; transform: rotate(-17deg); }
+.live2d-dog .ear-right { right: 8rpx; transform: rotate(17deg); border-radius: 60% 24% 35% 35%; }
+.ear-inner { position: absolute; bottom: 1rpx; left: 10rpx; width: 20rpx; height: 27rpx; background: #e4bbb0; border: 4rpx solid #eeece7; border-radius: 45% 55% 25% 25%; box-sizing: border-box; }
+.ear-fold { position: absolute; top: -3rpx; left: -2rpx; width: 45rpx; height: 19rpx; background: #5c5a60; border-radius: 30% 55% 65% 15%; transform: rotate(-10deg); }
+.ear-right .ear-fold { transform: rotate(10deg); border-radius: 55% 30% 15% 65%; }
+.live2d-dog .dog-eyes { top: 51rpx; width: 35rpx; height: 11rpx; align-items: center; }
+.live2d-dog .eye { width: 8rpx; height: 10rpx; border: 0; border-radius: 50%; background: #343137; box-shadow: none; }
+.live2d-dog .dog-blush { top: 66rpx; width: 10rpx; height: 5rpx; background: #e5b9b3; opacity: 0.6; }
+.blush-left { left: 41rpx; }
+.blush-right { right: 41rpx; }
+.dog-nose { top: 63rpx; width: 13rpx; height: 9rpx; background: #4a464a; border-radius: 40% 40% 60% 60%; }
+.dog-mouth { top: 76rpx; width: 19rpx; height: 13rpx; }
+.mouth-lip { width: 18rpx; height: 7rpx; border: 0; border-radius: 25% 25% 50% 50%; background: #695057; }
+.dog-tongue { display: block; width: 11rpx; height: 10rpx; margin-top: -5rpx; background: #df939a; border: 0; border-radius: 15% 15% 60% 60%; animation: none; }
+.live2d-dog .dog-body { width: 68rpx; height: 60rpx; box-sizing: border-box; border: 0; background: radial-gradient(ellipse 32rpx 55rpx at 50% 30%, #e9e7e2 0%, #d2d0cd 58%, #b7b5b5 100%); border-radius: 42% 42% 30% 30%; box-shadow: none; overflow: hidden; }
+.dog-belly { display: none; }
+.dog-chest { position: absolute; top: -2rpx; left: 9rpx; width: 47rpx; height: 55rpx; background: radial-gradient(ellipse at 50% 28%, #f8f7f3 0%, #f8f7f3 35%, rgba(248,247,243,0.75) 63%, rgba(248,247,243,0) 100%); border-radius: 20% 20% 48% 48%; }
+.dog-haunch { position: absolute; bottom: 1rpx; width: 28rpx; height: 34rpx; background: radial-gradient(ellipse at 50% 45%, #f8f7f3 18%, #eeece8 62%, #d6d3cf 100%); border: 0; border-radius: 50% 50% 42% 42%; z-index: 3; }
+.haunch-left { left: 36rpx; transform: rotate(-18deg); }
+.haunch-right { right: 36rpx; transform: rotate(18deg); }
+.paw-pad { position: absolute; left: 7rpx; bottom: 6rpx; width: 14rpx; height: 12rpx; background: #dc9b9b; border-radius: 45% 45% 40% 40%; }
+.toe { position: absolute; width: 5rpx; height: 6rpx; border-radius: 50%; background: #dc9b9b; top: 7rpx; }
+.toe-one { left: 4rpx; transform: rotate(-20deg); }
+.toe-two { left: 11rpx; top: 4rpx; }
+.toe-three { right: 4rpx; transform: rotate(20deg); }
+.dog-paws { width: 47rpx; bottom: -1rpx; z-index: 4; }
+.paw { position: relative; width: 20rpx; height: 36rpx; background: linear-gradient(90deg, #e2dfd9 0%, #f8f7f3 32%, #f8f7f3 70%, #e8e5df 100%); border: 0; border-bottom: 0; border-radius: 35% 35% 25% 25%; box-shadow: none; }
+.dog-tail-wrap { left: auto; right: 35rpx; bottom: 21rpx; }
+.dog-tail { width: 15rpx; height: 28rpx; background: linear-gradient(100deg, #cbc8c5 0%, #e4e1dc 45%, #b7b5b5 100%); border: 0; border-radius: 60% 60% 35% 35%; box-shadow: none; }
+.dog-shadow { width: 94rpx; height: 7rpx; bottom: -4rpx; background: #dcd9d2; filter: none; }
+.live2d-dog .eye-happy-crescent { width: 9rpx; height: 6rpx; border-width: 2rpx; border-color: #343137 transparent transparent; border-radius: 50% 50% 0 0; }
+.live2d-dog.action-surprise .eye { height: 12rpx; width: 9rpx; }
+.live2d-dog.action-sad .dog-tongue, .live2d-dog.action-sleepy .dog-tongue { display: none; }
+.live2d-dog.action-sad .mouth-lip { height: 4rpx; width: 12rpx; border: 0; border-top: 2rpx solid #695057; border-radius: 50% 50% 0 0; background: transparent; }
+.live2d-dog.action-sleepy .mouth-lip { height: 4rpx; width: 10rpx; background: transparent; border: 0; border-bottom: 2rpx solid #695057; }
+.live2d-dog.action-happy .ear-left { transform: rotate(-24deg); }
+.live2d-dog.action-happy .ear-right { transform: rotate(24deg); }
+.live2d-dog.action-sleepy .ear-left { transform: rotate(-10deg); }
+.live2d-dog.action-sleepy .ear-right { transform: rotate(10deg); }
+
+/* One sparse texture layer with physical-pixel strokes for phone rendering.
+   Keep color transitions in the base backgrounds, separate from the fur. */
+.live2d-dog .dog-head::before,
+.live2d-dog .dog-body::before,
+.dog-tail::before,
+.dog-haunch::before,
+.ear-fold::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background-image: repeating-linear-gradient(105deg,
+    transparent 0, transparent 7px,
+    rgba(255,255,255,0.26) 7px, rgba(255,255,255,0.26) 8px,
+    transparent 8px, transparent 13px);
+  background-size: 16px 11px;
+  pointer-events: none; z-index: 0;
+}
+.dog-tail { position: relative; }
+.ear-fold { position: absolute; }
+.dog-chest::after,
+.paw::after {
+  content: ''; position: absolute; inset: 2rpx; border-radius: inherit;
+  background-image: repeating-linear-gradient(98deg,
+    transparent 0, transparent 6px,
+    rgba(145,138,130,0.18) 6px, rgba(145,138,130,0.18) 7px,
+    transparent 7px, transparent 12px);
+  background-size: 15px 10px;
+  pointer-events: none;
+}
+/* Small filled tufts soften the silhouette without drawing an outline. */
+.fur-edge { position: absolute; width: 13rpx; height: 8rpx; background: #b7b5b5; border-radius: 85% 15% 75% 25%; pointer-events: none; z-index: 2; }
+.fur-edge-left { left: 6rpx; top: 54rpx; transform: rotate(35deg); }
+.fur-edge-left-low { left: 10rpx; top: 69rpx; transform: rotate(12deg); }
+.fur-edge-right { right: 6rpx; top: 54rpx; transform: rotate(145deg); }
+.fur-edge-right-low { right: 10rpx; top: 69rpx; transform: rotate(168deg); }
+.head-tuft::before, .head-tuft::after {
+  content: ''; position: absolute; width: 12rpx; height: 14rpx;
+  background: #f8f7f3; border-radius: 85% 15% 0 0;
+}
+.head-tuft::before { left: -7rpx; top: 5rpx; transform: rotate(-23deg); }
+.head-tuft::after { right: -6rpx; top: 3rpx; transform: rotate(26deg); }
+
+/* 统一取消吐舌头表现，保持嘴部表情简洁。 */
+.live2d-dog .dog-tongue {
+  display: none !important;
+}

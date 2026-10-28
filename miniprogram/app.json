@@ -10,7 +10,10 @@
     "pages/puzzle/puzzle",
     "pages/game/game",
     "pages/location/location",
-    "pages/pet/pet"
+    "pages/pet/pet",
+    "pages/billing/billing",
+    "pages/lovelist/lovelist",
+    "pages/period/period"
   ],
   "permission": {
     "scope.userLocation": {

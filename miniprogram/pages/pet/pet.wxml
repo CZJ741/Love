@@ -4,13 +4,13 @@
     <view class="scene-arrow scene-arrow-left" bindtap="previousScene">‹</view>
     <view class="scene-title">{{currentSceneName}}</view>
     <view class="scene-arrow scene-arrow-right" bindtap="nextScene">›</view>
-    <view wx:if="{{currentScene === 'living'}}" class="scene-backdrop living-backdrop"><view class="scene-decor couch">🛋️</view><view class="scene-decor plant">🪴</view></view>
+    <view wx:if="{{currentScene === 'living'}}" class="scene-backdrop living-backdrop"></view>
     <view wx:if="{{currentScene === 'bedroom'}}" class="scene-backdrop bedroom-backdrop"><view class="bedroom-headboard"></view><view class="scene-decor moon">🌙</view></view>
     <view wx:if="{{currentScene === 'bathroom'}}" class="scene-backdrop bathroom-backdrop"><view class="bath-mirror">◯</view><view class="bath-tile"></view></view>
     <view wx:if="{{currentScene === 'outdoor'}}" class="scene-backdrop outdoor-backdrop"><view class="scene-decor cloud-one">☁️</view><view class="scene-decor cloud-two">☁️</view><view class="scene-decor sun">☀️</view></view>
     <view class="room-back-wall">
       <view class="wall-panel panel-left"></view><view class="wall-panel panel-right"></view><view class="baseboard"></view>
-      <view class="room-window"><view class="window-glass"><view class="window-sun"></view><view class="window-cloud"></view><view class="window-mullion-v"></view><view class="window-mullion-h"></view></view><view class="window-sill"></view></view>
+      <view class="room-window" wx:if="{{currentScene === 'living'}}"><view class="window-glass"><view class="window-sun"></view><view class="window-cloud"></view><view class="window-mullion-v"></view><view class="window-mullion-h"></view></view><view class="window-sill"></view></view>
       <view class="wall-art" wx:if="{{pet.slots.wall && visibleSlots.wall}}">
         <view wx:if="{{pet.slots.wall === 'furn_wall_lights'}}" class="string-lights">✨ ✨ ✨ ✨</view>
         <view wx:elif="{{pet.slots.wall === 'furn_wall_frame'}}" class="photo-frame"><view class="photo-art">💞</view></view>
@@ -23,23 +23,29 @@
       </view>
     </view>
     <view class="room-floor"></view>
-    <view class="floor-rug {{pet.slots.rug}}" wx:if="{{pet.slots.rug && visibleSlots.rug}}"><view class="rug-pattern"></view></view>
-    <view class="room-bed {{pet.slots.bed}}" wx:if="{{pet.slots.bed && visibleSlots.bed}}"><view class="bed-headboard"></view><view class="bed-pillow">🤍</view><view class="bed-mattress"></view><view class="bed-blanket"></view><view class="bed-legs"></view><view wx:if="{{pet.slots.bed === 'furn_bed_castle'}}" class="bed-castle-detail">🏰</view><view wx:if="{{pet.slots.bed === 'furn_bed_moon'}}" class="bed-moon-detail">🌙</view></view>
+    <view class="floor-rug {{pet.slots.rug || ''}}"><view class="rug-pattern"></view></view>
     <view class="room-facility {{pet.slots.facility}}" wx:if="{{pet.slots.facility && visibleSlots.facility}}">
       <view wx:if="{{pet.slots.facility === 'furn_fac_feeder'}}" class="feeder"><view class="feeder-bowl"><view class="food-pile"></view></view><view class="feeder-base"></view></view>
       <view wx:elif="{{pet.slots.facility === 'furn_fac_fountain'}}" class="fountain"><view class="water-stream"></view><view class="fountain-bowl"></view><view class="fountain-base"></view></view>
       <view wx:elif="{{pet.slots.facility === 'furn_fac_robot'}}" class="robot"><view class="robot-antenna"></view><view class="robot-head"><view class="robot-eye"></view><view class="robot-eye"></view></view><view class="robot-body"></view></view>
     </view>
-    <view wx:if="{{currentScene === 'living' && pet.slots.scene_living_sofa}}" class="scene-prop sofa">🛋️</view>
-    <view wx:if="{{currentScene === 'living' && pet.slots.scene_living_table}}" class="scene-prop table">🪵</view>
-    <view wx:if="{{currentScene === 'bedroom' && pet.slots.scene_bedroom_lamp}}" class="scene-prop lamp">🪔</view>
-    <view wx:if="{{currentScene === 'bathroom' && pet.slots.scene_bathroom_tub}}" class="scene-prop tub">🛁</view>
-    <view wx:if="{{currentScene === 'bathroom' && pet.slots.scene_bathroom_mat}}" class="scene-prop mat">🧼</view>
-    <view wx:if="{{currentScene === 'outdoor' && pet.slots.scene_outdoor_tent}}" class="scene-prop tent">⛺</view>
-    <view wx:if="{{currentScene === 'outdoor' && pet.slots.scene_outdoor_tree}}" class="scene-prop tree">🌳</view>
+    <block wx:for="{{sceneItems}}" wx:key="id">
+      <view class="fixed-item fixed-{{item.kind}} pos-{{item.position}} item-{{item.id}} {{selectedFurnitureId === item.id ? 'selected' : ''}} {{item.owned ? '' : 'locked'}} {{item.cooling ? 'cooling' : ''}}"
+        data-id="{{item.id}}" catchtap="onTapFurniture">
+        <!-- 逼真椭圆地面阴影：根据透视自然投影在地面上 -->
+        <view class="furniture-floor-shadow"></view>
+        <view class="fixed-item-art">{{item.icon}}</view>
+        <view wx:if="{{item.kind === 'furniture'}}" class="fixed-item-label">
+          <text>{{item.name}}</text>
+          <text wx:if="{{!item.owned}}"> · 未解锁</text>
+          <text wx:elif="{{item.cooling}}" class="cooling-tag"> · {{item.remainingCdText}}</text>
+          <text wx:elif="{{item.cdMinutes}}" class="cd-base-tag"> · CD {{item.cdMinutes}}m</text>
+        </view>
+      </view>
+    </block>
     <!-- 核心角色：Live2D 宠物舞台 -->
     <view class="center-pet-wrap" catchtap="onTapPet">
-      <live2d-pet id="live2d-stage-pet" pet="{{pet}}" bind:interact="onPetLive2DInteract" />
+      <live2d-pet id="live2d-stage-pet" compactMode="{{true}}" pet="{{pet}}" bind:interact="onPetLive2DInteract" />
     </view>
   </view>
 
@@ -49,10 +55,6 @@
     <view class="top-nav-row" style="padding-top: {{statusBarHeight}}px;">
       <view class="back-pill" bindtap="navigateBack">
         <text class="pill-icon">‹</text>
-      </view>
-      <view class="name-pill" bindtap="promptRename" bindlongpress="toggleDevModal">
-        <text class="pet-name">{{pet.name || '小糯米'}}</text>
-        <text class="edit-icon">✏️</text>
       </view>
       <view class="coin-pill">
         <text class="coin-icon">🪙</text>
@@ -84,6 +86,8 @@
         <text class="sb-icon">⚡</text>
         <text class="sb-val">{{pet.energy || 0}}</text>
       </view>
+      <view class="stat-bubble"><text class="sb-icon">🧸</text><text class="sb-val">{{pet.comfort || 0}}</text></view>
+      <view class="stat-bubble"><text class="sb-icon">🚻</text><text class="sb-val">{{pet.physiology || 0}}</text></view>
       <view class="stat-bubble {{pet.health < 60 ? 'warn' : ''}}">
         <text class="sb-icon">❤️</text>
         <text class="sb-val">{{pet.health || 0}}</text>
@@ -92,6 +96,10 @@
 
     <!-- 右侧常用功能 -->
     <view class="hud-right">
+      <view class="hud-btn-circle quick-btn" bindtap="batchUseFurniture">
+        <text class="hbc-icon">⚡</text>
+        <text class="hbc-label">一键使用</text>
+      </view>
       <view class="hud-btn-circle game-btn" data-type="game" bindtap="openModal">
         <text class="hbc-icon">🎮</text>
         <text class="hbc-label">赚金币</text>
@@ -102,13 +110,9 @@
       </view>
       <view class="hud-btn-circle bag-btn" data-type="backpack" bindtap="openModal">
         <text class="hbc-icon">🎒</text>
-        <text class="hbc-label">储物箱</text>
+        <text class="hbc-label">背包</text>
       </view>
-      <view class="hud-btn-circle decor-btn" data-type="decor" bindtap="openModal">
-        <text class="hbc-icon">🪑</text>
-        <text class="hbc-label">换装</text>
-      </view>
-      <view class="hud-btn-circle log-btn" data-type="footprints" bindtap="openModal">
+      <view class="hud-btn-circle log-btn" data-type="footprints" bindtap="openModal" bindlongpress="toggleDevModal">
         <text class="hbc-icon">📔</text>
         <text class="hbc-label">足迹</text>
       </view>
@@ -205,11 +209,11 @@
     </view>
   </view>
 
-  <!-- 宠物背包弹窗 -->
+  <!-- 宠物背包弹窗（仅展示消耗品） -->
   <view wx:if="{{activeModal === 'backpack'}}" class="modal-mask" catchtap="closeModal">
     <view class="modal-card sheet-card" catchtap="noop">
       <view class="modal-header">
-        <view class="mh-title">宠物背包</view>
+        <view class="mh-title">背包</view>
         <view class="mh-close" bindtap="closeModal">×</view>
       </view>
 
@@ -227,52 +231,6 @@
           </block>
         </view>
         <view wx:else class="empty-tip">背包空空如也，去商店逛逛吧~</view>
-      </scroll-view>
-    </view>
-  </view>
-
-  <!-- 宠物屋装饰弹窗 -->
-  <view wx:if="{{activeModal === 'decor'}}" class="modal-mask" catchtap="closeModal">
-    <view class="modal-card sheet-card" catchtap="noop">
-      <view class="modal-header">
-        <view class="mh-title">宠物小窝装饰</view>
-        <view class="mh-close" bindtap="closeModal">×</view>
-      </view>
-
-      <view class="sheet-tabs decor-tabs">
-        <view class="st-item {{decorSlotTab === 'scene' ? 'active' : ''}}" data-tab="scene" bindtap="switchDecorTab">场景</view>
-        <view class="st-item {{decorSlotTab === 'rug' ? 'active' : ''}}" data-tab="rug" bindtap="switchDecorTab">地毯</view>
-        <view class="st-item {{decorSlotTab === 'bed' ? 'active' : ''}}" data-tab="bed" bindtap="switchDecorTab">睡窝</view>
-        <view class="st-item {{decorSlotTab === 'wall' ? 'active' : ''}}" data-tab="wall" bindtap="switchDecorTab">墙饰</view>
-        <view class="st-item {{decorSlotTab === 'window' ? 'active' : ''}}" data-tab="window" bindtap="switchDecorTab">窗台</view>
-        <view class="st-item {{decorSlotTab === 'facility' ? 'active' : ''}}" data-tab="facility" bindtap="switchDecorTab">设施</view>
-      </view>
-
-      <scroll-view scroll-y class="sheet-scroll">
-        <view wx:if="{{decorSlotTab === 'scene'}}" class="scene-filter decor-scene-filter">
-          <view wx:for="{{scenes}}" wx:key="id" class="scene-filter-chip {{currentScene === item.id ? 'active' : ''}}" data-scene="{{item.id}}" bindtap="switchScene">{{item.name}}</view>
-        </view>
-        <view class="decor-actions-row" wx:if="{{decorSlotTab !== 'scene'}}">
-          <button class="btn-unequip" data-slot="{{decorSlotTab}}" data-id="" bindtap="equipFurniture">卸下当前装饰</button>
-        </view>
-        <view class="shop-grid">
-          <block wx:for="{{pet.inventory}}" wx:key="id">
-            <view wx:if="{{decorSlotTab !== 'scene' && item.type === 'furniture' && item.slot === decorSlotTab && item.scene === currentScene}}" class="shop-card-box {{pet.slots[decorSlotTab] === item.id ? 'equipped' : ''}}">
-              <view class="sc-emoji">{{item.emoji || '🪑'}}</view>
-              <view class="sc-name">{{item.name || item.id}}</view>
-              <button class="btn-buy" data-slot="{{decorSlotTab}}" data-id="{{item.id}}" bindtap="equipFurniture">
-                {{pet.slots[decorSlotTab] === item.id ? '已穿戴' : '穿戴'}}
-              </button>
-            </view>
-            <view wx:if="{{decorSlotTab === 'scene' && item.type === 'furniture' && item.scene === currentScene}}" class="shop-card-box {{item.equipped ? 'equipped' : ''}}">
-              <view class="sc-emoji">{{item.emoji}}</view>
-              <view class="sc-name">{{item.name}}</view>
-              <button class="btn-buy" data-id="{{item.id}}" data-scene="{{item.scene}}" data-slot="{{item.slot}}" bindtap="equipSceneFurniture">
-                {{item.equipped ? '已摆放' : '摆放'}}
-              </button>
-            </view>
-          </block>
-        </view>
       </scroll-view>
     </view>
   </view>
@@ -323,6 +281,11 @@
           <button class="dev-btn ok" bindtap="devMaxExp">✨ 经验拉满（可进化）</button>
           <button class="dev-btn warn" bindtap="devMakeSick">🤒 设为虚弱生病</button>
           <button class="dev-btn warn" bindtap="devMakeHungry">🍖 设为极度饥饿</button>
+        </view>
+
+        <view class="dev-section-title">重置数据</view>
+        <view class="dev-btn-group">
+          <button class="dev-btn warn" style="background: #D32F2F !important; color: #fff !important;" bindtap="devResetPet">🗑️ 清空并重置宠物所有数据</button>
         </view>
       </scroll-view>
     </view>

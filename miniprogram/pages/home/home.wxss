@@ -40,6 +40,50 @@
 .cold-title { font-size: 28rpx; font-weight: 600; color: #7A6A5E; }
 .cold-sub { font-size: 24rpx; color: #A89A8E; margin-top: 2rpx; }
 
+/* 首页经期暖心动态横幅 */
+.period-home-banner {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  border-radius: 24rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 16rpx rgba(244, 143, 177, 0.18);
+  border: 1rpx solid rgba(244, 143, 177, 0.3);
+}
+
+.period-home-banner.during {
+  background: linear-gradient(135deg, #FFF0F3 0%, #FFDCE5 100%);
+}
+
+.period-home-banner.approaching {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFE0B2 100%);
+  border-color: #FFE082;
+}
+
+.phb-icon {
+  font-size: 40rpx;
+  line-height: 1;
+}
+
+.phb-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  flex: 1;
+}
+
+.phb-title {
+  font-size: 26rpx;
+  font-weight: 700;
+  color: #5A4636;
+}
+
+.phb-sub {
+  font-size: 20rpx;
+  color: #B39B8A;
+}
+
 /* ── 双人拼图头像卡 ── */
 .puzzle-card { padding: 26rpx 28rpx 16rpx; }
 .hello-row { display: flex; align-items: center; justify-content: space-between; }
@@ -316,6 +360,18 @@
   background: linear-gradient(135deg, #FFE082 0%, #FFB300 100%);
   box-shadow: 0 4rpx 12rpx rgba(255, 179, 0, 0.35);
 }
+.fi-billing {
+  background: linear-gradient(135deg, #FFD54F 0%, #FF9800 100%);
+  box-shadow: 0 4rpx 12rpx rgba(255, 152, 0, 0.35);
+}
+.fi-lovelist {
+  background: linear-gradient(135deg, #FF80AB 0%, #FF4081 100%);
+  box-shadow: 0 4rpx 12rpx rgba(255, 64, 129, 0.35);
+}
+.fi-period {
+  background: linear-gradient(135deg, #F48FB1 0%, #E57373 100%);
+  box-shadow: 0 4rpx 12rpx rgba(229, 115, 115, 0.35);
+}
 
 .fi-title {
   font-size: 26rpx;
@@ -475,7 +531,7 @@
 .together-card {
   position: relative; overflow: hidden;
   padding: 0; min-height: 200rpx;
-  background: linear-gradient(135deg, #FFEBED 0%, #FFCC80 100%);
+  background: linear-gradient(135deg, #FCE4EC 0%, #F8BBD0 100%);
   border-radius: 24rpx;
   cursor: pointer;
 }
@@ -505,10 +561,6 @@
 .together-card.unlocked .together-line3 {
   color: #E91E63;
   font-weight: 600;
-}
-.together-bg-hint {
-  position: absolute; bottom: 12rpx; right: 20rpx;
-  font-size: 20rpx; color: rgba(0,0,0,0.2); z-index: 1;
 }
 
 /* 恋爱纪念日设定弹窗 */
@@ -575,19 +627,6 @@
   color: #FFFFFF;
   box-shadow: 0 6rpx 16rpx rgba(244, 143, 177, 0.4);
 }
-
-/* 背景选择弹窗 */
-.bg-grid {
-  display: flex; flex-wrap: wrap; margin: -8rpx;
-}
-.bg-cell {
-  width: 140rpx; height: 100rpx; border-radius: 16rpx;
-  margin: 8rpx; border: 3rpx solid transparent;
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.06);
-}
-.bg-cell.selected { border-color: #F48FB1; }
-.bg-check { font-size: 36rpx; color: #F48FB1; font-weight: 800; }
 
 /* ── 快捷赞美面板 ── */
 .praise-values {

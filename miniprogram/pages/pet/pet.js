@@ -18,6 +18,37 @@ const SCENES = [
 ]
 const SCENE_ORDER = SCENES.map(scene => scene.id)
 
+// 家具使用固定坐标，避免拖拽造成遮挡或比例失衡。装饰只参与画面表现。
+const SCENE_LAYOUTS = {
+  living: [
+    { id: 'furn_living_sofa', name: '沙发', icon: '🛋️', kind: 'furniture', slot: 'sofa', position: 'left-back', benefit: '舒适 +18 · 体力 +12', cdMinutes: 45 },
+    { id: 'furn_living_table', name: '茶几', icon: '🍵', kind: 'furniture', slot: 'table', position: 'right-front', benefit: '饱食 +15', cdMinutes: 30 },
+    { id: 'furn_living_tv', name: '电视柜', icon: '📺', kind: 'furniture', slot: 'tv', position: 'right-back', benefit: '心情 +16', cdMinutes: 30 },
+    { id: 'decor_living_window', name: '窗户', icon: '🪟', kind: 'decor', position: 'wall-right' }
+  ],
+  bedroom: [
+    { id: 'furn_bedroom_bed', name: '床', icon: '🛏️', kind: 'furniture', slot: 'bed', position: 'left-back', benefit: '体力 +20 · 舒适 +15', cdMinutes: 60 },
+    { id: 'furn_bedroom_nightstand', name: '床头柜', icon: '🗄️', kind: 'furniture', slot: 'nightstand', position: 'left-front', benefit: '心情 +14', cdMinutes: 30 },
+    { id: 'furn_bedroom_wardrobe', name: '衣柜', icon: '🚪', kind: 'furniture', slot: 'wardrobe', position: 'right-back', benefit: '整理小窝 · 心情 +10', cdMinutes: 20 },
+    { id: 'decor_bedroom_lamp', name: '台灯', icon: '💡', kind: 'decor', position: 'wall-left' },
+    { id: 'decor_bedroom_art', name: '挂画', icon: '🖼️', kind: 'decor', position: 'wall-right' }
+  ],
+  bathroom: [
+    { id: 'furn_bathroom_tub', name: '浴缸', icon: '🛁', kind: 'furniture', slot: 'tub', position: 'left-back', benefit: '清洁 +20 · 心情 +10', cdMinutes: 45 },
+    { id: 'furn_bathroom_sink', name: '洗手台', icon: '🚰', kind: 'furniture', slot: 'sink', position: 'right-back', benefit: '清洁 +15', cdMinutes: 25 },
+    { id: 'furn_bathroom_toilet', name: '马桶', icon: '🚽', kind: 'furniture', slot: 'toilet', position: 'right-front', benefit: '生理 +20', cdMinutes: 40 },
+    { id: 'decor_bathroom_towel', name: '毛巾架', icon: '🧻', kind: 'decor', position: 'wall-left' }
+  ],
+  outdoor: [
+    { id: 'furn_outdoor_house', name: '宠物屋', icon: '🏠', kind: 'furniture', slot: 'house', position: 'left-back', benefit: '舒适 +16 · 体力 +10', cdMinutes: 60 },
+    { id: 'furn_outdoor_feeder', name: '食盆架', icon: '🥣', kind: 'furniture', slot: 'feeder', position: 'floor-left', benefit: '饱食 +15', cdMinutes: 30 },
+    { id: 'furn_outdoor_ramp', name: '敏捷坡道', icon: '🛝', kind: 'furniture', slot: 'ramp', position: 'right-front', benefit: '心情 +12 · 体力 +8', cdMinutes: 45 },
+    { id: 'decor_outdoor_tree', name: '树木', icon: '🌳', kind: 'decor', position: 'right-back' },
+    { id: 'decor_outdoor_flowers', name: '花圃', icon: '🌼', kind: 'decor', position: 'wall-left' }
+  ]
+}
+const FIXED_FURNITURE_IDS = new Set(Object.values(SCENE_LAYOUTS).flat().filter(item => item.kind === 'furniture').map(item => item.id))
+
 Page({
   data: {
     // 沉浸舞台基础
@@ -29,6 +60,8 @@ Page({
       mood: 90,
       cleanliness: 90,
       energy: 90,
+      comfort: 90,
+      physiology: 90,
       health: 95,
       exp: 0,
       maxExp: 100,
@@ -61,20 +94,20 @@ Page({
     currentSceneName: '客厅',
     sceneFurniture: [],
     furnitureSceneTab: 'living',
+    sceneItems: SCENE_LAYOUTS.living,
+    selectedFurnitureId: '',
+    furnitureFeedback: '',
 
     // 伴侣同步与动态浮条
     partnerToast: '',
     showPartnerToast: false,
 
     // 模态弹窗控制
-    activeModal: null, // 'shop' | 'backpack' | 'decor' | 'game' | 'footprints' | 'dev'
+    activeModal: null, // 'shop' | 'backpack' | 'game' | 'footprints' | 'dev'
     submitting: false,
 
     // 商店分类标签
     shopTab: 'consumable', // 'consumable' | 'furniture'
-
-    // 装扮插槽分类标签
-    decorSlotTab: 'rug', // 'rug' | 'bed' | 'wall' | 'window' | 'facility'
 
     // 小游戏引擎状态
     gameRunning: false,
@@ -91,11 +124,13 @@ Page({
   onLoad() {
     const sys = wx.getSystemInfoSync()
     this.setData({ statusBarHeight: sys.statusBarHeight || 24 })
-    this.fetchPetData()
+    this._isPageLoaded = false
   },
 
   onShow() {
-    this.fetchPetData(true)
+    // 页面初次进入由 onShow 统一加载，避免 onLoad 与 onShow 并发调用引发底层初次渲染竞态
+    this.fetchPetData(!this._isPageLoaded ? false : true)
+    this._isPageLoaded = true
   },
 
   onUnload() {
@@ -164,23 +199,43 @@ Page({
           .filter(item => item.type === 'furniture')
           .map(item => item.id))
         const displayShopList = fullShop
+          .filter(item => item.type !== 'furniture' || FIXED_FURNITURE_IDS.has(item.id))
           .filter(item => item.type !== 'furniture' || !ownedFurnitureIds.has(item.id))
 
         const equippedScene = processedPet.slots && processedPet.slots.scene
-        const activeScene = SCENES.some(scene => scene.id === equippedScene) ? equippedScene : this.data.currentScene
+        const currentActiveScene = this.data.currentScene
+        // 优先保持当前用户正在浏览或切换的本地场景，避免异步请求回来时覆盖本地切换
+        const activeScene = (this._switchingScene || this._sceneSaveDebounce)
+          ? currentActiveScene
+          : (SCENES.some(scene => scene.id === equippedScene) ? equippedScene : currentActiveScene)
         const sceneSlotForId = id => {
           const config = fullShop.find(shopItem => shopItem.id === id)
           return config && config.scene ? config.scene : 'living'
         }
-        const sceneFurniture = Object.keys(processedPet.slots || {})
-          .filter(slot => slot.startsWith('scene_'))
-          .map(slot => ({ slot, id: processedPet.slots[slot] }))
-          .filter(item => item.id)
+        const sceneFurniture = (processedPet.inventory || [])
+          .filter(item => item.type === 'furniture')
           .map(item => {
             const config = fullShop.find(shopItem => shopItem.id === item.id)
-            return config ? { ...config, equippedSlot: item.slot, equipped: processedPet.slots[item.slot] === item.id } : null
+            return config ? { ...config, equipped: true } : null
           })
           .filter(Boolean)
+
+        const now = Date.now()
+        const sceneItems = (SCENE_LAYOUTS[activeScene] || []).map(item => {
+          const cdEnd = Number((processedPet.furnitureCooldowns || {})[item.id] || 0)
+          const isCooling = item.kind === 'furniture' && cdEnd > now
+          let remainingCdText = ''
+          if (isCooling) {
+            const remainingMinutes = Math.max(1, Math.ceil((cdEnd - now) / 60000))
+            remainingCdText = `${remainingMinutes}m`
+          }
+          return {
+            ...item,
+            owned: item.kind === 'decor' || ownedFurnitureIds.has(item.id),
+            cooling: isCooling,
+            remainingCdText
+          }
+        })
 
         this.setData({
           pet: processedPet,
@@ -188,6 +243,7 @@ Page({
           currentSceneName: (SCENES.find(scene => scene.id === activeScene) || SCENES[0]).name,
           furnitureSceneTab: activeScene,
           sceneFurniture,
+          sceneItems,
           visibleSlots: {
             rug: sceneSlotForId(processedPet.slots && processedPet.slots.rug) === activeScene,
             bed: sceneSlotForId(processedPet.slots && processedPet.slots.bed) === activeScene,
@@ -223,8 +279,8 @@ Page({
 
   // 伴侣动态浮条自适应提示
   triggerPartnerToast(text) {
-    if (!text) return
-    const readableText = /为小窝插槽换上了|[銆€鎹负]/u.test(text)
+    if (!text || text.includes('切换到了')) return
+    const readableText = /为小窝插槽换上了/.test(text)
       ? '小窝刚刚换上了新装饰！'
       : text
     this.setData({ partnerToast: readableText, showPartnerToast: true })
@@ -238,8 +294,8 @@ Page({
   onTapPet() {
     try { wx.vibrateShort({ type: 'light' }) } catch (_) {}
     const petComp = this.selectComponent('#live2d-stage-pet')
-    if (petComp && petComp.onTapPet) {
-      petComp.onTapPet()
+    if (petComp && petComp.onPetTap) {
+      petComp.onPetTap()
     }
   },
 
@@ -289,14 +345,13 @@ Page({
     this.setData({ shopTab: tab, furnitureSceneTab: this.data.currentScene })
   },
 
-  switchDecorTab(e) {
-    const tab = e.currentTarget.dataset.tab
-    this.setData({ decorSlotTab: tab, furnitureSceneTab: this.data.currentScene })
-  },
-
   switchScene(e) {
     const scene = e.currentTarget.dataset.scene
     if (!SCENES.some(item => item.id === scene)) return
+    if (this._switchingScene || scene === this.data.currentScene) return
+    this._switchingScene = true
+    this._targetScene = scene
+
     const slots = { ...(this.data.pet.slots || {}), scene }
     const findScene = id => {
       const config = this.data.shopList.find(item => item.id === id)
@@ -315,9 +370,139 @@ Page({
         facility: findScene(slots.facility) === scene,
       }
     })
-    api.call('petEquipSlot', { slot: 'scene', itemId: scene })
-      .then(() => this.fetchPetData(true))
-      .catch(err => wx.showToast({ title: err.message || '场景保存失败', icon: 'none' }))
+    this.refreshSceneItems(scene, { ...this.data.pet, slots })
+
+    if (this._sceneSaveDebounce) clearTimeout(this._sceneSaveDebounce)
+    this._sceneSaveDebounce = setTimeout(() => {
+      const targetScene = this._targetScene || scene
+      api.call('petEquipSlot', { slot: 'scene', itemId: targetScene })
+        .then(() => {
+          // 仅静默同步其它属性（经验/状态等），避免服务端旧数据覆盖当前本地最新场景
+          return this.fetchPetData(true)
+        })
+        .catch(err => wx.showToast({ title: err.message || '场景保存失败', icon: 'none' }))
+    }, 400)
+
+    setTimeout(() => {
+      this._switchingScene = false
+    }, 280)
+  },
+
+  refreshSceneItems(scene = this.data.currentScene, pet = this.data.pet) {
+    const owned = new Set((pet.inventory || []).filter(item => item.type === 'furniture').map(item => item.id))
+    const cooldowns = pet.furnitureCooldowns || {}
+    const now = Date.now()
+    const sceneItems = (SCENE_LAYOUTS[scene] || []).map(item => {
+      const cdEnd = Number(cooldowns[item.id] || 0)
+      const isCooling = item.kind === 'furniture' && cdEnd > now
+      let remainingCdText = ''
+      if (isCooling) {
+        const remainingMinutes = Math.max(1, Math.ceil((cdEnd - now) / 60000))
+        remainingCdText = `${remainingMinutes}m`
+      }
+      return {
+        ...item,
+        owned: item.kind === 'decor' || owned.has(item.id),
+        cooling: isCooling,
+        remainingCdText
+      }
+    })
+    this.setData({ sceneItems })
+  },
+
+  onTapFurniture(e) {
+    const id = e.currentTarget.dataset.id
+    const item = this.data.sceneItems.find(entry => entry.id === id)
+    if (!item || item.kind !== 'furniture' || this.data.submitting) return
+    this.setData({ selectedFurnitureId: id, furnitureFeedback: item.benefit || '' })
+    if (!item.owned) {
+      wx.showToast({ title: '先到商店解锁这件家具', icon: 'none' })
+      this.setData({ activeModal: 'shop', shopTab: 'furniture', furnitureSceneTab: this.data.currentScene })
+      return
+    }
+    if (item.cooling) {
+      wx.showToast({ title: '家具正在恢复中，稍后再来吧', icon: 'none' })
+      return
+    }
+    this.setData({ submitting: true })
+    api.call('petUseFurniture', { furnitureId: id })
+      .then(res => {
+        try { wx.vibrateShort({ type: 'medium' }) } catch (_) {}
+        wx.showToast({ title: res.replyText || item.benefit, icon: 'none' })
+        return this.fetchPetData(true)
+      })
+      .catch(err => wx.showToast({ title: err.message || '家具互动失败', icon: 'none' }))
+      .finally(() => this.setData({ submitting: false }))
+  },
+
+  // 一键使用所有可用家具（支持云端单接口执行与未部署时的优雅并发降级）
+  batchUseFurniture() {
+    if (this.data.submitting) return
+    this.setData({ submitting: true })
+
+    const pet = this.data.pet || {}
+    const owned = new Set((pet.inventory || []).filter(item => item.type === 'furniture').map(item => item.id))
+    const cooldowns = pet.furnitureCooldowns || {}
+    const now = Date.now()
+
+    // 筛选出当前已拥有且不在冷却中的家具
+    const allConfigFurnitures = Object.values(SCENE_LAYOUTS).flat().filter(item => item.kind === 'furniture')
+    const readyFurnitures = allConfigFurnitures.filter(item => {
+      if (!owned.has(item.id)) return false
+      const cdEnd = Number(cooldowns[item.id] || 0)
+      return cdEnd <= now
+    })
+
+    if (owned.size === 0) {
+      this.setData({ submitting: false })
+      return wx.showToast({ title: '小窝还没有家具，先去商店逛逛吧', icon: 'none' })
+    }
+
+    if (readyFurnitures.length === 0) {
+      this.setData({ submitting: false })
+      return wx.showToast({ title: '所有家具都在冷却中，稍后再来吧', icon: 'none' })
+    }
+
+    // 优先尝试云函数批量接口
+    api.call('petBatchUseFurniture', {})
+      .then(res => {
+        try { wx.vibrateShort({ type: 'medium' }) } catch (_) {}
+        wx.showToast({ title: res.replyText || '已一键使用家具', icon: 'none', duration: 2500 })
+        const petComp = this.selectComponent('#live2d-stage-pet')
+        if (petComp && petComp.triggerActionFx) petComp.triggerActionFx('touch')
+        return this.fetchPetData(true)
+      })
+      .catch(err => {
+        // 如果云函数尚未重新部署（报未知操作），自动优雅降级为逐个使用现有 petUseFurniture 接口
+        if (err && err.message && err.message.includes('未知操作')) {
+          const promises = readyFurnitures.map(item =>
+            api.call('petUseFurniture', { furnitureId: item.id }).catch(() => null)
+          )
+          return Promise.all(promises).then(results => {
+            const gains = {}
+            readyFurnitures.forEach(item => {
+              if (item.benefit) {
+                const parts = item.benefit.split('·').map(s => s.trim())
+                parts.forEach(p => {
+                  const m = p.match(/(饱食|心情|清洁|体力|舒适|生理)\s*\+(\d+)/)
+                  if (m) {
+                    const k = m[1], v = parseInt(m[2], 10)
+                    gains[k] = (gains[k] || 0) + v
+                  }
+                })
+              }
+            })
+            const summary = Object.keys(gains).map(k => `${k}+${gains[k]}`).join('、')
+            try { wx.vibrateShort({ type: 'medium' }) } catch (_) {}
+            wx.showToast({ title: summary ? `已提升：${summary}` : '状态满满~', icon: 'none', duration: 2500 })
+            const petComp = this.selectComponent('#live2d-stage-pet')
+            if (petComp && petComp.triggerActionFx) petComp.triggerActionFx('touch')
+            return this.fetchPetData(true)
+          })
+        }
+        wx.showToast({ title: err.message || '使用失败', icon: 'none' })
+      })
+      .finally(() => this.setData({ submitting: false }))
   },
 
   previousScene() {
@@ -338,28 +523,10 @@ Page({
     this.setData({ furnitureSceneTab: scene })
   },
 
-  equipSceneFurniture(e) {
-    const { id, scene, slot } = e.currentTarget.dataset
-    if (!id || !scene || !slot || this.data.submitting) return
-    const legacySlot = ['rug', 'bed', 'wall', 'window', 'facility'].includes(slot) ? slot : 'facility'
-    const sceneSlot = `scene_${scene}_${slot}`
-    this.setData({ submitting: true })
-    api.call('petEquipSlot', { slot: sceneSlot, itemId: id })
-      .catch(err => {
-        if (/无效的家具插槽/.test(err.message || '')) {
-          return api.call('petEquipSlot', { slot: legacySlot, itemId: id })
-        }
-        throw err
-      })
-      .then(() => this.fetchPetData(true))
-      .catch(err => wx.showToast({ title: err.message || '装饰失败', icon: 'none' }))
-      .finally(() => this.setData({ submitting: false }))
-  },
-
   // 4. 萌宠商店：消耗共享金币购买道具/家具
   buyShopItem(e) {
     const itemId = e.currentTarget.dataset.id
-    const item = this.data.shopList.find(shopItem => shopItem.id === itemId)
+    const item = (this.data.shopList || []).find(shopItem => shopItem && shopItem.id === itemId)
     if (!item || this.data.submitting) return
     if (item.available === false || e.currentTarget.dataset.available === false) {
       return wx.showToast({ title: '该家具尚未上架，请先更新云函数', icon: 'none' })
@@ -384,7 +551,34 @@ Page({
             .then(buyRes => {
               wx.hideLoading()
               try { wx.vibrateShort({ type: 'medium' }) } catch (_) {}
-              wx.showToast({ title: buyRes.replyText || '已放入储物箱！', icon: 'none' })
+
+              const isFurn = item.type === 'furniture'
+              const sceneNameMap = { living: '客厅', bedroom: '卧室', bathroom: '浴室', outdoor: '室外' }
+              const targetScene = item.scene || 'living'
+              const toastMsg = isFurn
+                ? `已解锁并布置到【${sceneNameMap[targetScene] || '小窝'}】！`
+                : (buyRes.replyText || '已放入储物箱！')
+
+              wx.showToast({ title: toastMsg, icon: 'none' })
+
+              // 立即本地补齐该家具，点亮场景中的固定点位，避免等待网络轮询
+              if (isFurn && this.data.pet) {
+                const currentInv = (this.data.pet.inventory || []).slice()
+                if (!currentInv.some(i => i.id === item.id)) {
+                  currentInv.push({ id: item.id, type: 'furniture', count: 1, name: item.name, emoji: item.emoji, scene: targetScene })
+                }
+                const updatedPet = { ...this.data.pet, inventory: currentInv }
+                this.setData({ pet: updatedPet })
+                this.refreshSceneItems(this.data.currentScene, updatedPet)
+              }
+
+              // 若购买的家具在其他房间，提示并自动切换过去或给用户明确感知
+              if (isFurn && targetScene && this.data.currentScene !== targetScene) {
+                setTimeout(() => {
+                  this.switchScene({ currentTarget: { dataset: { scene: targetScene } } })
+                }, 800)
+              }
+
               this.fetchPetData(true)
             })
             .catch(err => {
@@ -423,31 +617,7 @@ Page({
       })
   },
 
-  // 6. 装扮小窝：插槽家具更换/穿戴/卸下
-  equipFurniture(e) {
-    const { slot, id } = e.currentTarget.dataset
-    if (!slot || this.data.submitting) return
-
-    wx.showLoading({ title: '装扮更换中...' })
-    this.setData({ submitting: true })
-
-    api.call('petEquipSlot', { slot, itemId: id || '' })
-      .then(res => {
-        wx.hideLoading()
-        try { wx.vibrateShort({ type: 'light' }) } catch (_) {}
-        wx.showToast({ title: id ? '装扮已换上！' : '已卸下装扮', icon: 'success' })
-        this.fetchPetData(true)
-      })
-      .catch(err => {
-        wx.hideLoading()
-        wx.showToast({ title: err.message || '更换失败', icon: 'none' })
-      })
-      .finally(() => {
-        this.setData({ submitting: false })
-      })
-  },
-
-  // 7. 第三人称操控萌宠小游戏引擎（萌宠接金币躲炸弹）
+  // 6. 第三人称操控萌宠小游戏引擎（萌宠接金币躲炸弹）
   initMiniGame() {
     this.setData({
       gameRunning: false,
@@ -680,6 +850,20 @@ Page({
 
   devFullRecovery() {
     this._callDevSet({ health: 100, hunger: 100, mood: 100, cleanliness: 100, energy: 100, actionState: 'happy' })
+  },
+
+  devResetPet() {
+    wx.showModal({
+      title: '确认清空数据',
+      content: '确定要清空宠物的所有数据（包含背包、金币、已解锁家具、足迹，并重新变回初始蛋）吗？',
+      confirmColor: '#D32F2F',
+      confirmText: '确认清空',
+      success: (res) => {
+        if (res.confirm) {
+          this._callDevSet({ reset: true })
+        }
+      }
+    })
   },
 
   _callDevSet(params) {

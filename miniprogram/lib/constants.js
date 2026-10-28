@@ -34,7 +34,7 @@ const MALL_ITEMS = [
 ]
 
 const BONUS_RATE = 0.3 // 动态汇率：付出奖励比例
-const SIGN_BASE = 10 // 每日签到基础分
+const SIGN_BASE = 5 // 每日签到基础分
 const BLIND_BOX_REWARD = 20 // 盲盒任务奖励
 
 // 萌宠百货商店配置（纯金币购买，食物/洗浴消耗品进储物箱，家具永久拥有）
@@ -89,7 +89,16 @@ const PET_SHOP = [
   { id: 'furn_bath_tub', name: '泡泡浴缸', price: 200, emoji: '🛁', desc: '装满泡泡的宠物浴缸', type: 'furniture', slot: 'tub', scene: 'bathroom' },
   { id: 'furn_bath_mat', name: '浴室防滑垫', price: 65, emoji: '🧼', desc: '柔软吸水的防滑脚垫', type: 'furniture', slot: 'mat', scene: 'bathroom' },
   { id: 'furn_outdoor_tent', name: '星空露营帐篷', price: 190, emoji: '⛺', desc: '周末户外露营小帐篷', type: 'furniture', slot: 'tent', scene: 'outdoor' },
-  { id: 'furn_outdoor_tree', name: '花园大树', price: 130, emoji: '🌳', desc: '为花园添一片清凉树荫', type: 'furniture', slot: 'tree', scene: 'outdoor' }
+  { id: 'furn_living_tv', name: '原木电视柜', price: 135, emoji: '📺', desc: '互动提升心情，冷却30分钟', type: 'furniture', slot: 'tv', scene: 'living' },
+  { id: 'furn_bedroom_bed', name: '奶油软床', price: 180, emoji: '🛏️', desc: '恢复体力与舒适度，冷却60分钟', type: 'furniture', slot: 'bed', scene: 'bedroom' },
+  { id: 'furn_bedroom_nightstand', name: '星光床头柜', price: 95, emoji: '🗄️', desc: '互动提升心情，冷却30分钟', type: 'furniture', slot: 'nightstand', scene: 'bedroom' },
+  { id: 'furn_bedroom_wardrobe', name: '云朵衣柜', price: 220, emoji: '🚪', desc: '解锁宠物换装入口', type: 'furniture', slot: 'wardrobe', scene: 'bedroom' },
+  { id: 'furn_bathroom_tub', name: '奶白泡泡浴缸', price: 200, emoji: '🛁', desc: '恢复清洁与心情，冷却45分钟', type: 'furniture', slot: 'tub', scene: 'bathroom' },
+  { id: 'furn_bathroom_sink', name: '贝壳洗手台', price: 120, emoji: '🚰', desc: '恢复清洁度，冷却25分钟', type: 'furniture', slot: 'sink', scene: 'bathroom' },
+  { id: 'furn_bathroom_toilet', name: '智能宠物马桶', price: 150, emoji: '🚽', desc: '恢复生理值，冷却40分钟', type: 'furniture', slot: 'toilet', scene: 'bathroom' },
+  { id: 'furn_outdoor_house', name: '庭院宠物屋', price: 190, emoji: '🏠', desc: '恢复舒适与体力，冷却60分钟', type: 'furniture', slot: 'house', scene: 'outdoor' },
+  { id: 'furn_outdoor_feeder', name: '户外食盆架', price: 105, emoji: '🥣', desc: '恢复饱食度，冷却30分钟', type: 'furniture', slot: 'feeder', scene: 'outdoor' },
+  { id: 'furn_outdoor_ramp', name: '草地敏捷坡道', price: 165, emoji: '🛝', desc: '提升心情与体力，冷却45分钟', type: 'furniture', slot: 'ramp', scene: 'outdoor' }
 ]
 
 module.exports = { ADD_REASONS, DEDUCT_REASONS, BLIND_BOX_TASKS, MALL_ITEMS, BONUS_RATE, SIGN_BASE, BLIND_BOX_REWARD, PET_SHOP }

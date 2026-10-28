@@ -1,0 +1,111 @@
+<view class="page lovelist-page">
+  <!-- 离屏 Canvas 用于生成成就海报 -->
+  <canvas type="2d" id="posterCanvas" class="offscreen-canvas"></canvas>
+
+  <!-- 顶部操作栏 -->
+  <view class="action-bar">
+    <view class="page-caption">心愿待办</view>
+    <view class="action-right">
+      <view class="add-custom-btn" bindtap="openAddCustomModal">
+        <text class="add-icon">+</text>
+        <text>添加待办</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 待办清单列表 -->
+  <view class="list-container">
+    <view wx:if="{{loading}}" class="empty-hint">加载中...</view>
+    <view wx:elif="{{list.length === 0}}" class="empty-hint">
+      <text class="empty-emoji">📝</text>
+      <text class="empty-text">还没有待办事项，快去添加吧</text>
+    </view>
+    <view wx:else class="items-grid">
+      <view class="item-card {{item.done ? 'is-done' : ''}}" wx:for="{{list}}" wx:key="_id">
+        <!-- 卡片主体行：左侧完成勾选框 + 中间标题 + 右侧删除按钮 -->
+        <view class="item-main-row">
+          <view class="check-box {{item.done ? 'checked' : ''}}" bindtap="toggleCheck" data-item="{{item}}">
+            <text wx:if="{{item.done}}">✔</text>
+          </view>
+          <view class="item-title {{item.done ? 'title-done' : ''}}">{{item.title}}</view>
+          <view class="delete-icon-btn" catchtap="deleteItem" data-item="{{item}}" data-id="{{item._id}}">
+            <text class="del-icon">✕</text>
+          </view>
+        </view>
+
+        <!-- 打卡心得与照片凭证 -->
+        <view class="item-proof-box" wx:if="{{item.done}}">
+          <view class="proof-meta">
+            <text class="proof-date">完成于 {{item.doneAt}}</text>
+            <view class="poster-link-btn" bindtap="generatePoster" data-item="{{item}}">
+              <text class="pl-icon">📜</text>
+              <text>生成海报</text>
+            </view>
+          </view>
+          <view class="proof-remark" wx:if="{{item.remark}}">“{{item.remark}}”</view>
+          <view class="proof-images" wx:if="{{item.imageUrls && item.imageUrls.length}}">
+            <image class="proof-thumb" wx:for="{{item.imageUrls}}" wx:for-item="img" wx:key="*this" src="{{img}}" mode="aspectFill" bindtap="previewProofImg" data-url="{{img}}" data-urls="{{item.imageUrls}}"></image>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 打卡弹窗 Modal (上传打卡凭证与心得) -->
+  <view class="modal-mask {{showCheckModal ? 'show' : ''}}" bindtap="closeCheckModal">
+    <view class="modal-content" catchtap="preventBubble">
+      <view class="modal-header">
+        <text class="modal-title">打卡完成</text>
+        <view class="modal-close" bindtap="closeCheckModal">✕</view>
+      </view>
+
+      <view class="check-item-preview">
+        <text class="cip-title">{{activeItem.title}}</text>
+      </view>
+
+      <!-- 照片上传凭证 -->
+      <view class="form-title">上传打卡凭证（选填）</view>
+      <view class="uploader-wrap">
+        <view class="upload-preview-box" wx:for="{{tempUploadImages}}" wx:key="*this">
+          <image class="preview-img" src="{{item}}" mode="aspectFill"></image>
+          <view class="del-img-btn" bindtap="removeUploadImage" data-idx="{{index}}">✕</view>
+        </view>
+        <view class="upload-btn-box" bindtap="chooseProofImage" wx:if="{{tempUploadImages.length < 3}}">
+          <text class="ub-icon">📷</text>
+          <text class="ub-text">上传照片</text>
+        </view>
+      </view>
+
+      <!-- 回忆心得日记 -->
+      <view class="form-title">写下此时此刻的心得感受</view>
+      <textarea class="remark-textarea" placeholder="记录下达成这一事项的温馨回忆吧~" maxlength="150" value="{{checkRemark}}" bindinput="onRemarkInput" />
+
+      <!-- 提交按钮 -->
+      <button class="submit-btn" bindtap="confirmCheckDone" loading="{{submitting}}">确认完成 💕</button>
+    </view>
+  </view>
+
+  <!-- 添加待办事项 Modal -->
+  <view class="modal-mask {{showCustomModal ? 'show' : ''}}" bindtap="closeCustomModal">
+    <view class="modal-content" catchtap="preventBubble">
+      <view class="modal-header">
+        <text class="modal-title">添加心愿待办</text>
+        <view class="modal-close" bindtap="closeCustomModal">✕</view>
+      </view>
+
+      <view class="form-title">待办内容</view>
+      <input class="custom-title-input" placeholder="例如：一起去游乐园坐摩天轮" placeholder-class="input-placeholder" maxlength="40" value="{{customTitle}}" bindinput="onCustomTitleInput" />
+
+      <button class="submit-btn" bindtap="submitCustomItem" loading="{{submitting}}">保存待办</button>
+    </view>
+  </view>
+
+  <!-- 海报生成预览弹窗 Modal -->
+  <view class="modal-mask {{showPosterModal ? 'show' : ''}}" bindtap="closePosterModal">
+    <view class="poster-preview-card" catchtap="preventBubble">
+      <image class="poster-img" src="{{posterTempPath}}" mode="widthFix" show-menu-by-longpress></image>
+      <button class="save-album-btn" bindtap="savePosterToAlbum">保存到手机相册</button>
+      <view class="poster-close-link" bindtap="closePosterModal">关闭</view>
+    </view>
+  </view>
+</view>

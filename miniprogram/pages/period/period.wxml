@@ -1,0 +1,197 @@
+<view class="page period-page">
+  <!-- 身份切换小开关（仅在未严格绑定时辅助确认） -->
+  <view class="role-switch-row">
+    <text class="rs-label">当前视角：{{isFemale ? '女生健康视角' : '男生暖心关怀视角'}}</text>
+    <view class="rs-btn" bindtap="togglePerspective">切换视角</view>
+  </view>
+
+  <!-- 男生端专属看板：这几天请多照顾 -->
+  <block wx:if="{{!isFemale}}">
+    <view class="care-banner {{status}}">
+      <view class="care-status-icon">
+        <text wx:if="{{status === 'during'}}">🌸</text>
+        <text wx:elif="{{status === 'approaching'}}">🍵</text>
+        <text wx:else>✨</text>
+      </view>
+      <view class="care-status-info">
+        <view class="care-main-title">
+          <text wx:if="{{status === 'during'}}">这几天请多照顾宝宝 💕</text>
+          <text wx:elif="{{status === 'approaching'}}">宝宝生理期快到啦 (约{{daysToNext}}天后)</text>
+          <text wx:else>宝宝目前状态平稳 🌸</text>
+        </view>
+        <view class="care-sub-desc">
+          <text wx:if="{{status === 'during'}}">今日生理期第 {{dayInPeriod}} 天 · 容易疲惫脆弱，多抱抱TA</text>
+          <text wx:elif="{{status === 'approaching'}}">预计 {{nextStartDate}} 来临 · 提前备好红糖温水与暖宝宝</text>
+          <text wx:else>下次预计 {{nextStartDate}} · 每天都要好心情</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 暖男求生与贴心指南 -->
+    <view class="guide-card">
+      <view class="guide-title">
+        <text class="gt-icon">💡</text>
+        <text>暖男贴心指南（别踩雷区）</text>
+      </view>
+      <view class="guide-list">
+        <view class="guide-item">
+          <text class="gi-emoji">🍵</text>
+          <view class="gi-content">
+            <text class="gi-t">不要只说“多喝热水”</text>
+            <text class="gi-d">直接端来温热的红糖水，或者备好暖宝宝递到手里</text>
+          </view>
+        </view>
+        <view class="guide-item">
+          <text class="gi-emoji">🍦</text>
+          <view class="gi-content">
+            <text class="gi-t">坚决监督管住凉食</text>
+            <text class="gi-d">不吃冰淇淋、生冷瓜果，不喝冰镇奶茶咖啡</text>
+          </view>
+        </view>
+        <view class="guide-item">
+          <text class="gi-emoji">🤗</text>
+          <view class="gi-content">
+            <text class="gi-t">情绪敏感情绪差时绝不讲大道理</text>
+            <text class="gi-d">激素变化容易委屈烦躁，少说多听，给一个紧紧的拥抱</text>
+          </view>
+        </view>
+        <view class="guide-item">
+          <text class="gi-emoji">🧹</text>
+          <view class="gi-content">
+            <text class="gi-t">主动分担家务少碰冷水</text>
+            <text class="gi-d">洗碗、洗衣等需要接触凉水的家务由你全包</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 一键送出暖心关怀操作 -->
+    <view class="actions-card">
+      <view class="actions-title">一键送出暖心关怀</view>
+      <view class="action-grid">
+        <view class="action-btn-item" bindtap="sendCare" data-type="tea" data-msg="热乎乎的红糖姜茶送到啦，乖乖喝完胃暖暖的~">
+          <text class="abi-emoji">🍵</text>
+          <text class="abi-text">送红糖水</text>
+        </view>
+        <view class="action-btn-item" bindtap="sendCare" data-type="hug" data-msg="给宝宝一个大大的暖暖拥抱，把小情绪都揉走~">
+          <text class="abi-emoji">🤗</text>
+          <text class="abi-text">揉肚抱抱</text>
+        </view>
+        <view class="action-btn-item" bindtap="sendCare" data-type="warmer" data-msg="暖宝宝已经贴好啦，腰部和小肚子都要热乎乎的~">
+          <text class="abi-emoji">♨️</text>
+          <text class="abi-text">备暖宝宝</text>
+        </view>
+        <view class="action-btn-item" bindtap="sendCare" data-type="water" data-msg="提醒宝宝喝杯温水润润喉咙，按时早点睡觉哦~">
+          <text class="abi-emoji">🥛</text>
+          <text class="abi-text">喝温热开水</text>
+        </view>
+      </view>
+      <view class="last-care-hint" wx:if="{{lastCareAt}}">
+        <text>最近关怀送达：{{lastCareAt}}</text>
+      </view>
+    </view>
+  </block>
+
+  <!-- 女生端专属看板：生理期智能记录与日历预测 -->
+  <block wx:else>
+    <!-- 环形状态预测大卡片 -->
+    <view class="cycle-dashboard-card {{status}}">
+      <view class="cdc-main">
+        <text class="cdc-badge" wx:if="{{status === 'during'}}">经期第 {{dayInPeriod}} 天</text>
+        <text class="cdc-badge" wx:elif="{{status === 'approaching'}}">预计 {{daysToNext}} 天后到访</text>
+        <text class="cdc-badge" wx:else>平稳期</text>
+
+        <view class="cdc-center-text">
+          <text class="cdc-large-num">{{status === 'during' ? dayInPeriod : (daysToNext > 0 ? daysToNext : 0)}}</text>
+          <text class="cdc-unit">{{status === 'during' ? '天' : '天后到访'}}</text>
+        </view>
+
+        <view class="cdc-pred-row">
+          <text class="cdc-pred-item">周期：{{cycleDays}} 天</text>
+          <text class="cdc-pred-dot">·</text>
+          <text class="cdc-pred-item">经期：{{periodDays}} 天</text>
+          <text class="cdc-pred-dot">·</text>
+          <text class="cdc-pred-item">预测：{{nextStartDate || '计算中'}}</text>
+        </view>
+      </view>
+
+      <!-- 快速标记今日经期开始 -->
+      <view class="cdc-quick-btn" bindtap="openRecordModal">
+        <text class="cqb-icon">🩸</text>
+        <text>{{status === 'during' ? '更新经期状态' : '姨妈今天来了'}}</text>
+      </view>
+    </view>
+
+    <!-- 周期设置与历史记录卡片 -->
+    <view class="history-card">
+      <view class="hc-header">
+        <text class="hc-title">打卡历史</text>
+        <view class="hc-setting-btn" bindtap="openSettingModal">设置周期</view>
+      </view>
+
+      <view wx:if="{{!records || records.length === 0}}" class="empty-history">
+        <text>暂无经期历史记录，点击上方按钮开启记录~</text>
+      </view>
+      <view wx:else class="history-list">
+        <view class="history-item" wx:for="{{records}}" wx:key="recordedAt">
+          <view class="hi-left">
+            <view class="hi-dot"></view>
+            <text class="hi-date">{{item.startDate}}</text>
+          </view>
+          <view class="hi-right">
+            <text class="hi-tag" wx:if="{{item.painLevel === 1}}">轻微隐痛</text>
+            <text class="hi-tag warning" wx:elif="{{item.painLevel === 2}}">明显痛经</text>
+            <text class="hi-tag danger" wx:elif="{{item.painLevel === 3}}">严重痛经</text>
+            <text class="hi-tag" wx:else>无痛感</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 记录经期打卡 Modal -->
+  <view class="modal-mask {{showRecordModal ? 'show' : ''}}" bindtap="closeRecordModal">
+    <view class="modal-content" catchtap="preventBubble">
+      <view class="modal-header">
+        <text class="modal-title">记录生理期</text>
+        <view class="modal-close" bindtap="closeRecordModal">✕</view>
+      </view>
+
+      <view class="form-title">起始日期</view>
+      <picker mode="date" value="{{recordDate}}" bindchange="onRecordDateChange">
+        <view class="date-picker-row">
+          <text class="dpr-icon">📅</text>
+          <text class="dpr-val">{{recordDate}}</text>
+        </view>
+      </picker>
+
+      <view class="form-title">痛经程度</view>
+      <view class="chip-row">
+        <view class="cr-chip {{painLevel === 0 ? 'active' : ''}}" bindtap="selectPain" data-val="{{0}}">没感觉</view>
+        <view class="cr-chip {{painLevel === 1 ? 'active' : ''}}" bindtap="selectPain" data-val="{{1}}">轻微隐痛</view>
+        <view class="cr-chip {{painLevel === 2 ? 'active' : ''}}" bindtap="selectPain" data-val="{{2}}">小腹坠痛</view>
+        <view class="cr-chip {{painLevel === 3 ? 'active' : ''}}" bindtap="selectPain" data-val="{{3}}">难受躺平</view>
+      </view>
+
+      <button class="submit-btn" bindtap="submitPeriodRecord" loading="{{submitting}}">保存记录 💕</button>
+    </view>
+  </view>
+
+  <!-- 周期设置 Modal -->
+  <view class="modal-mask {{showSettingModal ? 'show' : ''}}" bindtap="closeSettingModal">
+    <view class="modal-content" catchtap="preventBubble">
+      <view class="modal-header">
+        <text class="modal-title">周期习惯设置</text>
+        <view class="modal-close" bindtap="closeSettingModal">✕</view>
+      </view>
+
+      <view class="form-title">平均生理周期 (天)</view>
+      <input class="num-input" type="number" value="{{editCycleDays}}" bindinput="onCycleInput" placeholder="默认28天" />
+
+      <view class="form-title">平均经期持续 (天)</view>
+      <input class="num-input" type="number" value="{{editPeriodDays}}" bindinput="onPeriodInput" placeholder="默认5天" />
+
+      <button class="submit-btn" bindtap="submitPeriodSetting" loading="{{submitting}}">更新设置</button>
+    </view>
+  </view>
+</view>
